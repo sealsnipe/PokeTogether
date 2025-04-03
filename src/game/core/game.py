@@ -15,6 +15,7 @@ from game.core.settings import Settings
 from game.ui.main_menu import MainMenu
 from game.ui.options_menu import OptionsMenu
 from game.ui.ingame_menu import IngameMenu
+from game.network.multiplayer_manager import MultiplayerManager
 
 class Game:
     """Main game class"""
@@ -37,9 +38,15 @@ class Game:
             "BATTLE": 2,
             "PAUSE": 3,
             "OPTIONS": 4,
-            "INGAME_MENU": 5
+            "INGAME_MENU": 5,
+            "MULTIPLAYER_MENU": 6
         }
         self.current_state = self.states["MAIN_MENU"]
+
+        # Multiplayer
+        self.multiplayer_manager = MultiplayerManager()
+        self.other_players = {}
+        self.multiplayer_active = False
 
         # Game resources
         self.resources = {}
@@ -88,6 +95,14 @@ class Game:
         # Ingame-Menü-Callbacks einrichten
         self.ingame_menu.on_show_options = self._show_options
         self.ingame_menu.on_save_game = self._save_game
+        self.ingame_menu.on_host_game = self.start_hosting
+        self.ingame_menu.on_join_game = self._show_join_dialog
+        self.ingame_menu.on_disconnect = self.stop_multiplayer
+
+        # Multiplayer-Callbacks einrichten
+        self.multiplayer_manager.set_player_update_callback(self._on_player_update)
+        self.multiplayer_manager.set_player_disconnected_callback(self._on_player_disconnected)
+        self.multiplayer_manager.set_chat_message_callback(self._on_chat_message)
 
         self.logger.info("Game initialized")
 
@@ -297,6 +312,10 @@ class Game:
 
                 # Kamera aktualisieren
                 self.camera.update(self.player.x, self.player.y)
+
+                # Multiplayer: Spielerdaten senden, wenn aktiv
+                if self.multiplayer_active:
+                    self._send_player_data()
         elif self.current_state == self.states["BATTLE"]:
             # Update battle
             pass
@@ -306,6 +325,14 @@ class Game:
         elif self.current_state == self.states["INGAME_MENU"]:
             # Ingame-Menü aktualisieren
             self.ingame_menu.update()
+
+            # Prüfen, ob das Menü geschlossen werden soll
+            if not self.ingame_menu.active:
+                self.current_state = self.states["PLAYING"]
+                # Eingaben zurücksetzen
+                self.input_handler.input_state = {}
+                self.input_handler.input_pressed = {}
+                self.input_handler.last_input_state = {}
         elif self.current_state == self.states["OPTIONS"]:
             # Optionsmenü aktualisieren
             self.options_menu.update()
@@ -345,6 +372,10 @@ class Game:
 
         # Spieler rendern
         self.player.render(self.screen, self.camera.get_offset())
+
+        # Andere Spieler rendern, wenn Multiplayer aktiv ist
+        if self.multiplayer_active:
+            self._render_other_players()
 
         # Debug-Informationen
         font = pygame.font.SysFont(None, 24)
@@ -428,5 +459,152 @@ class Game:
             # Bildschirm aktualisieren
             pygame.display.flip()
 
+        # Multiplayer-Session beenden, falls aktiv
+        if self.multiplayer_active:
+            self.stop_multiplayer()
+
         self.logger.info("Game loop ended")
         pygame.quit()
+
+    # Multiplayer-Methoden
+    def start_hosting(self):
+        """Startet eine Multiplayer-Session als Host"""
+        if self.multiplayer_active:
+            self.logger.warning("Multiplayer already active")
+            return
+
+        self.logger.info("Starting multiplayer session as host")
+        self.multiplayer_manager.start_hosting()
+        self.multiplayer_active = True
+
+        # Spielerdaten an den Server senden
+        self._send_player_data()
+
+    def join_session(self, host: str, port: int = 8765):
+        """Verbindet mit einer Multiplayer-Session
+
+        Args:
+            host: Host-Adresse
+            port: Host-Port
+        """
+        if self.multiplayer_active:
+            self.logger.warning("Multiplayer already active")
+            return
+
+        self.logger.info(f"Joining multiplayer session at {host}:{port}")
+        self.multiplayer_manager.connect_to_session(host, port)
+        self.multiplayer_active = True
+
+        # Spielerdaten an den Server senden
+        self._send_player_data()
+
+    def stop_multiplayer(self):
+        """Beendet die Multiplayer-Session"""
+        if not self.multiplayer_active:
+            return
+
+        self.logger.info("Stopping multiplayer session")
+
+        if self.multiplayer_manager.is_host:
+            self.multiplayer_manager.stop_hosting()
+        else:
+            self.multiplayer_manager.disconnect_from_session()
+
+        self.multiplayer_active = False
+        self.other_players = {}
+
+    def _send_player_data(self):
+        """Sendet die Spielerdaten an den Server"""
+        if not self.multiplayer_active:
+            return
+
+        # Spielerdaten sammeln
+        player_data = {
+            "name": self.player.name,
+            "x": self.player.x,
+            "y": self.player.y,
+            "direction": self.player.direction,
+            "moving": self.player.moving
+        }
+
+        # Daten an den Server senden
+        self.multiplayer_manager.update_player(player_data)
+
+    def _on_player_update(self, client_id: str, player_data: dict):
+        """Callback für Spieler-Updates
+
+        Args:
+            client_id: Client-ID des Spielers
+            player_data: Spielerdaten
+        """
+        self.logger.debug(f"Player update: {player_data.get('name')} at ({player_data.get('x')}, {player_data.get('y')})")
+
+        # Spielerdaten speichern
+        self.other_players[client_id] = player_data
+
+    def _on_player_disconnected(self, client_id: str, player_name: str):
+        """Callback für Spieler-Disconnects
+
+        Args:
+            client_id: Client-ID des Spielers
+            player_name: Name des Spielers
+        """
+        self.logger.info(f"Player disconnected: {player_name}")
+
+        # Spieler aus der Liste entfernen
+        if client_id in self.other_players:
+            del self.other_players[client_id]
+
+    def _on_chat_message(self, player_name: str, message: str):
+        """Callback für Chat-Nachrichten
+
+        Args:
+            player_name: Name des Spielers
+            message: Chat-Nachricht
+        """
+        self.logger.info(f"Chat message from {player_name}: {message}")
+        # Hier könnte die Nachricht im Spiel angezeigt werden
+
+    def _show_join_dialog(self):
+        """Zeigt einen Dialog zum Beitreten einer Multiplayer-Session"""
+        self.logger.info("Showing join dialog")
+
+        # In einer vollständigen Implementierung würde hier ein Eingabedialog angezeigt werden
+        # Für dieses Beispiel verwenden wir einen festen Wert (localhost)
+        host = "localhost"
+        port = 8765
+
+        # Verbindung herstellen
+        self.join_session(host, port)
+
+    def _render_other_players(self):
+        """Rendert andere Spieler im Multiplayer-Modus"""
+        if not self.multiplayer_active or not self.other_players:
+            return
+
+        # Temporärer Font für Spielernamen
+        font = pygame.font.SysFont(None, 18)
+
+        # Alle anderen Spieler rendern
+        for client_id, player_data in self.other_players.items():
+            # Spielerposition aus den Daten extrahieren
+            x = player_data.get("x", 0)
+            y = player_data.get("y", 0)
+            name = player_data.get("name", "Unknown")
+            direction = player_data.get("direction", "down")
+
+            # Kamera-Offset anwenden
+            offset = self.camera.get_offset()
+            screen_x = x + offset[0]
+            screen_y = y + offset[1]
+
+            # Prüfen, ob der Spieler im sichtbaren Bereich ist
+            if (0 <= screen_x <= self.screen.get_width() and
+                0 <= screen_y <= self.screen.get_height()):
+
+                # Einfache Darstellung als farbiger Kreis
+                pygame.draw.circle(self.screen, (0, 0, 255), (int(screen_x), int(screen_y)), 16)
+
+                # Spielername anzeigen
+                name_text = font.render(name, True, (255, 255, 255))
+                self.screen.blit(name_text, (int(screen_x) - name_text.get_width() // 2, int(screen_y) - 30))

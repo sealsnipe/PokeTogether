@@ -88,10 +88,9 @@ class IngameMenu:
     def hide(self):
         """Hide the ingame menu"""
         self.active = False
+        self.current_menu = "main"  # Zurück zum Hauptmenü
+        self.current_option = 0    # Erste Option auswählen
         self.logger.info("Ingame menu closed")
-
-        # Eingaben zurücksetzen, um Probleme zu vermeiden
-        self.input_handler.reset()
 
     def update(self):
         """Update the ingame menu"""
