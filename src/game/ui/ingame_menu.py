@@ -90,7 +90,8 @@ class IngameMenu:
         self.active = False
         self.logger.info("Ingame menu closed")
 
-        # Wir entfernen den Aufruf der reset-Methode, da sie Probleme verursacht
+        # Eingaben zurücksetzen, um Probleme zu vermeiden
+        self.input_handler.reset()
 
     def update(self):
         """Update the ingame menu"""

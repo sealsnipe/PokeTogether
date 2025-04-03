@@ -383,3 +383,9 @@ class InputHandler:
             "axes": axes,
             "hats": hats
         }
+
+    def reset(self):
+        """Setzt den Eingabezustand zurück"""
+        self.input_state = {}
+        self.input_pressed = {}
+        self.last_input_state = {}
