@@ -1,0 +1,74 @@
+# PokeTogether Vibe-Coding-Regeln und Standards
+
+## Allgemeine Prinzipien
+- Clean Code-Prinzipien befolgen (DRY, KISS, SRP)
+- Modulare Struktur mit einer Funktion pro Datei
+- Klare Import-Strategien
+- Gut dokumentierte Verzeichnisstruktur
+
+## Verzeichnisstruktur
+- `src/`: Enthält den gesamten Quellcode des Spiels
+  - `game/`: Enthält die Spiellogik
+    - `core/`: Kernkomponenten (Game, Camera, InputHandler, etc.)
+    - `entities/`: Spielentitäten (Player, NPC, etc.)
+    - `maps/`: Karten und Tilemap-Funktionalität
+    - `ui/`: Benutzeroberfläche (Menüs, HUD, etc.)
+  - `utils/`: Hilfsfunktionen und -klassen
+- `assets/`: Enthält alle Ressourcen
+  - `images/`: Bilder und Sprites
+  - `maps/`: Kartendateien
+  - `tilesets/`: Tilesets für Karten
+  - `sounds/`: Soundeffekte und Musik
+- `tests/`: Enthält alle Tests
+- `docs/`: Enthält die Dokumentation
+- `tools/`: Enthält Hilfsskripte und Tools
+
+## Coding-Standards
+- PEP 8 für Python-Code befolgen
+- Docstrings für alle Klassen und Funktionen
+- Typisierung mit Python-Typhinweisen
+- Aussagekräftige Variablen- und Funktionsnamen
+- Kommentare für komplexe Logik
+
+## Steuerung
+- Unterstützung für Tastatur und Controller
+- Tastatur: Pfeiltasten oder WASD für Bewegung
+- Controller: Analogstick oder D-Pad für Bewegung
+- Zusätzliche Controller-Tasten für verschiedene Spielfunktionen
+
+## Spielmechaniken
+- Pokémon-ähnliches Gameplay
+- Rundenbasierte Kämpfe
+- Erkundung der Spielwelt
+- Sammeln von Pokémon
+- Interaktion mit NPCs
+
+## Grafik
+- Pixel-Art-Stil ähnlich den originalen Pokémon-Spielen
+- Tiled Map Editor für Karten
+- Aseprite für Sprite-Arbeit
+
+## Multiplayer
+- Online-Multiplayer-Funktionalität geplant
+- Pygame für Client
+- FastAPI/Flask für Backend
+
+## Dokumentation
+- Kommentare im Code
+- README.md für Projektübersicht
+- Separate Dokumentation für komplexe Systeme
+
+## Tests
+- Unittests für alle Kernfunktionen
+- Integrationstests für Spielmechaniken
+- Automatisierte Tests für CI/CD
+
+## Versionskontrolle
+- Git für Versionskontrolle
+- Feature-Branches für neue Funktionen
+- Pull Requests für Code-Reviews
+
+## MCP-Tools
+- PokeTogether-Helper
+- GameDev-Tools
+- AssetManager

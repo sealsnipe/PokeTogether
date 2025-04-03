@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "PokeTogether-Helper": {
+      "command": "npx",
+      "args": ["-y", "mcp-server"],
+      "env": {
+        "PROJECT_NAME": "PokeTogether",
+        "GAME_TYPE": "2D-Pokemon"
+      }
+    },
+    "GameDev-Tools": {
+      "command": "python",
+      "args": ["-m", "gamedev_mcp_server"]
+    },
+    "AssetManager": {
+      "command": "npx",
+      "args": ["-y", "asset-manager-mcp"]
+    }
+  }
+}

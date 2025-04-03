@@ -1,0 +1,56 @@
+{
+    "video": {
+        "fullscreen": false,
+        "resolution": [
+            800,
+            600
+        ],
+        "available_resolutions": [
+            [
+                640,
+                480
+            ],
+            [
+                800,
+                600
+            ],
+            [
+                1024,
+                768
+            ],
+            [
+                1280,
+                720
+            ],
+            [
+                1366,
+                768
+            ],
+            [
+                1920,
+                1080
+            ]
+        ],
+        "vsync": false,
+        "fps_limit": 30
+    },
+    "audio": {
+        "master_volume": 0.8,
+        "music_volume": 0.7,
+        "sfx_volume": 0.9,
+        "mute": false
+    },
+    "gameplay": {
+        "text_speed": "fast",
+        "battle_animations": false,
+        "battle_style": "shift",
+        "difficulty": "normal",
+        "run_speed": 2.0,
+        "fast_forward_speed": 3.0
+    },
+    "controls": {
+        "keyboard_enabled": true,
+        "controller_enabled": true,
+        "controller_id": 0
+    }
+}
