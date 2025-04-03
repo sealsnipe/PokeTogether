@@ -121,13 +121,9 @@ class Game:
             elif self.current_state == self.states["INGAME_MENU"]:
                 self.current_state = self.states["PLAYING"]
                 self.ingame_menu.hide()
-                # Eingaben zurücksetzen, um Probleme zu vermeiden
-                self.input_handler.reset()
             elif self.current_state == self.states["OPTIONS"]:
                 self.current_state = self.states["MAIN_MENU"]
                 self.options_menu.hide()
-                # Eingaben zurücksetzen, um Probleme zu vermeiden
-                self.input_handler.reset()
             elif self.current_state == self.states["MAIN_MENU"]:
                 self.running = False
         elif event.key == pygame.K_RETURN or event.key == pygame.K_x:  # Enter oder X-Taste
@@ -169,8 +165,7 @@ class Game:
     def _options_closed(self):
         """Called when the options menu is closed"""
         self.logger.info("Options menu closed, returning to previous state")
-        # Eingaben zurücksetzen, um Probleme zu vermeiden
-        self.input_handler.reset()
+        # Wir entfernen den Aufruf der reset-Methode, da sie Probleme verursacht
 
         # Wenn das Optionsmenü aus dem Ingame-Menü geöffnet wurde, zurück zum Ingame-Menü
         if hasattr(self, "_previous_state") and self._previous_state == self.states["INGAME_MENU"]:
@@ -222,9 +217,28 @@ class Game:
             dt: Zeitdelta seit dem letzten Update in Sekunden
         """
         # Prüfen, ob das Spiel beschleunigt werden soll
-        if self.input_handler.is_pressed("fast_forward"):
+        # Direkte Prüfung der LB-Taste für Fast Forward
+        fast_forward_pressed = False
+        if self.input_handler.controllers and len(self.input_handler.controllers) > 0:
+            controller = self.input_handler.controllers[0]
+            try:
+                from game.core.controller_constants import BUTTON_LEFTSHOULDER
+                if controller.get_button(BUTTON_LEFTSHOULDER):
+                    fast_forward_pressed = True
+                    self.logger.info("LB-Taste direkt erkannt für Vorspulen!")
+            except Exception as e:
+                self.logger.error(f"Fehler bei der Controller-Prüfung für Vorspulen: {e}")
+
+        # Normale Prüfung für Tastatur
+        if not fast_forward_pressed:
+            fast_forward_pressed = self.input_handler.is_pressed("fast_forward")
+
+        self.logger.info(f"Fast forward pressed: {fast_forward_pressed}")
+
+        if fast_forward_pressed:
             fast_forward_speed = self.settings.get("gameplay", "fast_forward_speed")
             dt *= fast_forward_speed
+            self.logger.info(f"Game speed increased to {fast_forward_speed}x")
 
         # Aktualisiere den Spielzustand mit dem angepassten dt
         self._update_game_state(dt)
@@ -241,8 +255,27 @@ class Game:
                 self.current_state = self.states["INGAME_MENU"]
                 self.ingame_menu.show()
             else:
-                # Prüfen, ob der Spieler rennen soll
-                run_speed = self.settings.get("gameplay", "run_speed") if self.input_handler.is_pressed("run") else 1.0
+                # Direkte Prüfung der RB-Taste für Rennen
+                run_pressed = False
+                if self.input_handler.controllers and len(self.input_handler.controllers) > 0:
+                    controller = self.input_handler.controllers[0]
+                    try:
+                        from game.core.controller_constants import BUTTON_RIGHTSHOULDER
+                        if controller.get_button(BUTTON_RIGHTSHOULDER):
+                            run_pressed = True
+                            self.logger.info("RB-Taste direkt erkannt für Rennen!")
+                    except Exception as e:
+                        self.logger.error(f"Fehler bei der Controller-Prüfung für Rennen: {e}")
+
+                # Normale Prüfung für Tastatur
+                if not run_pressed:
+                    run_pressed = self.input_handler.is_pressed("run")
+
+                self.logger.info(f"Run pressed: {run_pressed}")
+
+                run_speed = self.settings.get("gameplay", "run_speed") if run_pressed else 1.0
+                if run_pressed:
+                    self.logger.info(f"Player running with speed {run_speed}x")
 
                 # Spielerbewegung basierend auf Input
                 movement = self.input_handler.get_movement()
