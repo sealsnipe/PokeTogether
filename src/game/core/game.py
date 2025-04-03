@@ -163,11 +163,22 @@ class Game:
                         self.input_dialog_callback(self.input_dialog_text)
                     self.current_state = self.previous_state
                     self.input_dialog_active = False
+
+                    # Eingabezustände zurücksetzen, um zu verhindern, dass die Enter-Taste
+                    # als Aktion erkannt wird
+                    self.input_handler.input_state = {}
+                    self.input_handler.input_pressed = {}
+                    self.input_handler.last_input_state = {}
                 elif event.key == pygame.K_ESCAPE:
                     # Escape-Taste: Dialog abbrechen
                     self.logger.info("Escape key pressed, canceling dialog")
                     self.current_state = self.previous_state
                     self.input_dialog_active = False
+
+                    # Eingabezustände zurücksetzen
+                    self.input_handler.input_state = {}
+                    self.input_handler.input_pressed = {}
+                    self.input_handler.last_input_state = {}
                 elif event.key == pygame.K_BACKSPACE:
                     # Backspace-Taste: Zeichen löschen
                     self.input_dialog_text = self.input_dialog_text[:-1]
@@ -208,10 +219,14 @@ class Game:
     def _host_game(self):
         """Host a multiplayer game"""
         self.logger.info("Starting new game as host")
-        # Multiplayer aktivieren und als Host starten
-        self.multiplayer_active = True
+        # Multiplayer-Status zurücksetzen
+        self.multiplayer_active = False
         self.other_players = {}
+
+        # Als Host starten
         self.start_hosting()
+
+        # Spielzustand auf PLAYING setzen
         self.current_state = self.states["PLAYING"]
 
     def _join_game(self):
@@ -317,12 +332,11 @@ class Game:
         if not fast_forward_pressed:
             fast_forward_pressed = self.input_handler.is_pressed("fast_forward")
 
-        self.logger.info(f"Fast forward pressed: {fast_forward_pressed}")
-
+        # Nur loggen, wenn sich der Zustand ändert
         if fast_forward_pressed:
             fast_forward_speed = self.settings.get("gameplay", "fast_forward_speed")
             dt *= fast_forward_speed
-            self.logger.info(f"Game speed increased to {fast_forward_speed}x")
+            self.logger.debug(f"Game speed increased to {fast_forward_speed}x")
 
         # Aktualisiere den Spielzustand mit dem angepassten dt
         self._update_game_state(dt)
@@ -546,14 +560,21 @@ class Game:
         """Startet eine Multiplayer-Session als Host"""
         if self.multiplayer_active:
             self.logger.warning("Multiplayer already active")
-            return
+            return False
 
         self.logger.info("Starting multiplayer session as host")
-        self.multiplayer_manager.start_hosting()
-        self.multiplayer_active = True
+        success = self.multiplayer_manager.start_hosting()
 
-        # Spielerdaten an den Server senden
-        self._send_player_data()
+        if success:
+            self.logger.info("Successfully started hosting multiplayer session")
+            self.multiplayer_active = True
+
+            # Spielerdaten an den Server senden
+            self._send_player_data()
+            return True
+        else:
+            self.logger.error("Failed to start hosting multiplayer session")
+            return False
 
     def join_session(self, host: str, port: int = 8765):
         """Verbindet mit einer Multiplayer-Session
@@ -567,14 +588,32 @@ class Game:
             return
 
         self.logger.info(f"Joining multiplayer session at {host}:{port}")
-        self.multiplayer_manager.connect_to_session(host, port)
-        self.multiplayer_active = True
 
-        # Spielzustand auf PLAYING setzen
-        self.current_state = self.states["PLAYING"]
+        try:
+            # Verbindung herstellen
+            self.multiplayer_manager.connect_to_session(host, port)
 
-        # Spielerdaten an den Server senden
-        self._send_player_data()
+            # Kurze Pause, um die Verbindung herzustellen
+            pygame.time.wait(500)  # 500ms warten
+
+            # Prüfen, ob die Verbindung erfolgreich war
+            if self.multiplayer_manager.is_connected():
+                self.logger.info("Successfully connected to multiplayer session")
+                self.multiplayer_active = True
+
+                # Spielzustand auf PLAYING setzen
+                self.current_state = self.states["PLAYING"]
+
+                # Spielerdaten an den Server senden
+                self._send_player_data()
+            else:
+                self.logger.error(f"Failed to connect to {host}:{port}")
+                # Zurück zum Hauptmenü
+                self.current_state = self.states["MAIN_MENU"]
+        except Exception as e:
+            self.logger.error(f"Error connecting to multiplayer session: {e}")
+            # Zurück zum Hauptmenü
+            self.current_state = self.states["MAIN_MENU"]
 
     def stop_multiplayer(self):
         """Beendet die Multiplayer-Session"""
@@ -666,6 +705,12 @@ class Game:
         self.logger.info(f"Joining session at {ip_address}")
         port = 8765
 
+        # Eingabezustände zurücksetzen, um zu verhindern, dass die Enter-Taste
+        # als Aktion erkannt wird
+        self.input_handler.input_state = {}
+        self.input_handler.input_pressed = {}
+        self.input_handler.last_input_state = {}
+
         # Verbindung herstellen
         self.join_session(ip_address, port)
 
@@ -678,6 +723,11 @@ class Game:
             self.current_state = self.previous_state
             self.input_dialog_active = False
 
+            # Eingabezustände zurücksetzen
+            self.input_handler.input_state = {}
+            self.input_handler.input_pressed = {}
+            self.input_handler.last_input_state = {}
+
         if self.input_handler.was_pressed("a"):
             # A-Taste: Dialog bestätigen
             self.logger.info("A button pressed, confirming dialog")
@@ -685,6 +735,11 @@ class Game:
                 self.input_dialog_callback(self.input_dialog_text)
             self.current_state = self.previous_state
             self.input_dialog_active = False
+
+            # Eingabezustände zurücksetzen
+            self.input_handler.input_state = {}
+            self.input_handler.input_pressed = {}
+            self.input_handler.last_input_state = {}
 
     def _render_input_dialog(self):
         """Rendert den Input-Dialog"""
