@@ -40,6 +40,7 @@ class IngameMenu:
                 {"text": "PLAYER", "action": lambda: self._change_menu("player")},
                 {"text": "SAVE", "action": self._save_game},
                 {"text": "OPTIONS", "action": self._show_options},
+                {"text": "MULTIPLAYER", "action": lambda: self._change_menu("multiplayer")},
                 {"text": "EXIT", "action": self._exit_menu}
             ],
             "pokemon": [
@@ -49,6 +50,12 @@ class IngameMenu:
                 {"text": "Back", "action": lambda: self._change_menu("main")}
             ],
             "player": [
+                {"text": "Back", "action": lambda: self._change_menu("main")}
+            ],
+            "multiplayer": [
+                {"text": "HOST GAME", "action": self._host_game},
+                {"text": "JOIN GAME", "action": self._join_game},
+                {"text": "DISCONNECT", "action": self._disconnect},
                 {"text": "Back", "action": lambda: self._change_menu("main")}
             ]
         }
@@ -67,6 +74,9 @@ class IngameMenu:
         # Callbacks
         self.on_show_options = None
         self.on_save_game = None
+        self.on_host_game = None
+        self.on_join_game = None
+        self.on_disconnect = None
 
     def show(self):
         """Show the ingame menu"""
@@ -80,8 +90,7 @@ class IngameMenu:
         self.active = False
         self.logger.info("Ingame menu closed")
 
-        # Eingaben zurücksetzen, um Probleme zu vermeiden
-        self.input_handler.reset()
+        # Wir entfernen den Aufruf der reset-Methode, da sie Probleme verursacht
 
     def update(self):
         """Update the ingame menu"""
@@ -93,11 +102,11 @@ class IngameMenu:
             self.current_option = (self.current_option - 1) % len(self.menus[self.current_menu])
         elif self.input_handler.was_pressed("down"):
             self.current_option = (self.current_option + 1) % len(self.menus[self.current_menu])
-        elif self.input_handler.was_pressed("action"):
+        elif self.input_handler.was_pressed("action") or self._check_controller_action():
             # Execute the action for the current option
             self.logger.info(f"Executing action for option: {self.menus[self.current_menu][self.current_option]['text']}")
             self.menus[self.current_menu][self.current_option]["action"]()
-        elif self.input_handler.was_pressed("cancel") or self.input_handler.was_pressed("menu"):
+        elif self.input_handler.was_pressed("cancel") or self.input_handler.was_pressed("menu") or self._check_controller_cancel():
             # Go back to the previous menu or exit
             self.logger.info("Cancel or menu pressed, going back")
             if self.current_menu == "main":
@@ -163,3 +172,63 @@ class IngameMenu:
         if self.on_show_options:
             self.on_show_options()
             self.hide()  # Hide ingame menu while options are shown
+
+    def _host_game(self):
+        """Host a multiplayer game"""
+        self.logger.info("Hosting multiplayer game")
+        if self.on_host_game:
+            self.on_host_game()
+
+    def _join_game(self):
+        """Join a multiplayer game"""
+        self.logger.info("Joining multiplayer game")
+        if self.on_join_game:
+            self.on_join_game()
+
+    def _disconnect(self):
+        """Disconnect from multiplayer game"""
+        self.logger.info("Disconnecting from multiplayer game")
+        if self.on_disconnect:
+            self.on_disconnect()
+
+    def _check_controller_action(self):
+        """Prüft, ob die A-Taste auf dem Controller gedrückt wurde"""
+        # Prüfen, ob ein Controller angeschlossen ist
+        if self.input_handler.controllers and len(self.input_handler.controllers) > 0:
+            controller = self.input_handler.controllers[0]
+            try:
+                # A-Taste direkt prüfen
+                from game.core.controller_constants import BUTTON_A
+                if controller.get_button(BUTTON_A):
+                    # Prüfen, ob die Taste im letzten Frame nicht gedrückt war
+                    # Dies verhindert, dass die Aktion mehrmals ausgeführt wird
+                    if not hasattr(self, "_last_a_button_state") or not self._last_a_button_state:
+                        self._last_a_button_state = True
+                        return True
+                    self._last_a_button_state = True
+                else:
+                    self._last_a_button_state = False
+            except Exception as e:
+                self.logger.error(f"Fehler bei der Controller-Prüfung: {e}")
+        return False
+
+    def _check_controller_cancel(self):
+        """Prüft, ob die B-Taste auf dem Controller gedrückt wurde"""
+        # Prüfen, ob ein Controller angeschlossen ist
+        if self.input_handler.controllers and len(self.input_handler.controllers) > 0:
+            controller = self.input_handler.controllers[0]
+            try:
+                # B-Taste direkt prüfen
+                from game.core.controller_constants import BUTTON_B
+                if controller.get_button(BUTTON_B):
+                    # Prüfen, ob die Taste im letzten Frame nicht gedrückt war
+                    # Dies verhindert, dass die Aktion mehrmals ausgeführt wird
+                    if not hasattr(self, "_last_b_button_state") or not self._last_b_button_state:
+                        self._last_b_button_state = True
+                        return True
+                    self._last_b_button_state = True
+                else:
+                    self._last_b_button_state = False
+            except Exception as e:
+                self.logger.error(f"Fehler bei der Controller-Prüfung: {e}")
+        return False
