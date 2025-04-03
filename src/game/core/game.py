@@ -39,8 +39,16 @@ class Game:
             "PAUSE": 3,
             "OPTIONS": 4,
             "INGAME_MENU": 5,
-            "MULTIPLAYER_MENU": 6
+            "MULTIPLAYER_MENU": 6,
+            "INPUT_DIALOG": 7
         }
+
+        # Input-Dialog-Variablen
+        self.input_dialog_active = False
+        self.input_dialog_text = ""
+        self.input_dialog_title = ""
+        self.input_dialog_callback = None
+        self.previous_state = None
         self.current_state = self.states["MAIN_MENU"]
 
         # Multiplayer
@@ -83,6 +91,8 @@ class Game:
         # Menü-Callbacks einrichten
         self.main_menu.set_callbacks(
             on_new_game=self._start_new_game,
+            on_host_game=self._host_game,
+            on_join_game=self._join_game,
             on_continue_game=self._continue_game,
             on_show_options=self._show_options,
             on_exit_game=self._exit_game
@@ -116,6 +126,11 @@ class Game:
         """Handle pygame events"""
         events = pygame.event.get()
 
+        # Wenn wir im Input-Dialog sind, Events direkt dort verarbeiten
+        if self.current_state == self.states["INPUT_DIALOG"]:
+            self._handle_input_dialog_events(events)
+            return
+
         for event in events:
             if event.type == pygame.QUIT:
                 self.running = False
@@ -125,6 +140,42 @@ class Game:
         # Input-Handler aktualisieren
         self.input_handler.handle_events(events)
         self.input_handler.update()
+
+    def _handle_input_dialog_events(self, events):
+        """Verarbeitet Events speziell für den Input-Dialog
+
+        Args:
+            events: Liste der pygame-Events
+        """
+        # Input-Handler aktualisieren (für Controller-Eingaben)
+        self.input_handler.handle_events(events)
+        self.input_handler.update()
+
+        # Tastatureingaben verarbeiten
+        for event in events:
+            if event.type == pygame.QUIT:
+                self.running = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
+                    # Enter-Taste: Dialog bestätigen
+                    self.logger.info("Enter key pressed, confirming dialog")
+                    if self.input_dialog_callback:
+                        self.input_dialog_callback(self.input_dialog_text)
+                    self.current_state = self.previous_state
+                    self.input_dialog_active = False
+                elif event.key == pygame.K_ESCAPE:
+                    # Escape-Taste: Dialog abbrechen
+                    self.logger.info("Escape key pressed, canceling dialog")
+                    self.current_state = self.previous_state
+                    self.input_dialog_active = False
+                elif event.key == pygame.K_BACKSPACE:
+                    # Backspace-Taste: Zeichen löschen
+                    self.input_dialog_text = self.input_dialog_text[:-1]
+                    self.logger.info(f"Backspace pressed, text now: {self.input_dialog_text}")
+                elif event.unicode and event.unicode.isprintable():
+                    # Zeichen hinzufügen (nur druckbare Zeichen)
+                    self.input_dialog_text += event.unicode
+                    self.logger.info(f"Character added: {event.unicode}, text now: {self.input_dialog_text}")
 
     def handle_keydown(self, event):
         """Handle keydown events"""
@@ -147,9 +198,27 @@ class Game:
                 self.ingame_menu.show()
 
     def _start_new_game(self):
-        """Start a new game"""
-        self.logger.info("Starting new game")
+        """Start a new single player game"""
+        self.logger.info("Starting new single player game")
+        # Sicherstellen, dass Multiplayer deaktiviert ist
+        self.multiplayer_active = False
+        self.other_players = {}
         self.current_state = self.states["PLAYING"]
+
+    def _host_game(self):
+        """Host a multiplayer game"""
+        self.logger.info("Starting new game as host")
+        # Multiplayer aktivieren und als Host starten
+        self.multiplayer_active = True
+        self.other_players = {}
+        self.start_hosting()
+        self.current_state = self.states["PLAYING"]
+
+    def _join_game(self):
+        """Join a multiplayer game"""
+        self.logger.info("Joining a multiplayer game")
+        # Dialog zur Eingabe der IP-Adresse anzeigen
+        self._show_join_dialog()
 
     def _continue_game(self):
         """Continue a saved game"""
@@ -336,6 +405,9 @@ class Game:
         elif self.current_state == self.states["OPTIONS"]:
             # Optionsmenü aktualisieren
             self.options_menu.update()
+        elif self.current_state == self.states["INPUT_DIALOG"]:
+            # Input-Dialog aktualisieren
+            self._update_input_dialog()
 
     def render(self):
         """Render the game"""
@@ -350,6 +422,9 @@ class Game:
         elif self.current_state == self.states["MAIN_MENU"]:
             # Render menu
             self._render_main_menu()
+        elif self.current_state == self.states["INPUT_DIALOG"]:
+            # Render input dialog
+            self._render_input_dialog()
         elif self.current_state == self.states["PAUSE"]:
             # Render pause menu
             self._render_pause()
@@ -495,6 +570,9 @@ class Game:
         self.multiplayer_manager.connect_to_session(host, port)
         self.multiplayer_active = True
 
+        # Spielzustand auf PLAYING setzen
+        self.current_state = self.states["PLAYING"]
+
         # Spielerdaten an den Server senden
         self._send_player_data()
 
@@ -569,13 +647,101 @@ class Game:
         """Zeigt einen Dialog zum Beitreten einer Multiplayer-Session"""
         self.logger.info("Showing join dialog")
 
-        # In einer vollständigen Implementierung würde hier ein Eingabedialog angezeigt werden
-        # Für dieses Beispiel verwenden wir einen festen Wert (localhost)
-        host = "localhost"
+        # Einfachen Dialog zur Eingabe der IP-Adresse erstellen
+        self.input_dialog_active = True
+        self.input_dialog_text = "localhost"
+        self.input_dialog_title = "IP-Adresse eingeben:"
+        self.input_dialog_callback = self._join_with_ip
+
+        # Wechsle in den Dialog-Zustand
+        self.previous_state = self.current_state
+        self.current_state = self.states["INPUT_DIALOG"]
+
+    def _join_with_ip(self, ip_address):
+        """Verbindet mit der angegebenen IP-Adresse
+
+        Args:
+            ip_address: IP-Adresse des Hosts
+        """
+        self.logger.info(f"Joining session at {ip_address}")
         port = 8765
 
         # Verbindung herstellen
-        self.join_session(host, port)
+        self.join_session(ip_address, port)
+
+    def _update_input_dialog(self):
+        """Aktualisiert den Input-Dialog"""
+        # Controller-Eingaben verarbeiten
+        if self.input_handler.was_pressed("b"):
+            # B-Taste: Dialog abbrechen
+            self.logger.info("B button pressed, canceling dialog")
+            self.current_state = self.previous_state
+            self.input_dialog_active = False
+
+        if self.input_handler.was_pressed("a"):
+            # A-Taste: Dialog bestätigen
+            self.logger.info("A button pressed, confirming dialog")
+            if self.input_dialog_callback:
+                self.input_dialog_callback(self.input_dialog_text)
+            self.current_state = self.previous_state
+            self.input_dialog_active = False
+
+    def _render_input_dialog(self):
+        """Rendert den Input-Dialog"""
+        # Hintergrund abdunkeln
+        overlay = pygame.Surface((self.screen.get_width(), self.screen.get_height()))
+        overlay.set_alpha(180)
+        overlay.fill((0, 0, 0))
+        self.screen.blit(overlay, (0, 0))
+
+        # Dialog-Box zeichnen
+        dialog_width = 400
+        dialog_height = 180
+        dialog_x = (self.screen.get_width() - dialog_width) // 2
+        dialog_y = (self.screen.get_height() - dialog_height) // 2
+
+        pygame.draw.rect(self.screen, (50, 50, 50), (dialog_x, dialog_y, dialog_width, dialog_height))
+        pygame.draw.rect(self.screen, (200, 200, 200), (dialog_x, dialog_y, dialog_width, dialog_height), 2)
+
+        # Titel zeichnen
+        font_title = pygame.font.SysFont(None, 30)
+        title_surface = font_title.render(self.input_dialog_title, True, (255, 255, 255))
+        self.screen.blit(title_surface, (dialog_x + 20, dialog_y + 20))
+
+        # Eingabefeld zeichnen
+        input_box_width = dialog_width - 40
+        input_box_height = 40
+        input_box_x = dialog_x + 20
+        input_box_y = dialog_y + 60
+
+        pygame.draw.rect(self.screen, (30, 30, 30), (input_box_x, input_box_y, input_box_width, input_box_height))
+        pygame.draw.rect(self.screen, (150, 150, 150), (input_box_x, input_box_y, input_box_width, input_box_height), 1)
+
+        # Text zeichnen
+        font_input = pygame.font.SysFont(None, 28)
+        input_surface = font_input.render(self.input_dialog_text, True, (255, 255, 255))
+        self.screen.blit(input_surface, (input_box_x + 10, input_box_y + 10))
+
+        # Blinkenden Cursor zeichnen
+        cursor_time = pygame.time.get_ticks() // 500 % 2  # Blinkt alle 500ms
+        if cursor_time == 0:
+            text_width = font_input.size(self.input_dialog_text)[0]
+            cursor_x = input_box_x + 10 + text_width
+            cursor_y = input_box_y + 10
+            pygame.draw.line(self.screen, (255, 255, 255),
+                            (cursor_x, cursor_y),
+                            (cursor_x, cursor_y + font_input.get_height()), 2)
+
+        # Hinweise zeichnen
+        font_hint = pygame.font.SysFont(None, 20)
+
+        # Tastatur-Hinweise
+        keyboard_hint = font_hint.render("Enter: Bestätigen, Escape: Abbrechen", True, (200, 200, 200))
+        self.screen.blit(keyboard_hint, (dialog_x + 20, dialog_y + 120))
+
+        # Controller-Hinweise
+        controller_hint = font_hint.render("A: Bestätigen, B: Abbrechen", True, (200, 200, 200))
+        self.screen.blit(controller_hint, (dialog_x + 20, dialog_y + 145))
 
     def _render_other_players(self):
         """Rendert andere Spieler im Multiplayer-Modus"""
