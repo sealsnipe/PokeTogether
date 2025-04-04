@@ -203,14 +203,23 @@ class Game:
             elif event.type == pygame.KEYDOWN:
                 # Eingabedialog-Steuerung
                 if self.state_manager.current_state == GameState.INPUT_DIALOG:
+                    self.logger.debug(f"Keydown event in INPUT_DIALOG state: {event.key}, unicode: {event.unicode}")
                     if event.key == pygame.K_RETURN:
+                        self.logger.info("Enter key pressed, confirming dialog")
                         self.state_manager.confirm_input_dialog()
                     elif event.key == pygame.K_ESCAPE:
+                        self.logger.info("Escape key pressed, canceling dialog")
                         self.state_manager.cancel_input_dialog()
                     elif event.key == pygame.K_BACKSPACE:
+                        self.logger.info("Backspace key pressed")
                         self.state_manager.remove_character_from_input_dialog()
+                        self.logger.info(f"Backspace pressed, text now: {self.state_manager.input_dialog_text}")
                     elif event.unicode and event.unicode.isprintable():
+                        self.logger.info(f"Character key pressed: {event.unicode}")
                         self.state_manager.add_character_to_input_dialog(event.unicode)
+                        self.logger.info(f"Character added: {event.unicode}, text now: {self.state_manager.input_dialog_text}")
+                    # Verhindern, dass andere Teile des Spiels die Tastatureingaben verarbeiten
+                    continue
 
     def update(self, dt: float) -> None:
         """Update game state
@@ -479,6 +488,15 @@ class Game:
         """Zeigt einen Dialog zum Beitreten einer Multiplayer-Session"""
         self.logger.info("=== SHOWING JOIN DIALOG ===")
 
+        # Eingabezustände zurücksetzen, um zu verhindern, dass vorherige Eingaben erkannt werden
+        self.input_manager.reset()
+
+        # Warte kurz, um sicherzustellen, dass die Enter-Taste vom vorherigen Menü nicht mehr erkannt wird
+        pygame.event.clear()
+
+        # Warte auf ein neues Frame, um sicherzustellen, dass keine Tasten mehr gedrückt sind
+        self.clock.tick(60)
+
         # Dialog einrichten
         self.state_manager.setup_input_dialog(
             "IP-Adresse eingeben:",
@@ -487,6 +505,13 @@ class Game:
         )
 
         self.logger.info(f"Dialog created with default IP: {self.state_manager.input_dialog_text}")
+
+        # Sicherstellen, dass der Fokus auf dem Eingabefeld liegt
+        pygame.key.set_repeat(500, 50)  # Tastaturwiederholung aktivieren
+
+        # Warte auf ein weiteres Frame, um sicherzustellen, dass keine Tasten mehr gedrückt sind
+        self.clock.tick(60)
+        pygame.event.clear()
 
     def _join_with_ip(self, ip_address: str) -> None:
         """Verbindet mit der angegebenen IP-Adresse
@@ -539,7 +564,7 @@ class Game:
 
         try:
             # Verbindung herstellen
-            success = self.multiplayer_manager.connect_to_server(host, port)
+            success = self.multiplayer_manager.connect_to_session(host, port)
 
             # Prüfen, ob die Verbindung erfolgreich war
             if success:
