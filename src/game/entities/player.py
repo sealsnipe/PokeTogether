@@ -49,16 +49,17 @@ class Player:
             # Fallback to a simple rectangle
             self.sprite_sheet = None
 
-    def move(self, dx: int, dy: int):
+    def move(self, dx: int, dy: int, speed_multiplier: float = 1.0):
         """Move the player
 
         Args:
             dx: Change in x position
             dy: Change in y position
+            speed_multiplier: Multiplier for the player's speed (default: 1.0)
         """
         # Debug-Logging für Bewegungseingaben
         if dx != 0 or dy != 0:
-            self.logger.debug(f"Bewegungseingabe: dx={dx}, dy={dy}")
+            self.logger.debug(f"Bewegungseingabe: dx={dx}, dy={dy}, speed_multiplier={speed_multiplier}")
 
         # Richtung basierend auf Bewegung setzen
         if dx > 0:
@@ -72,8 +73,8 @@ class Player:
 
         # Position aktualisieren
         old_x, old_y = self.x, self.y
-        self.x += dx * self.speed
-        self.y += dy * self.speed
+        self.x += dx * self.speed * speed_multiplier
+        self.y += dy * self.speed * speed_multiplier
 
         # Bewegungsstatus aktualisieren
         self.moving = dx != 0 or dy != 0

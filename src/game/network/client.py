@@ -369,3 +369,43 @@ class GameClient:
         message = data.get("message", "")
 
         self.logger.info(f"Chat message from {player_name}: {message}")
+
+    def send_message(self, message_type: str, message_data: Dict[str, Any]):
+        """Send a message to the server
+
+        Args:
+            message_type: Type of the message
+            message_data: Message data
+        """
+        if not self.connected or not self.websocket:
+            self.logger.warning(f"Cannot send message: not connected to server")
+            return
+
+        # Erstelle die Nachricht
+        message = {
+            "type": message_type,
+            "data": message_data
+        }
+
+        # Sende die Nachricht asynchron
+        asyncio.run_coroutine_threadsafe(self._send_message_async(message), self.event_loop)
+
+    async def _send_message_async(self, message: Dict[str, Any]):
+        """Send a message to the server asynchronously
+
+        Args:
+            message: Message to send
+        """
+        if not self.connected or not self.websocket:
+            self.logger.warning(f"Cannot send message: not connected to server")
+            return
+
+        try:
+            # Konvertiere die Nachricht in JSON
+            message_json = json.dumps(message)
+
+            # Sende die Nachricht
+            await self.websocket.send(message_json)
+            self.logger.debug(f"Message sent: {message_json[:100]}..." if len(message_json) > 100 else f"Message sent: {message_json}")
+        except Exception as e:
+            self.logger.error(f"Error sending message: {e}")

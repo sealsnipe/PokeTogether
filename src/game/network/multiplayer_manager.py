@@ -352,3 +352,20 @@ class MultiplayerManager:
         # Call the callback if registered
         if self.on_chat_message:
             self.on_chat_message(player_name, message)
+
+    def send_player_update(self, player_data):
+        """Send player data to the server
+
+        Args:
+            player_data: Player data to send
+        """
+        self.logger.debug(f"Sending player update: {player_data}")
+
+        # Speichere die lokalen Spielerdaten
+        self.local_player_data = player_data
+
+        # Sende die Daten an den Server
+        if self.client.connected:
+            self.client.send_message("player_update", player_data)
+        else:
+            self.logger.warning("Cannot send player update: not connected to server")
