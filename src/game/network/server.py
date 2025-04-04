@@ -22,6 +22,7 @@ class GameServer:
             port: Port to listen on
         """
         self.logger = logging.getLogger(__name__)
+        self.logger.info(f"=== INITIALIZING GAME SERVER ON {host}:{port} ===")
         self.host = host
         self.port = port
         self.clients: Dict[str, WebSocketServerProtocol] = {}
@@ -29,12 +30,18 @@ class GameServer:
         self.server = None
         self.running = False
 
+        self.logger.debug("Game server initialized with:")
+        self.logger.debug(f"- host: {self.host}")
+        self.logger.debug(f"- port: {self.port}")
+        self.logger.debug(f"- running: {self.running}")
+
     async def start(self):
         """Start the game server"""
-        self.logger.info(f"Starting game server on {self.host}:{self.port}")
+        self.logger.info(f"=== STARTING GAME SERVER ON {self.host}:{self.port} ===")
         self.running = True
 
         try:
+            self.logger.debug(f"Creating WebSocket server on {self.host}:{self.port}...")
             self.server = await websockets.serve(
                 self.handle_client,
                 self.host,
@@ -76,18 +83,19 @@ class GameServer:
             await self.server.wait_closed()
             self.logger.info("Game server stopped")
 
-    async def handle_client(self, websocket: WebSocketServerProtocol, path: str):
+    async def handle_client(self, websocket: WebSocketServerProtocol, path=None):
         """Handle a client connection
 
         Args:
             websocket: WebSocket connection
-            path: Connection path
+            path: Connection path (optional, not used)
         """
         # Generate a unique client ID
         client_id = str(uuid.uuid4())
         self.clients[client_id] = websocket
 
-        self.logger.info(f"New client connected: {client_id}")
+        self.logger.info(f"=== NEW CLIENT CONNECTED: {client_id} ===")
+        self.logger.debug(f"Total clients connected: {len(self.clients)}")
 
         try:
             # Send welcome message with client ID

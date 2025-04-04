@@ -125,7 +125,7 @@ class MainMenu:
 
     def _new_game(self):
         """Start a new game"""
-        self.logger.info("New game selected")
+        self.logger.info("=== NEW GAME SELECTED ===")
         if self.on_new_game:
             self.on_new_game()
 
@@ -143,13 +143,13 @@ class MainMenu:
 
     def _host_game(self):
         """Host a multiplayer game"""
-        self.logger.info("Host game selected")
+        self.logger.info("=== HOST GAME SELECTED ===")
         if self.on_host_game:
             self.on_host_game()
 
     def _join_game(self):
         """Join a multiplayer game"""
-        self.logger.info("Join game selected")
+        self.logger.info("=== JOIN GAME SELECTED ===")
         if self.on_join_game:
             self.on_join_game()
 

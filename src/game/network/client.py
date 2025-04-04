@@ -7,6 +7,7 @@ import asyncio
 import json
 import logging
 import threading
+import time
 from typing import Dict, List, Any, Optional, Callable
 import websockets
 
@@ -16,6 +17,7 @@ class GameClient:
     def __init__(self):
         """Initialize the game client"""
         self.logger = logging.getLogger(__name__)
+        self.logger.info("=== INITIALIZING GAME CLIENT ===")
         self.websocket = None
         self.client_id = None
         self.connected = False
@@ -30,6 +32,10 @@ class GameClient:
         self.register_handler("player_update", self._handle_player_update)
         self.register_handler("player_disconnected", self._handle_player_disconnected)
         self.register_handler("chat_message", self._handle_chat_message)
+
+        self.logger.debug("Game client initialized with:")
+        self.logger.debug(f"- connected: {self.connected}")
+        self.logger.debug(f"- client_id: {self.client_id}")
 
     def register_handler(self, message_type: str, handler: Callable):
         """Register a message handler
@@ -50,6 +56,7 @@ class GameClient:
         Returns:
             bool: True if connection was initiated successfully, False otherwise
         """
+        self.logger.info(f"=== CLIENT.CONNECT CALLED: {host}:{port} ===")
         if self.connected:
             self.logger.warning("Already connected to a server")
             return False
@@ -59,6 +66,7 @@ class GameClient:
         try:
             # Create a new event loop for the client thread
             self.event_loop = asyncio.new_event_loop()
+            self.logger.debug("Created new event loop for client thread")
 
             # Start the client in a separate thread
             self.client_thread = threading.Thread(
@@ -66,10 +74,18 @@ class GameClient:
                 args=(self.event_loop, host, port),
                 daemon=True
             )
+            self.logger.debug("Created client thread")
             self.client_thread.start()
+            self.logger.debug("Started client thread")
+
+            # Warte kurz, um zu sehen, ob die Verbindung hergestellt wird
+            time.sleep(0.5)
+            self.logger.info(f"Connection status after thread start: {self.connected}")
             return True
         except Exception as e:
             self.logger.error(f"Error creating client thread: {e}")
+            import traceback
+            self.logger.error(traceback.format_exc())
             return False
 
     def disconnect(self):
@@ -138,13 +154,18 @@ class GameClient:
             host: Server host address
             port: Server port
         """
+        self.logger.info(f"=== RUNNING CLIENT LOOP FOR {host}:{port} ===")
         asyncio.set_event_loop(loop)
 
         try:
+            self.logger.debug(f"Connecting to server at {host}:{port} and listening for messages...")
             loop.run_until_complete(self._connect_and_listen(host, port))
         except Exception as e:
-            self.logger.error(f"Error in client loop: {e}")
+            self.logger.error(f"=== ERROR IN CLIENT LOOP: {e} ===")
+            import traceback
+            self.logger.error(traceback.format_exc())
         finally:
+            self.logger.debug("Closing client event loop")
             loop.close()
 
     async def _connect_and_listen(self, host: str, port: int):
@@ -154,17 +175,20 @@ class GameClient:
             host: Server host address
             port: Server port
         """
+        self.logger.info(f"=== CONNECTING AND LISTENING TO {host}:{port} ===")
         uri = f"ws://{host}:{port}"
 
         # Teste zuerst, ob der Server auf dem Port erreichbar ist
-        self._test_server_connection(host, port)
+        self.logger.debug(f"Testing server connection to {host}:{port}...")
+        connection_test_result = self._test_server_connection(host, port)
+        self.logger.debug(f"Server connection test result: {connection_test_result}")
 
         try:
             self.running = True
 
             # Verbindungstimeout setzen
             try:
-                self.logger.info(f"Attempting to connect to {uri} with 5 second timeout")
+                self.logger.info(f"=== ATTEMPTING TO CONNECT TO {uri} WITH 5 SECOND TIMEOUT ===")
                 # Versuche, eine Verbindung mit Timeout herzustellen
                 websocket = await asyncio.wait_for(
                     websockets.connect(uri),
@@ -173,7 +197,7 @@ class GameClient:
 
                 self.websocket = websocket
                 self.connected = True
-                self.logger.info(f"Connected to server at {uri}")
+                self.logger.info(f"=== SUCCESSFULLY CONNECTED TO SERVER AT {uri} ===")
 
                 # Listen for messages from the server
                 while self.running:
@@ -213,22 +237,30 @@ class GameClient:
             host: Hostname oder IP-Adresse
             port: Port
         """
+        self.logger.info(f"=== TESTING SERVER CONNECTION: {host}:{port} ===")
         try:
             import socket
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.settimeout(1)
+            s.settimeout(2)  # Längerer Timeout
+            self.logger.debug(f"Attempting to connect to {host}:{port}...")
             result = s.connect_ex((host, port))
             s.close()
 
             if result == 0:
                 self.logger.info(f"Server is reachable at {host}:{port}")
+                # Versuche auch, die lokale IP zu ermitteln
+                self._print_local_ip_addresses()
+                return True
             else:
                 self.logger.error(f"Server is NOT reachable at {host}:{port}, error code: {result}")
-
-            # Versuche auch, die lokale IP zu ermitteln
-            self._print_local_ip_addresses()
+                # Versuche auch, die lokale IP zu ermitteln
+                self._print_local_ip_addresses()
+                return False
         except Exception as e:
             self.logger.error(f"Error testing server connection: {e}")
+            import traceback
+            self.logger.error(traceback.format_exc())
+            return False
 
     def _print_local_ip_addresses(self):
         """Gibt alle lokalen IP-Adressen aus"""

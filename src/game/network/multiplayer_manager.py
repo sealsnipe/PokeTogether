@@ -20,6 +20,7 @@ class MultiplayerManager:
     def __init__(self):
         """Initialize the multiplayer manager"""
         self.logger = logging.getLogger(__name__)
+        self.logger.info("=== INITIALIZING MULTIPLAYER MANAGER ===")
         self.server = GameServer()
         self.client = GameClient()
         self.is_host = False
@@ -35,6 +36,10 @@ class MultiplayerManager:
         self.client.register_handler("player_disconnected", self._handle_player_disconnected)
         self.client.register_handler("chat_message", self._handle_chat_message)
 
+        self.logger.debug("Multiplayer manager initialized with:")
+        self.logger.debug(f"- is_host: {self.is_host}")
+        self.logger.debug(f"- client connected: {self.client.connected}")
+
     def start_hosting(self, port: int = 8765):
         """Start hosting a multiplayer session
 
@@ -44,6 +49,7 @@ class MultiplayerManager:
         Returns:
             bool: True if hosting was started successfully, False otherwise
         """
+        self.logger.info("=== START_HOSTING CALLED ===")
         if self.is_host:
             self.logger.warning("Already hosting a session")
             return False
@@ -57,6 +63,7 @@ class MultiplayerManager:
         try:
             # Create a new event loop for the server thread
             self.server_loop = asyncio.new_event_loop()
+            self.logger.debug("Created new event loop for server thread")
 
             # Start the server in a separate thread
             self.server_thread = threading.Thread(
@@ -64,22 +71,30 @@ class MultiplayerManager:
                 args=(self.server_loop, port),
                 daemon=True
             )
+            self.logger.debug("Created server thread")
             self.server_thread.start()
+            self.logger.debug("Started server thread")
 
-            # Kurze Pause, um dem Server Zeit zum Starten zu geben
-            time.sleep(0.5)
+            # Längere Pause, um dem Server Zeit zum Starten zu geben
+            self.logger.debug("Waiting for server to start...")
+            time.sleep(1.0)
+            self.logger.debug("Wait complete")
 
             # Connect to our own server
+            self.logger.debug("Connecting to own server...")
             success = self.connect_to_session("localhost", port)
             if success:
                 self.is_host = True
                 self.logger.info("Successfully started hosting multiplayer session")
+                self.logger.info(f"Host status: is_host={self.is_host}, client_connected={self.client.connected}")
                 return True
             else:
                 self.logger.error("Failed to connect to own server")
                 return False
         except Exception as e:
             self.logger.error(f"Error starting to host multiplayer session: {e}")
+            import traceback
+            self.logger.error(traceback.format_exc())
             return False
 
     def stop_hosting(self):
@@ -112,16 +127,21 @@ class MultiplayerManager:
         Returns:
             bool: True if connection was initiated successfully, False otherwise
         """
+        self.logger.info(f"=== CONNECT_TO_SESSION CALLED: {host}:{port} ===")
         if self.client.connected:
             self.logger.warning("Already connected to a session")
             return False
 
         self.logger.info(f"Connecting to multiplayer session at {host}:{port}")
         try:
-            self.client.connect(host, port)
-            return True
+            success = self.client.connect(host, port)
+            self.logger.info(f"Connection attempt result: {success}")
+            self.logger.info(f"Client connected status: {self.client.connected}")
+            return success
         except Exception as e:
             self.logger.error(f"Error connecting to session: {e}")
+            import traceback
+            self.logger.error(traceback.format_exc())
             return False
 
     def disconnect_from_session(self):
@@ -216,18 +236,82 @@ class MultiplayerManager:
             loop: Event loop to run
             port: Port to listen on
         """
+        self.logger.info(f"=== RUNNING SERVER LOOP ON PORT {port} ===")
         asyncio.set_event_loop(loop)
 
         try:
             # Start the server
-            loop.run_until_complete(self.server.start())
+            self.logger.debug("Starting server in event loop...")
+            success = loop.run_until_complete(self.server.start())
+
+            if not success:
+                self.logger.error("Failed to start server, not running event loop")
+                return
+
+            self.logger.info("=== SERVER STARTED SUCCESSFULLY, RUNNING EVENT LOOP ===")
+
+            # Teste, ob der Server auf dem Port erreichbar ist
+            self._test_server_connection("localhost", port)
 
             # Keep the loop running
+            self.logger.debug("Running event loop forever...")
             loop.run_forever()
         except Exception as e:
-            self.logger.error(f"Error in server loop: {e}")
+            self.logger.error(f"=== ERROR IN SERVER LOOP: {e} ===")
+            import traceback
+            self.logger.error(traceback.format_exc())
         finally:
+            self.logger.debug("Closing event loop")
             loop.close()
+
+    def _test_server_connection(self, host, port):
+        """Testet, ob der Server auf dem angegebenen Port erreichbar ist
+
+        Args:
+            host: Hostname oder IP-Adresse
+            port: Port
+        """
+        try:
+            import socket
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.settimeout(1)
+            result = s.connect_ex((host, port))
+            s.close()
+
+            if result == 0:
+                self.logger.info(f"Server is reachable at {host}:{port}")
+            else:
+                self.logger.error(f"Server is NOT reachable at {host}:{port}, error code: {result}")
+
+            # Versuche auch, die externe IP zu ermitteln
+            self._get_external_ip()
+        except Exception as e:
+            self.logger.error(f"Error testing server connection: {e}")
+
+    def _get_external_ip(self):
+        """Versucht, die externe IP-Adresse zu ermitteln"""
+        try:
+            import urllib.request
+            import json
+
+            # Verschiedene Dienste zur IP-Ermittlung
+            services = [
+                "https://api.ipify.org?format=json",
+                "https://ipinfo.io/json"
+            ]
+
+            for service in services:
+                try:
+                    response = urllib.request.urlopen(service, timeout=2)
+                    data = json.loads(response.read().decode())
+
+                    if "ip" in data:
+                        self.logger.info(f"External IP address: {data['ip']}")
+                        break
+                except:
+                    continue
+        except Exception as e:
+            self.logger.error(f"Error getting external IP: {e}")
 
     async def _handle_player_update(self, data: Dict[str, Any]):
         """Handle player update message

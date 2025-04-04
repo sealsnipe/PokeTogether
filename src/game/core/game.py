@@ -7,7 +7,9 @@ import pygame
 import sys
 import logging
 import os
+import time
 from game.core.input_handler import InputHandler
+from game.core.input_command_reader import InputCommandReader
 from game.entities.player import Player
 from game.core.camera import Camera
 from game.maps.simple_map import SimpleMap
@@ -20,14 +22,48 @@ from game.network.multiplayer_manager import MultiplayerManager
 class Game:
     """Main game class"""
 
-    def __init__(self):
-        """Initialize the game"""
+    def __init__(self, minimized=False):
+        """Initialize the game
+
+        Args:
+            minimized: Wenn True, wird das Spiel minimiert gestartet
+        """
         self.logger = logging.getLogger(__name__)
         self.logger.info("Initializing game")
 
+        # Minimiert-Flag speichern
+        self.minimized = minimized
+
         pygame.init()
+
+        # Normales Fenster erstellen
         self.screen = pygame.display.set_mode((800, 600))
-        pygame.display.set_caption("PokeTogether")
+
+        if minimized:
+            self.logger.info("Minimierter Modus aktiviert - Fenster wird minimiert")
+            pygame.display.set_caption("PokeTogether (Test Mode)")
+
+            # Fenster minimieren (nur unter Windows)
+            try:
+                import ctypes
+                import win32con
+                import win32gui
+
+                # Pygame-Fenster-Handle bekommen
+                hwnd = pygame.display.get_wm_info()["window"]
+
+                # Fenster minimieren
+                win32gui.ShowWindow(hwnd, win32con.SW_MINIMIZE)
+
+                # Speichere das Fenster-Handle für spätere Verwendung
+                self.window_handle = hwnd
+
+                self.logger.info("Fenster erfolgreich minimiert")
+            except Exception as e:
+                self.logger.error(f"Fehler beim Minimieren des Fensters: {e}")
+        else:
+            pygame.display.set_caption("PokeTogether")
+
         self.clock = pygame.time.Clock()
         self.running = True
 
@@ -64,6 +100,9 @@ class Game:
 
         # Input-Handler
         self.input_handler = InputHandler()
+
+        # Input-Command-Reader für autonomes Testen
+        self.input_command_reader = InputCommandReader()
 
         # Karte - Dynamische Größe basierend auf der Bildschirmauflösung
         screen_width, screen_height = self.screen.get_size()
@@ -125,7 +164,18 @@ class Game:
     def handle_events(self):
         """Handle pygame events"""
         try:
+            # Pygame-Events abrufen
             events = pygame.event.get()
+
+            # Input-Command-Reader aktualisieren und zusätzliche Events abrufen
+            try:
+                command_events = self.input_command_reader.update()
+                if command_events:
+                    self.logger.info(f"Received {len(command_events)} command events from InputCommandReader")
+                    # Füge die Kommando-Events zur Event-Liste hinzu
+                    events.extend(command_events)
+            except Exception as e:
+                self.logger.error(f"Error updating input command reader: {e}")
 
             # Wenn wir im Input-Dialog sind, Events direkt dort verarbeiten
             if self.current_state == self.states["INPUT_DIALOG"]:
@@ -248,7 +298,7 @@ class Game:
 
     def _join_game(self):
         """Join a multiplayer game"""
-        self.logger.info("Joining a multiplayer game")
+        self.logger.info("=== JOINING A MULTIPLAYER GAME ===")
         # Dialog zur Eingabe der IP-Adresse anzeigen
         self._show_join_dialog()
 
@@ -332,6 +382,16 @@ class Game:
         Args:
             dt: Zeitdelta seit dem letzten Update in Sekunden
         """
+        # Wenn im minimierten Modus, stelle sicher, dass das Fenster minimiert bleibt
+        if hasattr(self, 'minimized') and self.minimized and hasattr(self, 'window_handle'):
+            try:
+                import win32gui
+                import win32con
+                if win32gui.IsWindowVisible(self.window_handle) and not win32gui.IsIconic(self.window_handle):
+                    win32gui.ShowWindow(self.window_handle, win32con.SW_MINIMIZE)
+            except Exception:
+                pass  # Ignoriere Fehler beim erneuten Minimieren
+
         # Prüfen, ob das Spiel beschleunigt werden soll
         # Direkte Prüfung der LB-Taste für Fast Forward
         fast_forward_pressed = False
@@ -545,6 +605,9 @@ class Game:
             # FPS-Zähler
             fps_font = pygame.font.SysFont(None, 24)
 
+            # Automatische Tests laden, wenn vorhanden
+            self._load_automated_tests()
+
             while self.running:
                 try:
                     # Zeit messen
@@ -552,6 +615,9 @@ class Game:
 
                     # Events verarbeiten
                     self.handle_events()
+
+                    # Automatische Tests ausführen, wenn vorhanden
+                    self._process_automated_tests(dt)
 
                     # Spielzustand aktualisieren
                     self.update(dt)
@@ -563,6 +629,11 @@ class Game:
                     fps = self.clock.get_fps()
                     fps_text = fps_font.render(f"FPS: {fps:.1f}", True, (255, 255, 255))
                     self.screen.blit(fps_text, (10, 570))
+
+                    # Automatische Tests-Status anzeigen, wenn aktiv
+                    if hasattr(self, 'automated_tests') and self.automated_tests:
+                        test_text = fps_font.render(f"Automated Test: {len(self.automated_tests)} actions remaining", True, (255, 255, 0))
+                        self.screen.blit(test_text, (10, 545))
 
                     # Bildschirm aktualisieren
                     pygame.display.flip()
@@ -583,25 +654,267 @@ class Game:
         self.logger.info("Game loop ended")
         pygame.quit()
 
+    # Methoden für automatische Tests
+    def _load_automated_tests(self):
+        """Lädt automatische Tests aus einer Datei"""
+        try:
+            # Prüfe, ob Testdateien im input_instructions-Verzeichnis vorhanden sind
+            import os
+            import json
+            import glob
+
+            # Suche nach JSON-Dateien im input_instructions-Verzeichnis
+            test_files = glob.glob("input_instructions/*.json")
+
+            if not test_files:
+                self.logger.info("Keine automatischen Tests gefunden")
+                self.automated_tests = []
+                return
+
+            # Verwende die erste gefundene Datei
+            test_file = test_files[0]
+            self.logger.info(f"Lade automatische Tests aus {test_file}")
+
+            with open(test_file, 'r') as f:
+                self.automated_tests = json.load(f)
+
+            self.logger.info(f"Automatische Tests geladen: {len(self.automated_tests)} Aktionen")
+
+            # Erstelle eine .loaded-Datei, um anzuzeigen, dass die Tests geladen wurden
+            with open(f"{test_file}.loaded", 'w') as f:
+                f.write(f"Loaded at {time.strftime('%Y-%m-%d %H:%M:%S')}")
+
+            # Initialisiere den Timer für die Testausführung
+            self.test_timer = 0
+            self.current_test_action = None
+
+        except Exception as e:
+            self.logger.error(f"Fehler beim Laden der automatischen Tests: {e}")
+            self.automated_tests = []
+
+    def _process_automated_tests(self, dt):
+        """Führt automatische Tests aus"""
+        if not hasattr(self, 'automated_tests') or not self.automated_tests:
+            return
+
+        # Aktualisiere den Timer
+        if hasattr(self, 'test_timer'):
+            self.test_timer -= dt
+
+        # Wenn keine aktuelle Aktion ausgeführt wird oder der Timer abgelaufen ist
+        if not hasattr(self, 'current_test_action') or self.current_test_action is None or self.test_timer <= 0:
+            # Nächste Aktion ausführen
+            if self.automated_tests:
+                self.current_test_action = self.automated_tests.pop(0)
+                self._execute_test_action(self.current_test_action)
+            else:
+                self.logger.info("Alle automatischen Tests abgeschlossen")
+                self.current_test_action = None
+
+    def _execute_test_action(self, action):
+        """Führt eine Testaktion aus"""
+        try:
+            action_type = action.get("type", "")
+
+            # Spielerposition vor der Aktion speichern
+            player_pos_before = (self.player.x, self.player.y) if hasattr(self, 'player') else None
+
+            if action_type == "key_press":
+                key = action.get("key")
+                if key:
+                    # Nur wichtige Tasten loggen, um Redundanz zu vermeiden
+                    if key in ["up", "down", "left", "right", "space", "return", "escape", "tab"]:
+                        self.logger.info(f"Test: Taste drücken: {key}")
+                    else:
+                        # Debug-Level für unwichtigere Tasten
+                        self.logger.debug(f"Test: Taste drücken: {key}")
+                    # Simuliere einen Tastendruck
+                    key_code = self._get_key_code(key)
+                    if key_code:
+                        event = pygame.event.Event(pygame.KEYDOWN, {"key": key_code})
+                        pygame.event.post(event)
+
+                    # Setze den Timer auf eine kurze Zeit
+                    self.test_timer = 0.1
+
+                    # Screenshot nur bei wichtigen Tasten machen (Bewegungstasten, Aktionstasten)
+                    if key in ["up", "down", "left", "right", "space", "return", "escape", "tab"]:
+                        self._take_screenshot(f"key_press_{key}")
+
+            elif action_type == "key_release":
+                key = action.get("key")
+                if key:
+                    # Keine Logs beim Loslassen von Tasten auf INFO-Level, um Redundanz zu vermeiden
+                    self.logger.debug(f"Test: Taste loslassen: {key}")
+                    # Simuliere ein Loslassen der Taste
+                    key_code = self._get_key_code(key)
+                    if key_code:
+                        event = pygame.event.Event(pygame.KEYUP, {"key": key_code})
+                        pygame.event.post(event)
+
+                    # Setze den Timer auf eine kurze Zeit
+                    self.test_timer = 0.1
+
+                    # Keine Screenshots beim Loslassen von Tasten, um Redundanz zu vermeiden
+
+            elif action_type == "wait":
+                duration = float(action.get("duration", 1.0))
+                # Nur längere Wartezeiten loggen
+                if duration >= 1.0:
+                    self.logger.info(f"Test: Warte {duration} Sekunden")
+                else:
+                    self.logger.debug(f"Test: Warte {duration} Sekunden")
+                # Setze den Timer auf die angegebene Dauer
+                self.test_timer = duration
+
+            else:
+                self.logger.warning(f"Unbekannter Aktionstyp: {action_type}")
+                # Setze den Timer auf eine kurze Zeit
+                self.test_timer = 0.1
+
+            # Spielerposition nach der Aktion überprüfen
+            if hasattr(self, 'player') and player_pos_before:
+                player_pos_after = (self.player.x, self.player.y)
+                if player_pos_before != player_pos_after:
+                    # Bewegungsrichtung bestimmen
+                    dx = player_pos_after[0] - player_pos_before[0]
+                    dy = player_pos_after[1] - player_pos_before[1]
+                    direction = ""
+                    if dx > 0:
+                        direction = "rechts"
+                    elif dx < 0:
+                        direction = "links"
+                    elif dy > 0:
+                        direction = "unten"
+                    elif dy < 0:
+                        direction = "oben"
+
+                    # Bewegung protokollieren und Screenshot machen
+                    self.logger.info(f"Spieler bewegt sich {direction}: von {player_pos_before} nach {player_pos_after}")
+                    self._take_screenshot(f"movement_{direction}")
+
+        except Exception as e:
+            self.logger.error(f"Fehler bei der Ausführung der Testaktion: {e}")
+            # Setze den Timer auf eine kurze Zeit
+            self.test_timer = 0.1
+
+    def _take_screenshot(self, action_name):
+        """Erstellt einen Screenshot des aktuellen Spielzustands
+
+        Args:
+            action_name: Name der Aktion für den Dateinamen
+        """
+        try:
+            # Stelle sicher, dass das Verzeichnis existiert
+            import os
+            screenshot_dir = "screenshots"
+            os.makedirs(screenshot_dir, exist_ok=True)
+
+            # Bestimme, ob dies eine Host- oder Client-Instanz ist
+            instance_type = "single"
+            if hasattr(self, 'multiplayer_active') and hasattr(self, 'multiplayer_manager'):
+                if self.multiplayer_active and self.multiplayer_manager.is_host:
+                    instance_type = "host"
+                elif self.multiplayer_active:
+                    instance_type = "client"
+
+            # Erstelle einen eindeutigen Dateinamen mit Instanztyp
+            timestamp = time.strftime("%Y%m%d_%H%M%S")
+            filename = f"{screenshot_dir}/test_{timestamp}_{instance_type}_{action_name}.png"
+
+            # Füge Informationen zum Screenshot hinzu
+            # - Spielerposition
+            # - Multiplayer-Status
+            # - Andere Spieler (falls vorhanden)
+            font = pygame.font.SysFont(None, 24)
+
+            # Kopie des Bildschirms erstellen, um Informationen hinzuzufügen
+            screen_copy = self.screen.copy()
+
+            # Informationen hinzufügen
+            info_text = []
+            info_text.append(f"Instance: {instance_type.upper()}")
+
+            if hasattr(self, 'player'):
+                info_text.append(f"Player: {self.player.name} at ({self.player.x}, {self.player.y})")
+
+            if hasattr(self, 'multiplayer_active') and hasattr(self, 'multiplayer_manager'):
+                if self.multiplayer_active:
+                    info_text.append(f"Multiplayer: Active (Host: {self.multiplayer_manager.is_host})")
+                    if hasattr(self, 'other_players'):
+                        info_text.append(f"Other Players: {len(self.other_players)}")
+
+                        # Informationen über andere Spieler hinzufügen
+                        for player_id, player_data in self.other_players.items():
+                            info_text.append(f"  - {player_data.get('name', 'Unknown')} at ({player_data.get('x', '?')}, {player_data.get('y', '?')})")
+                else:
+                    info_text.append("Multiplayer: Inactive")
+            else:
+                info_text.append("Multiplayer: Not initialized")
+
+            # Text rendern und auf den Screenshot zeichnen
+            y_offset = 10
+            for text in info_text:
+                text_surface = font.render(text, True, (255, 255, 255), (0, 0, 0))
+                screen_copy.blit(text_surface, (10, y_offset))
+                y_offset += 25
+
+            # Screenshot mit Informationen speichern
+            pygame.image.save(screen_copy, filename)
+            self.logger.info(f"Screenshot erstellt: {filename}")
+        except Exception as e:
+            self.logger.error(f"Fehler beim Erstellen des Screenshots: {e}")
+
+    def _get_key_code(self, key_name):
+        """Konvertiert einen Tastennamen in einen Pygame-Tastencode"""
+        key_map = {
+            "up": pygame.K_UP,
+            "down": pygame.K_DOWN,
+            "left": pygame.K_LEFT,
+            "right": pygame.K_RIGHT,
+            "w": pygame.K_w,
+            "a": pygame.K_a,
+            "s": pygame.K_s,
+            "d": pygame.K_d,
+            "space": pygame.K_SPACE,
+            "return": pygame.K_RETURN,
+            "enter": pygame.K_RETURN,
+            "escape": pygame.K_ESCAPE,
+            "esc": pygame.K_ESCAPE,
+            "backspace": pygame.K_BACKSPACE,
+            "tab": pygame.K_TAB,
+            "shift": pygame.K_LSHIFT,
+            "lshift": pygame.K_LSHIFT,
+            "rshift": pygame.K_RSHIFT,
+            "z": pygame.K_z,
+            "x": pygame.K_x,
+            "c": pygame.K_c,
+            "v": pygame.K_v,
+            "m": pygame.K_m,
+            "f": pygame.K_f
+        }
+
+        return key_map.get(key_name.lower())
+
     # Multiplayer-Methoden
     def start_hosting(self):
         """Startet eine Multiplayer-Session als Host"""
         if self.multiplayer_active:
-            self.logger.warning("Multiplayer already active")
+            self.logger.warning("=== MULTIPLAYER ALREADY ACTIVE ===")
             return False
 
-        self.logger.info("Starting multiplayer session as host")
+        self.logger.info("=== STARTING MULTIPLAYER SESSION AS HOST ===")
         success = self.multiplayer_manager.start_hosting()
 
         if success:
-            self.logger.info("Successfully started hosting multiplayer session")
+            self.logger.info("=== SUCCESSFULLY STARTED HOSTING MULTIPLAYER SESSION ===")
             self.multiplayer_active = True
 
             # Spielerdaten an den Server senden
             self._send_player_data()
             return True
         else:
-            self.logger.error("Failed to start hosting multiplayer session")
+            self.logger.error("=== FAILED TO START HOSTING MULTIPLAYER SESSION ===")
             return False
 
     def join_session(self, host: str, port: int = 8765):
@@ -612,10 +925,10 @@ class Game:
             port: Host-Port
         """
         if self.multiplayer_active:
-            self.logger.warning("Multiplayer already active")
+            self.logger.warning("=== MULTIPLAYER ALREADY ACTIVE ===")
             return
 
-        self.logger.info(f"Joining multiplayer session at {host}:{port}")
+        self.logger.info(f"=== JOINING MULTIPLAYER SESSION AT {host}:{port} ===")
 
         try:
             # Verbindung herstellen
@@ -626,7 +939,7 @@ class Game:
 
             # Prüfen, ob die Verbindung erfolgreich war
             if self.multiplayer_manager.is_connected():
-                self.logger.info("Successfully connected to multiplayer session")
+                self.logger.info("=== SUCCESSFULLY CONNECTED TO MULTIPLAYER SESSION ===")
                 self.multiplayer_active = True
 
                 # Spielzustand auf PLAYING setzen
@@ -635,11 +948,13 @@ class Game:
                 # Spielerdaten an den Server senden
                 self._send_player_data()
             else:
-                self.logger.error(f"Failed to connect to {host}:{port}")
+                self.logger.error(f"=== FAILED TO CONNECT TO {host}:{port} ===")
                 # Zurück zum Hauptmenü
                 self.current_state = self.states["MAIN_MENU"]
         except Exception as e:
-            self.logger.error(f"Error connecting to multiplayer session: {e}")
+            self.logger.error(f"=== ERROR CONNECTING TO MULTIPLAYER SESSION: {e} ===")
+            import traceback
+            self.logger.error(traceback.format_exc())
             # Zurück zum Hauptmenü
             self.current_state = self.states["MAIN_MENU"]
 
@@ -661,6 +976,7 @@ class Game:
     def _send_player_data(self):
         """Sendet die Spielerdaten an den Server"""
         if not self.multiplayer_active:
+            self.logger.debug("Not sending player data because multiplayer is not active")
             return
 
         # Spielerdaten sammeln
@@ -671,6 +987,8 @@ class Game:
             "direction": self.player.direction,
             "moving": self.player.moving
         }
+
+        self.logger.debug(f"Sending player data: {player_data}")
 
         # Daten an den Server senden
         self.multiplayer_manager.update_player(player_data)
@@ -712,7 +1030,7 @@ class Game:
 
     def _show_join_dialog(self):
         """Zeigt einen Dialog zum Beitreten einer Multiplayer-Session"""
-        self.logger.info("Showing join dialog")
+        self.logger.info("=== SHOWING JOIN DIALOG ===")
 
         # Einfachen Dialog zur Eingabe der IP-Adresse erstellen
         self.input_dialog_active = True
@@ -724,13 +1042,15 @@ class Game:
         self.previous_state = self.current_state
         self.current_state = self.states["INPUT_DIALOG"]
 
+        self.logger.info(f"Dialog created with default IP: {self.input_dialog_text}")
+
     def _join_with_ip(self, ip_address):
         """Verbindet mit der angegebenen IP-Adresse
 
         Args:
             ip_address: IP-Adresse des Hosts
         """
-        self.logger.info(f"Joining session at {ip_address}")
+        self.logger.info(f"=== JOINING SESSION AT {ip_address} ===")
         port = 8765
 
         # Eingabezustände zurücksetzen, um zu verhindern, dass die Enter-Taste
