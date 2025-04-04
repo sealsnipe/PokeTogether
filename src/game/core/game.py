@@ -124,22 +124,33 @@ class Game:
 
     def handle_events(self):
         """Handle pygame events"""
-        events = pygame.event.get()
+        try:
+            events = pygame.event.get()
 
-        # Wenn wir im Input-Dialog sind, Events direkt dort verarbeiten
-        if self.current_state == self.states["INPUT_DIALOG"]:
-            self._handle_input_dialog_events(events)
-            return
+            # Wenn wir im Input-Dialog sind, Events direkt dort verarbeiten
+            if self.current_state == self.states["INPUT_DIALOG"]:
+                self._handle_input_dialog_events(events)
+                return
 
-        for event in events:
-            if event.type == pygame.QUIT:
-                self.running = False
-            elif event.type == pygame.KEYDOWN:
-                self.handle_keydown(event)
+            for event in events:
+                if event.type == pygame.QUIT:
+                    self.running = False
+                elif event.type == pygame.KEYDOWN:
+                    self.handle_keydown(event)
+        except Exception as e:
+            self.logger.error(f"Error handling events: {e}")
+            # Versuche, die Events zu leeren, um weitere Fehler zu vermeiden
+            try:
+                pygame.event.clear()
+            except:
+                pass
 
         # Input-Handler aktualisieren
-        self.input_handler.handle_events(events)
-        self.input_handler.update()
+        try:
+            self.input_handler.handle_events(events if 'events' in locals() else [])
+            self.input_handler.update()
+        except Exception as e:
+            self.logger.error(f"Error updating input handler: {e}")
 
     def _handle_input_dialog_events(self, events):
         """Verarbeitet Events speziell für den Input-Dialog
@@ -147,46 +158,52 @@ class Game:
         Args:
             events: Liste der pygame-Events
         """
-        # Input-Handler aktualisieren (für Controller-Eingaben)
-        self.input_handler.handle_events(events)
-        self.input_handler.update()
+        try:
+            # Input-Handler aktualisieren (für Controller-Eingaben)
+            self.input_handler.handle_events(events)
+            self.input_handler.update()
 
-        # Tastatureingaben verarbeiten
-        for event in events:
-            if event.type == pygame.QUIT:
-                self.running = False
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RETURN:
-                    # Enter-Taste: Dialog bestätigen
-                    self.logger.info("Enter key pressed, confirming dialog")
-                    if self.input_dialog_callback:
-                        self.input_dialog_callback(self.input_dialog_text)
-                    self.current_state = self.previous_state
-                    self.input_dialog_active = False
+            # Tastatureingaben verarbeiten
+            for event in events:
+                if event.type == pygame.QUIT:
+                    self.running = False
+                elif event.type == pygame.KEYDOWN:
+                    try:
+                        if event.key == pygame.K_RETURN:
+                            # Enter-Taste: Dialog bestätigen
+                            self.logger.info("Enter key pressed, confirming dialog")
+                            if self.input_dialog_callback:
+                                self.input_dialog_callback(self.input_dialog_text)
+                            self.current_state = self.previous_state
+                            self.input_dialog_active = False
 
-                    # Eingabezustände zurücksetzen, um zu verhindern, dass die Enter-Taste
-                    # als Aktion erkannt wird
-                    self.input_handler.input_state = {}
-                    self.input_handler.input_pressed = {}
-                    self.input_handler.last_input_state = {}
-                elif event.key == pygame.K_ESCAPE:
-                    # Escape-Taste: Dialog abbrechen
-                    self.logger.info("Escape key pressed, canceling dialog")
-                    self.current_state = self.previous_state
-                    self.input_dialog_active = False
+                            # Eingabezustände zurücksetzen, um zu verhindern, dass die Enter-Taste
+                            # als Aktion erkannt wird
+                            self.input_handler.input_state = {}
+                            self.input_handler.input_pressed = {}
+                            self.input_handler.last_input_state = {}
+                        elif event.key == pygame.K_ESCAPE:
+                            # Escape-Taste: Dialog abbrechen
+                            self.logger.info("Escape key pressed, canceling dialog")
+                            self.current_state = self.previous_state
+                            self.input_dialog_active = False
 
-                    # Eingabezustände zurücksetzen
-                    self.input_handler.input_state = {}
-                    self.input_handler.input_pressed = {}
-                    self.input_handler.last_input_state = {}
-                elif event.key == pygame.K_BACKSPACE:
-                    # Backspace-Taste: Zeichen löschen
-                    self.input_dialog_text = self.input_dialog_text[:-1]
-                    self.logger.info(f"Backspace pressed, text now: {self.input_dialog_text}")
-                elif event.unicode and event.unicode.isprintable():
-                    # Zeichen hinzufügen (nur druckbare Zeichen)
-                    self.input_dialog_text += event.unicode
-                    self.logger.info(f"Character added: {event.unicode}, text now: {self.input_dialog_text}")
+                            # Eingabezustände zurücksetzen
+                            self.input_handler.input_state = {}
+                            self.input_handler.input_pressed = {}
+                            self.input_handler.last_input_state = {}
+                        elif event.key == pygame.K_BACKSPACE:
+                            # Backspace-Taste: Zeichen löschen
+                            self.input_dialog_text = self.input_dialog_text[:-1]
+                            self.logger.info(f"Backspace pressed, text now: {self.input_dialog_text}")
+                        elif event.unicode and event.unicode.isprintable():
+                            # Zeichen hinzufügen (nur druckbare Zeichen)
+                            self.input_dialog_text += event.unicode
+                            self.logger.info(f"Character added: {event.unicode}, text now: {self.input_dialog_text}")
+                    except Exception as e:
+                        self.logger.error(f"Error processing key event: {e}")
+        except Exception as e:
+            self.logger.error(f"Error handling input dialog events: {e}")
 
     def handle_keydown(self, event):
         """Handle keydown events"""
@@ -522,31 +539,42 @@ class Game:
         """Main game loop"""
         self.logger.info("Starting game loop")
 
-        self.load_resources()
+        try:
+            self.load_resources()
 
-        # FPS-Zähler
-        fps_font = pygame.font.SysFont(None, 24)
+            # FPS-Zähler
+            fps_font = pygame.font.SysFont(None, 24)
 
-        while self.running:
-            # Zeit messen
-            dt = self.clock.tick(60) / 1000.0
+            while self.running:
+                try:
+                    # Zeit messen
+                    dt = self.clock.tick(60) / 1000.0
 
-            # Events verarbeiten
-            self.handle_events()
+                    # Events verarbeiten
+                    self.handle_events()
 
-            # Spielzustand aktualisieren
-            self.update(dt)
+                    # Spielzustand aktualisieren
+                    self.update(dt)
 
-            # Rendern
-            self.render()
+                    # Rendern
+                    self.render()
 
-            # FPS anzeigen
-            fps = self.clock.get_fps()
-            fps_text = fps_font.render(f"FPS: {fps:.1f}", True, (255, 255, 255))
-            self.screen.blit(fps_text, (10, 570))
+                    # FPS anzeigen
+                    fps = self.clock.get_fps()
+                    fps_text = fps_font.render(f"FPS: {fps:.1f}", True, (255, 255, 255))
+                    self.screen.blit(fps_text, (10, 570))
 
-            # Bildschirm aktualisieren
-            pygame.display.flip()
+                    # Bildschirm aktualisieren
+                    pygame.display.flip()
+
+                except Exception as e:
+                    self.logger.error(f"Error in game loop: {e}")
+                    # Kurze Pause, um CPU-Last zu reduzieren
+                    pygame.time.wait(100)
+        except Exception as e:
+            self.logger.error(f"Critical error in game: {e}")
+            # Versuche, das Spiel sauber zu beenden
+            pygame.quit()
 
         # Multiplayer-Session beenden, falls aktiv
         if self.multiplayer_active:
