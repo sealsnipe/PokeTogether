@@ -226,7 +226,23 @@ class Config:
         Returns:
             bool: True if client-side prediction is enabled, False otherwise
         """
-        return self.config["multiplayer"]["prediction"]
+        return self.config["multiplayer"].get("prediction", True)
+
+    def get_jitter_buffer_size(self) -> int:
+        """Get the jitter buffer size
+
+        Returns:
+            int: Jitter buffer size
+        """
+        return self.config["multiplayer"].get("jitter_buffer_size", 3)
+
+    def get_jitter_buffer_delay(self) -> float:
+        """Get the jitter buffer delay
+
+        Returns:
+            float: Jitter buffer delay in seconds
+        """
+        return self.config["multiplayer"].get("jitter_buffer_delay", 0.05)
 
     def get_reconciliation(self) -> bool:
         """Get the reconciliation setting

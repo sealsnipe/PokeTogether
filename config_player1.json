@@ -6,7 +6,11 @@
     "multiplayer": {
         "server_host": "127.0.0.1",
         "server_port": 8765,
-        "update_rate": 10
+        "update_rate": 20,
+        "interpolation": true,
+        "prediction": true,
+        "jitter_buffer_size": 3,
+        "jitter_buffer_delay": 0.05
     },
     "paths": {
         "save_dir": "saves",

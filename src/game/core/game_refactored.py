@@ -892,7 +892,7 @@ class Game:
             self.logger.error("=== FAILED TO START HOSTING MULTIPLAYER SESSION ===")
             return False
 
-    def join_session(self, host: str = None, port: int = None, latency: int = None, jitter: int = None) -> bool:
+    def join_session(self, host: str = None, port: int = None, latency: int = None, jitter: int = None, config = None) -> bool:
         """Verbindet mit einer Multiplayer-Session
 
         Args:
@@ -900,6 +900,7 @@ class Game:
             port: Host-Port (optional, sonst aus Konfiguration)
             latency: Latenz-Simulation in Millisekunden (optional, sonst aus Konfiguration)
             jitter: Jitter-Simulation in Millisekunden (optional, sonst aus Konfiguration)
+            config: Konfigurationsobjekt (optional, sonst wird self.config verwendet)
 
         Returns:
             bool: True if the connection attempt was initiated successfully, False otherwise
@@ -924,7 +925,9 @@ class Game:
 
         try:
             # Verbindung herstellen
-            success = self.multiplayer_manager.connect_to_session(host, port, latency, jitter)
+            # Verwende das übergebene Konfigurationsobjekt oder das eigene
+            config_to_use = config if config is not None else self.config
+            success = self.multiplayer_manager.connect_to_session(host, port, latency, jitter, config=config_to_use)
 
             # Prüfen, ob die Verbindung initiiert wurde (nicht unbedingt schon hergestellt)
             if success:

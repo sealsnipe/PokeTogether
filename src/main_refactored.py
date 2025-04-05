@@ -171,7 +171,7 @@ def main() -> int:
             host = args.join
             port = args.port if args.port else config.get_server_port()
             logger.info(f"Joining game at {host}:{port}")
-            game.join_session(host, port)
+            game.join_session(host, port, config=config)
 
         # Hauptspielschleife starten
         game.run()

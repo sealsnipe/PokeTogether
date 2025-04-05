@@ -31,6 +31,12 @@ class MultiplayerManager:
         self.on_player_disconnected = None
         self.on_chat_message = None
 
+        # Jitter-Pufferung
+        self.jitter_buffer = {}  # Dict von client_id -> Liste von Nachrichten
+        self.last_processed_time = {}  # Dict von client_id -> Zeitpunkt der letzten Verarbeitung
+        self.jitter_buffer_size = None  # Wird später aus der Konfiguration geladen
+        self.jitter_buffer_delay = None  # Wird später aus der Konfiguration geladen
+
         # Register custom message handlers
         self.client.register_handler("player_update", self._handle_player_update)
         self.client.register_handler("player_disconnected", self._handle_player_disconnected)
@@ -127,7 +133,7 @@ class MultiplayerManager:
         self.logger.info(f"=== SETTING NETWORK SIMULATION: LATENCY={latency}ms, JITTER={jitter}ms ===")
         self.client.set_network_simulation(latency, jitter)
 
-    def connect_to_session(self, host: str, port: int = 8765, latency: int = 0, jitter: int = 0):
+    def connect_to_session(self, host: str, port: int = 8765, latency: int = 0, jitter: int = 0, config = None):
         """Connect to a multiplayer session
 
         Args:
@@ -135,6 +141,7 @@ class MultiplayerManager:
             port: Host port
             latency: Latency simulation in milliseconds (default: 0)
             jitter: Jitter simulation in milliseconds (default: 0)
+            config: Configuration object
 
         Returns:
             bool: True if connection was initiated successfully, False otherwise
@@ -143,6 +150,17 @@ class MultiplayerManager:
         if self.client.connected:
             self.logger.warning("Already connected to a session")
             return False
+
+        # Lade die Jitter-Pufferung-Konfiguration, wenn verfügbar
+        if config:
+            self.jitter_buffer_size = config.get_jitter_buffer_size()
+            self.jitter_buffer_delay = config.get_jitter_buffer_delay()
+            self.logger.info(f"Loaded jitter buffer configuration: size={self.jitter_buffer_size}, delay={self.jitter_buffer_delay}s")
+        else:
+            # Standardwerte verwenden
+            self.jitter_buffer_size = 3
+            self.jitter_buffer_delay = 0.05
+            self.logger.info(f"Using default jitter buffer configuration: size={self.jitter_buffer_size}, delay={self.jitter_buffer_delay}s")
 
         # Netzwerk-Simulation konfigurieren, wenn angegeben
         if latency > 0 or jitter > 0:
@@ -330,7 +348,7 @@ class MultiplayerManager:
             self.logger.error(f"Error getting external IP: {e}")
 
     async def _handle_player_update(self, data: Dict[str, Any]):
-        """Handle player update message
+        """Handle player update message with jitter buffering
 
         Args:
             data: Player update message data
@@ -339,26 +357,55 @@ class MultiplayerManager:
         self.logger.info(f"[DATENFLUSS] MULTIPLAYER_MANAGER RECEIVED MESSAGE: {json.dumps(data)}")
 
         client_id = data.get("client_id")
+        timestamp = data.get("timestamp", time.time())
 
-        # Extrahiere die Spielerdaten direkt aus der Nachricht
-        # Entferne die Schlüssel "type" und "client_id", um nur die Spielerdaten zu behalten
-        player_data = {k: v for k, v in data.items() if k not in ["type", "client_id"]}
+        # Jitter-Pufferung: Füge die Nachricht zum Puffer hinzu
+        if client_id not in self.jitter_buffer:
+            self.jitter_buffer[client_id] = []
+            self.last_processed_time[client_id] = 0
 
-        self.logger.info(f"[DATENFLUSS] MULTIPLAYER_MANAGER EXTRACTED PLAYER DATA: {json.dumps(player_data)}")
+        # Füge die Nachricht zum Puffer hinzu
+        self.jitter_buffer[client_id].append((timestamp, data))
+        self.logger.debug(f"[JITTER] Added message to buffer for client {client_id}. Buffer size: {len(self.jitter_buffer[client_id])}")
 
-        # Call the callback if registered
-        if self.on_player_update:
-            self.logger.info(f"[DATENFLUSS] CALLING ON_PLAYER_UPDATE CALLBACK: client_id={client_id}, player_data={json.dumps(player_data)}")
-            try:
-                self.logger.info(f"[DATENFLUSS] CALLBACK TYPE: {type(self.on_player_update).__name__}")
-                self.on_player_update(client_id, player_data)
-                self.logger.info(f"[DATENFLUSS] ON_PLAYER_UPDATE CALLBACK CALLED SUCCESSFULLY")
-            except Exception as e:
-                self.logger.error(f"[DATENFLUSS] ERROR CALLING ON_PLAYER_UPDATE CALLBACK: {e}")
-                import traceback
-                self.logger.error(f"[DATENFLUSS] TRACEBACK: {traceback.format_exc()}")
-        else:
-            self.logger.warning(f"[DATENFLUSS] ON_PLAYER_UPDATE CALLBACK NOT REGISTERED")
+        # Sortiere den Puffer nach Zeitstempel
+        self.jitter_buffer[client_id].sort(key=lambda x: x[0])
+
+        # Begrenze die Puffergröße
+        if len(self.jitter_buffer[client_id]) > self.jitter_buffer_size:
+            # Entferne die älteste Nachricht, wenn der Puffer voll ist
+            self.jitter_buffer[client_id].pop(0)
+            self.logger.debug(f"[JITTER] Removed oldest message from buffer for client {client_id}")
+
+        # Prüfe, ob es Zeit ist, eine Nachricht zu verarbeiten
+        current_time = time.time()
+        time_since_last_processed = current_time - self.last_processed_time[client_id]
+
+        if time_since_last_processed >= self.jitter_buffer_delay and self.jitter_buffer[client_id]:
+            # Verarbeite die älteste Nachricht im Puffer
+            _, buffered_data = self.jitter_buffer[client_id].pop(0)
+            self.last_processed_time[client_id] = current_time
+
+            # Extrahiere die Spielerdaten direkt aus der Nachricht
+            # Entferne die Schlüssel "type" und "client_id", um nur die Spielerdaten zu behalten
+            player_data = {k: v for k, v in buffered_data.items() if k not in ["type", "client_id"]}
+
+            self.logger.info(f"[DATENFLUSS] MULTIPLAYER_MANAGER EXTRACTED PLAYER DATA: {json.dumps(player_data)}")
+            self.logger.debug(f"[JITTER] Processing message from buffer for client {client_id}. Remaining buffer size: {len(self.jitter_buffer[client_id])}")
+
+            # Call the callback if registered
+            if self.on_player_update:
+                self.logger.info(f"[DATENFLUSS] CALLING ON_PLAYER_UPDATE CALLBACK: client_id={client_id}, player_data={json.dumps(player_data)}")
+                try:
+                    self.logger.info(f"[DATENFLUSS] CALLBACK TYPE: {type(self.on_player_update).__name__}")
+                    self.on_player_update(client_id, player_data)
+                    self.logger.info(f"[DATENFLUSS] ON_PLAYER_UPDATE CALLBACK CALLED SUCCESSFULLY")
+                except Exception as e:
+                    self.logger.error(f"[DATENFLUSS] ERROR CALLING ON_PLAYER_UPDATE CALLBACK: {e}")
+                    import traceback
+                    self.logger.error(f"[DATENFLUSS] TRACEBACK: {traceback.format_exc()}")
+            else:
+                self.logger.warning(f"[DATENFLUSS] ON_PLAYER_UPDATE CALLBACK NOT REGISTERED")
 
     async def _handle_player_disconnected(self, data: Dict[str, Any]):
         """Handle player disconnected message
