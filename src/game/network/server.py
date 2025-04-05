@@ -6,6 +6,7 @@ Server-Modul - Implementiert den Host-Modus für Multiplayer
 import asyncio
 import json
 import logging
+import time
 import uuid
 from typing import Dict, List, Any, Optional, Set
 import websockets
@@ -42,6 +43,8 @@ class GameServer:
 
         try:
             self.logger.debug(f"Creating WebSocket server on {self.host}:{self.port}...")
+            # Starte den WebSocket-Server ohne Pfad-Parameter
+            self.logger.info(f"Starting WebSocket server on {self.host}:{self.port}")
             self.server = await websockets.serve(
                 self.handle_client,
                 self.host,
@@ -96,6 +99,10 @@ class GameServer:
 
         self.logger.info(f"=== NEW CLIENT CONNECTED: {client_id} ===")
         self.logger.debug(f"Total clients connected: {len(self.clients)}")
+        self.logger.info(f"[DATENFLUSS] CLIENT CONNECTED: ID={client_id}, Path={path}")
+        # Add a clear marker for automated testing
+        print(f"NEW CLIENT CONNECTED: {client_id}")
+        print(f"[CONNECTION_STATUS] CLIENT {client_id} CONNECTED TO SERVER")
 
         try:
             # Send welcome message with client ID
@@ -141,8 +148,20 @@ class GameServer:
             message_type = data.get("type", "")
 
             if message_type == "player_update":
-                # Update player data
-                player_data = data.get("player_data", {})
+                # Vollständige Nachricht loggen
+                self.logger.info(f"[DATENFLUSS] SERVER RECEIVED MESSAGE: {json.dumps(data)}")
+
+                # Extrahiere die Spielerdaten direkt aus der Nachricht
+                # Entferne den "type"-Schlüssel, um nur die Spielerdaten zu behalten
+                player_data = {k: v for k, v in data.items() if k != "type"}
+
+                # Log the received data
+                self.logger.info(f"[DATENFLUSS] SERVER PROCESSED PLAYER DATA: {json.dumps(player_data)}")
+
+                # Prüfen, ob die Spielerdaten leer sind oder nur den Typ enthalten
+                if not player_data or len(player_data) <= 1:
+                    self.logger.warning(f"[DATENFLUSS] EMPTY PLAYER DATA RECEIVED FROM CLIENT: {client_id}")
+                    return
 
                 # Store or update player data
                 if client_id not in self.players:
@@ -151,11 +170,31 @@ class GameServer:
                 self.players[client_id] = player_data
 
                 # Broadcast player update to all other clients
-                await self.broadcast({
+                # Füge client_id zu den Spielerdaten hinzu und setze den Typ
+                broadcast_data = {
                     "type": "player_update",
                     "client_id": client_id,
-                    "player_data": player_data
-                }, exclude={client_id})
+                    **player_data  # Entpacke die Spielerdaten direkt in die Nachricht
+                }
+                self.logger.info(f"[DATENFLUSS] SERVER BROADCASTING TO CLIENTS: {json.dumps(broadcast_data)}")
+                await self.broadcast(broadcast_data, exclude={client_id})
+
+            elif message_type == "connection_confirmation":
+                # Handle connection confirmation
+                client_info = data.get("client_info", {})
+                self.logger.info(f"Received connection confirmation from client {client_id}")
+                self.logger.info(f"Client info: {client_info}")
+
+                # Acknowledge the confirmation
+                try:
+                    await self.clients[client_id].send(json.dumps({
+                        "type": "connection_acknowledged",
+                        "server_time": time.time(),
+                        "message": "Connection confirmed and acknowledged"
+                    }))
+                    self.logger.info(f"Sent connection acknowledgement to client {client_id}")
+                except Exception as e:
+                    self.logger.error(f"Error sending connection acknowledgement to client {client_id}: {e}")
 
             elif message_type == "chat_message":
                 # Handle chat messages
@@ -188,10 +227,20 @@ class GameServer:
             exclude = set()
 
         message = json.dumps(data)
+        self.logger.info(f"[DATENFLUSS] BROADCASTING MESSAGE TO CLIENTS: {message[:100]}..." if len(message) > 100 else f"[DATENFLUSS] BROADCASTING MESSAGE TO CLIENTS: {message}")
+        self.logger.info(f"[DATENFLUSS] BROADCASTING TO {len(self.clients) - len(exclude)} CLIENTS (EXCLUDING {len(exclude)} CLIENTS)")
 
+        broadcast_count = 0
         for client_id, websocket in self.clients.items():
             if client_id not in exclude:
                 try:
+                    self.logger.info(f"[DATENFLUSS] SENDING BROADCAST TO CLIENT: {client_id}")
                     await websocket.send(message)
+                    self.logger.info(f"[DATENFLUSS] BROADCAST SENT TO CLIENT: {client_id}")
+                    broadcast_count += 1
                 except Exception as e:
-                    self.logger.error(f"Error broadcasting to client {client_id}: {e}")
+                    self.logger.error(f"[DATENFLUSS] ERROR BROADCASTING TO CLIENT {client_id}: {e}")
+                    import traceback
+                    self.logger.error(f"[DATENFLUSS] TRACEBACK: {traceback.format_exc()}")
+
+        self.logger.info(f"[DATENFLUSS] BROADCAST COMPLETED: {broadcast_count} CLIENTS RECEIVED THE MESSAGE")

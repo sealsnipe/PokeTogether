@@ -5,6 +5,7 @@ Game class - Main game loop and state management (refactored version)
 
 import pygame
 import sys
+import json
 import logging
 import os
 import time
@@ -18,6 +19,7 @@ from game.entities.player import Player
 from game.core.camera import Camera
 from game.maps.simple_map import SimpleMap
 from game.core.settings import Settings
+from game.core.config import Config
 from game.ui.main_menu_refactored import MainMenuRefactored
 from game.ui.options_menu_refactored import OptionsMenuRefactored
 from game.ui.ingame_menu_refactored import IngameMenuRefactored
@@ -27,14 +29,19 @@ from game.network.multiplayer_manager import MultiplayerManager
 class Game:
     """Main game class (refactored version)"""
 
-    def __init__(self, minimized=False):
+    def __init__(self, config: Config = None, minimized: bool = False):
         """Initialize the game
 
         Args:
+            config: Konfigurationsobjekt
             minimized: Wenn True, wird das Spiel minimiert gestartet
         """
         self.logger = logging.getLogger(__name__)
         self.logger.info("Initializing game")
+
+        # Konfiguration speichern oder Standardkonfiguration erstellen
+        self.config = config if config else Config()
+        self.logger.info(f"Using configuration with player name: {self.config.get_player_name()}")
 
         # Minimiert-Flag speichern
         self.minimized = minimized
@@ -44,7 +51,7 @@ class Game:
 
         # Fenster erstellen
         self.screen = pygame.display.set_mode((800, 600))
-        pygame.display.set_caption("PokeTogether" + (" (Test Mode)" if minimized else ""))
+        pygame.display.set_caption(self.config.get_window_title() + (" (Test Mode)" if minimized else ""))
 
         # Fenster minimieren, wenn gewünscht
         if minimized:
@@ -65,7 +72,14 @@ class Game:
         # Multiplayer
         self.multiplayer_manager = MultiplayerManager()
         self.other_players = {}
+        self.interpolated_players = {}  # Für Interpolation
         self.multiplayer_active = False
+        self.force_player_data_update = True  # Beim ersten Mal immer senden
+
+        # Screenshots
+        self.screenshots_enabled = False
+        self.screenshot_interval = 5.0  # Sekunden zwischen automatischen Screenshots
+        self.last_screenshot_time = 0.0
 
         # Game resources
         self.resources = {}
@@ -84,8 +98,11 @@ class Game:
 
         self.current_map = SimpleMap(map_width, map_height, tile_size)
 
-        # Spieler - Starte in der Mitte der Karte
-        self.player = Player(self.current_map.pixel_width // 2, self.current_map.pixel_height // 2, "Red")
+        # Spieler - Starte in der Mitte der Karte mit dem Namen aus der Konfiguration
+        player_name = self.config.get_player_name()
+        player_character = self.config.get("player", "character")
+        self.player = Player(self.current_map.pixel_width // 2, self.current_map.pixel_height // 2, player_character)
+        self.player.name = player_name
 
         # Kamera - Verwende die aktuelle Bildschirmgröße für die Kamera
         # Zoom-Faktor von 1.2 bedeutet 20% herausgezoomt
@@ -102,6 +119,9 @@ class Game:
 
         # State-Callbacks registrieren
         self._register_state_callbacks()
+
+        # Multiplayer-Callbacks registrieren
+        self._register_multiplayer_callbacks()
 
         # Hauptmenü anzeigen
         self.main_menu.show()
@@ -163,6 +183,42 @@ class Game:
         self.state_manager.register_state_changed_callback(GameState.PLAYING, self._on_enter_playing)
         self.state_manager.register_state_changed_callback(GameState.MAIN_MENU, self._on_enter_main_menu)
         self.state_manager.register_state_changed_callback(GameState.INGAME_MENU, self._on_enter_ingame_menu)
+
+    def _register_multiplayer_callbacks(self) -> None:
+        """Registriert die Multiplayer-Callbacks"""
+        self.logger.info("[DATENFLUSS] REGISTERING MULTIPLAYER CALLBACKS")
+
+        # Prüfen, ob die Methoden existieren
+        if not hasattr(self.multiplayer_manager, "on_player_update"):
+            self.logger.error("[DATENFLUSS] MULTIPLAYER_MANAGER HAS NO ATTRIBUTE 'on_player_update'")
+        else:
+            self.logger.info("[DATENFLUSS] MULTIPLAYER_MANAGER HAS ATTRIBUTE 'on_player_update'")
+
+        if not hasattr(self, "_on_player_update"):
+            self.logger.error("[DATENFLUSS] GAME HAS NO METHOD '_on_player_update'")
+        else:
+            self.logger.info("[DATENFLUSS] GAME HAS METHOD '_on_player_update'")
+
+        # Callbacks registrieren
+        self.logger.info("[DATENFLUSS] REGISTERING CALLBACK: on_player_update = self._on_player_update")
+        self.multiplayer_manager.on_player_update = self._on_player_update
+        self.logger.info("[DATENFLUSS] CALLBACK REGISTERED: on_player_update")
+
+        self.logger.info("[DATENFLUSS] REGISTERING CALLBACK: on_player_disconnected = self._on_player_disconnected")
+        self.multiplayer_manager.on_player_disconnected = self._on_player_disconnected
+        self.logger.info("[DATENFLUSS] CALLBACK REGISTERED: on_player_disconnected")
+
+        self.logger.info("[DATENFLUSS] REGISTERING CALLBACK: on_chat_message = self._on_chat_message")
+        self.multiplayer_manager.on_chat_message = self._on_chat_message
+        self.logger.info("[DATENFLUSS] CALLBACK REGISTERED: on_chat_message")
+
+        # Prüfen, ob die Callbacks korrekt registriert wurden
+        if hasattr(self.multiplayer_manager, "on_player_update") and self.multiplayer_manager.on_player_update == self._on_player_update:
+            self.logger.info("[DATENFLUSS] CALLBACK VERIFICATION: on_player_update is correctly registered")
+        else:
+            self.logger.error("[DATENFLUSS] CALLBACK VERIFICATION FAILED: on_player_update is not correctly registered")
+
+        self.logger.info("[DATENFLUSS] MULTIPLAYER CALLBACKS REGISTERED SUCCESSFULLY")
 
     def _toggle_menu(self) -> None:
         """Öffnet oder schließt das Menü"""
@@ -291,19 +347,43 @@ class Game:
         elif self.input_manager.is_pressed(InputAction.RIGHT):
             direction_x = 1
 
-        # Spieler bewegen
+        # Spieler bewegen mit Client-Side Prediction
         if direction_x != 0 or direction_y != 0:
-            self.player.move(direction_x, direction_y, speed_multiplier)
+            # Verwende Client-Side Prediction, wenn aktiviert
+            prediction = self.config.get_prediction()
+            input_data = self.player.move(direction_x, direction_y, speed_multiplier, prediction)
+
+            # Wenn im Multiplayer-Modus und eine signifikante Änderung vorliegt, erzwinge ein Update
+            if self.multiplayer_active and (direction_x != 0 or direction_y != 0):
+                self.force_player_data_update = True
 
         # Spieler aktualisieren
         self.player.update(dt)
 
+        # Andere Spieler aktualisieren (Interpolation)
+        if self.multiplayer_active and self.config.get_interpolation():
+            for player_id, player_data in self.other_players.items():
+                # Erstelle einen temporären Spieler für die Interpolation
+                if player_id not in self.interpolated_players:
+                    temp_player = Player()
+                    temp_player.x = player_data.get("x", 0)
+                    temp_player.y = player_data.get("y", 0)
+                    temp_player.direction = player_data.get("direction", "down")
+                    temp_player.name = player_data.get("name", "Player")
+                    temp_player.character_type = player_data.get("character_type", "Red")
+                    self.interpolated_players[player_id] = temp_player
+
+                # Interpoliere die Position des Spielers
+                self.interpolated_players[player_id].interpolate(player_data)
+
+                # Aktualisiere die Spielerdaten mit den interpolierten Werten
+                self.other_players[player_id]["x"] = self.interpolated_players[player_id].x
+                self.other_players[player_id]["y"] = self.interpolated_players[player_id].y
+
         # Kamera aktualisieren
         self.camera.update(self.player.x, self.player.y)
 
-        # Multiplayer: Spielerdaten senden, wenn aktiv
-        if self.multiplayer_active:
-            self._send_player_data()
+        # Multiplayer-Aktualisierungen werden jetzt in der Hauptschleife mit Timer durchgeführt
 
     def _update_battle(self, dt: float) -> None:
         """Aktualisiert den Spielzustand im BATTLE-State
@@ -343,6 +423,7 @@ class Game:
 
         # Andere Spieler rendern, wenn Multiplayer aktiv ist
         if self.multiplayer_active:
+            self.logger.info(f"[INFO] Rendering other players. Active: {len(self.other_players)} players")
             self._render_other_players()
 
         # Debug-Informationen
@@ -401,20 +482,160 @@ class Game:
 
     def _render_other_players(self) -> None:
         """Rendert die anderen Spieler im Multiplayer-Modus"""
-        for player_id, player_data in self.other_players.items():
-            # Einfache Darstellung anderer Spieler als farbige Rechtecke
-            player_rect = pygame.Rect(
-                player_data["x"] - self.camera.get_offset()[0],
-                player_data["y"] - self.camera.get_offset()[1],
-                32, 32
-            )
-            pygame.draw.rect(self.screen, (0, 0, 255), player_rect)
+        # Prüfen, ob überhaupt andere Spieler vorhanden sind
+        self.logger.info(f"[DATENFLUSS] RENDERING OTHER PLAYERS. Count: {len(self.other_players)}")
+        self.logger.info(f"[DATENFLUSS] OTHER_PLAYERS CONTENT: {json.dumps(self.other_players)}")
 
-            # Spielername anzeigen
-            font = pygame.font.SysFont(None, 20)
-            name_text = font.render(player_data.get("name", "Player"), True, (255, 255, 255))
-            name_rect = name_text.get_rect(center=(player_rect.centerx, player_rect.top - 10))
-            self.screen.blit(name_text, name_rect)
+        # Prüfen, ob die other_players Liste korrekt initialisiert wurde
+        if not hasattr(self, 'other_players'):
+            self.logger.error("[DATENFLUSS] OTHER_PLAYERS LIST NOT INITIALIZED")
+            return
+
+        # Prüfen, ob die other_players Liste ein Dictionary ist
+        if not isinstance(self.other_players, dict):
+            self.logger.error(f"[DATENFLUSS] OTHER_PLAYERS IS NOT A DICTIONARY: {type(self.other_players).__name__}")
+            return
+
+        if not self.other_players:
+            self.logger.info("[DATENFLUSS] NO OTHER PLAYERS TO RENDER")
+            return
+
+        # Temporärer Font für Spielernamen
+        font = pygame.font.SysFont(None, 18)
+
+        for player_id, player_data in self.other_players.items():
+            # Vollständige Spielerdaten loggen
+            self.logger.info(f"[DATENFLUSS] RENDERING PLAYER: {player_id}, data={json.dumps(player_data)}")
+
+            # Spielerdaten extrahieren
+            x = player_data.get("x", 0)
+            y = player_data.get("y", 0)
+            name = player_data.get("name", "Player")
+            character_type = player_data.get("character_type", "Red")
+            direction = player_data.get("direction", "down")
+
+            # Kamera-Offset anwenden
+            offset = self.camera.get_offset()
+            screen_x = int(x - offset[0])
+            screen_y = int(y - offset[1])
+
+            # Debug-Ausgabe für das Rendering
+            self.logger.info(f"[DATENFLUSS] RENDERING PLAYER {name} (ID: {player_id}): x={x}, y={y}, screen_x={screen_x}, screen_y={screen_y}")
+
+            # Prüfen, ob der Spieler im sichtbaren Bereich ist
+            if (0 <= screen_x <= self.screen.get_width() and
+                0 <= screen_y <= self.screen.get_height()):
+
+                # Farbe basierend auf dem Charaktertyp wählen
+                color = (0, 0, 255)  # Standard: Blau
+                if character_type == "Blue":
+                    color = (0, 0, 200)  # Dunkelblau
+                elif character_type == "Red":
+                    color = (200, 0, 0)  # Dunkelrot
+                elif character_type == "Green":
+                    color = (0, 200, 0)  # Dunkelgrün
+                elif character_type == "Yellow":
+                    color = (200, 200, 0)  # Gelb
+
+                # Spieler als farbiges Rechteck darstellen
+                player_rect = pygame.Rect(screen_x - 16, screen_y - 16, 32, 32)
+                pygame.draw.rect(self.screen, color, player_rect)
+
+                # Spielername anzeigen
+                name_text = font.render(name, True, (255, 255, 255))
+                self.screen.blit(name_text, (screen_x - name_text.get_width() // 2, screen_y - 30))
+
+                # Richtungspfeil anzeigen
+                arrow_color = (255, 255, 0)  # Gelb
+                arrow_length = 20
+                arrow_start = (player_rect.centerx, player_rect.centery)
+                arrow_end = arrow_start
+
+                if direction == "up":
+                    arrow_end = (arrow_start[0], arrow_start[1] - arrow_length)
+                elif direction == "down":
+                    arrow_end = (arrow_start[0], arrow_start[1] + arrow_length)
+                elif direction == "left":
+                    arrow_end = (arrow_start[0] - arrow_length, arrow_start[1])
+                elif direction == "right":
+                    arrow_end = (arrow_start[0] + arrow_length, arrow_start[1])
+
+                pygame.draw.line(self.screen, arrow_color, arrow_start, arrow_end, 2)
+
+                # Debug-Informationen anzeigen
+                if self.settings.get("debug", "show_player_info"):
+                    debug_font = pygame.font.SysFont(None, 16)
+                    debug_text = debug_font.render(
+                        f"ID: {player_id[:8]}... Pos: ({x}, {y})",
+                        True, (200, 200, 200)
+                    )
+                    debug_rect = debug_text.get_rect(center=(player_rect.centerx, player_rect.bottom + 15))
+                    self.screen.blit(debug_text, debug_rect)
+
+    def enable_screenshots(self) -> None:
+        """Aktiviert automatische Screenshots"""
+        self.logger.info("Enabling automatic screenshots")
+        self.screenshots_enabled = True
+        self.last_screenshot_time = time.time()
+
+        # Sofort einen Screenshot machen, um zu bestätigen, dass es funktioniert
+        self._take_screenshot("enabled")
+
+    def _take_screenshot(self, action_name: str) -> None:
+        """Erstellt einen Screenshot des aktuellen Spielzustands
+
+        Args:
+            action_name: Name der Aktion für den Dateinamen
+        """
+        try:
+            # Stelle sicher, dass das Verzeichnis existiert
+            screenshot_dir = self.config.get_screenshots_dir()
+            os.makedirs(screenshot_dir, exist_ok=True)
+
+            # Bestimme, ob dies eine Host- oder Client-Instanz ist
+            instance_type = "single"
+            if self.multiplayer_active:
+                if self.multiplayer_manager.is_host:
+                    instance_type = "host"
+                else:
+                    instance_type = "client"
+
+            # Erstelle einen eindeutigen Dateinamen mit Instanztyp
+            timestamp = time.strftime("%Y%m%d_%H%M%S")
+            filename = f"{screenshot_dir}/test_{timestamp}_{instance_type}_{action_name}.png"
+
+            # Füge Informationen zum Screenshot hinzu
+            # - Spielerposition
+            # - Multiplayer-Status
+            # - Andere Spieler (falls vorhanden)
+            font = pygame.font.SysFont(None, 24)
+
+            # Kopie des Bildschirms erstellen, um Informationen hinzuzufügen
+            screen_copy = self.screen.copy()
+
+            # Informationen hinzufügen
+            info_text = []
+            info_text.append(f"Instance: {instance_type.upper()}")
+            info_text.append(f"Player: {self.player.name} at ({self.player.x}, {self.player.y})")
+            info_text.append(f"Multiplayer: {self.multiplayer_active}")
+
+            if self.multiplayer_active and self.other_players:
+                info_text.append(f"Other players: {len(self.other_players)}")
+                for pid, pdata in self.other_players.items():
+                    info_text.append(f"  - {pdata.get('name', 'Unknown')} at ({pdata.get('x', '?')}, {pdata.get('y', '?')})")
+
+            # Text rendern und auf den Screenshot zeichnen
+            y_offset = 10
+            for text in info_text:
+                text_surface = font.render(text, True, (255, 255, 255), (0, 0, 0))
+                screen_copy.blit(text_surface, (10, y_offset))
+                y_offset += 25
+
+            # Screenshot mit Informationen speichern
+            pygame.image.save(screen_copy, filename)
+            self.logger.info(f"Screenshot erstellt: {filename}")
+        except Exception as e:
+            self.logger.error(f"Fehler beim Erstellen des Screenshots: {e}")
 
     def _process_automated_tests(self, dt: float) -> None:
         """Verarbeitet automatisierte Tests
@@ -429,22 +650,143 @@ class Game:
     def _send_player_data(self) -> None:
         """Sendet die Spielerdaten an den Server"""
         if not self.multiplayer_active:
-            self.logger.debug("Not sending player data because multiplayer is not active")
+            self.logger.debug("[DATENFLUSS] NOT SENDING PLAYER DATA: Multiplayer is not active")
             return
 
-        # Spielerdaten sammeln
-        player_data = {
-            "name": self.player.name,
-            "x": self.player.x,
-            "y": self.player.y,
-            "direction": self.player.direction,
-            "moving": self.player.moving
-        }
+        # Prüfen, ob sich relevante Daten geändert haben
+        if not self.player.has_significant_changes() and not self.force_player_data_update:
+            self.logger.debug("[DATENFLUSS] NOT SENDING PLAYER DATA: No significant changes")
+            return
 
-        self.logger.debug(f"Sending player data: {player_data}")
+        # Spielerdaten mit der to_network_data Methode sammeln
+        player_data = self.player.to_network_data()
+        self.logger.info(f"[DATENFLUSS] PLAYER DATA COLLECTED: {json.dumps(player_data)}")
+
+        # Ausführlichere Log-Ausgabe für das Senden von Spielerdaten
+        self.logger.info(f"[DATENFLUSS] SENDING PLAYER UPDATE: player_id={player_data.get('player_id')}, x={player_data.get('x')}, y={player_data.get('y')}, direction={player_data.get('direction')}")
+        self.logger.debug(f"[DATENFLUSS] FULL PLAYER DATA: {json.dumps(player_data)}")
+
+        # Prüfen, ob die Spielerdaten vollständig sind
+        if not player_data.get('x') or not player_data.get('y') or not player_data.get('player_id'):
+            self.logger.warning(f"[DATENFLUSS] INCOMPLETE PLAYER DATA: {json.dumps(player_data)}")
+            return
+
+        # Prüfen, ob die player_id korrekt gesetzt ist
+        if player_data.get('player_id') != self.player.player_id:
+            self.logger.warning(f"[DATENFLUSS] PLAYER ID MISMATCH: player_data.player_id={player_data.get('player_id')}, self.player.player_id={self.player.player_id}")
 
         # Daten an den Server senden
+        self.logger.info(f"[DATENFLUSS] SENDING PLAYER DATA TO MULTIPLAYER MANAGER")
         self.multiplayer_manager.send_player_update(player_data)
+        self.logger.info(f"[DATENFLUSS] PLAYER DATA SENT TO MULTIPLAYER MANAGER")
+
+        # Aktualisiere die letzten gesendeten Daten
+        self.player.update_last_sent_data()
+        self.logger.debug(f"[DATENFLUSS] LAST SENT DATA UPDATED: position=({self.player.last_sent_position[0]}, {self.player.last_sent_position[1]}), direction={self.player.last_sent_direction}")
+
+        # Zurücksetzen des Force-Flags
+        self.force_player_data_update = False
+        self.logger.debug(f"[DATENFLUSS] FORCE_PLAYER_DATA_UPDATE RESET: {self.force_player_data_update}")
+
+    def _on_player_update(self, client_id: str, player_data: dict):
+        """Callback für Spieler-Updates
+
+        Args:
+            client_id: Client-ID des Spielers
+            player_data: Spielerdaten
+        """
+        # Vollständige Daten loggen
+        self.logger.info(f"[DATENFLUSS] GAME RECEIVED PLAYER UPDATE: client_id={client_id}, player_data={json.dumps(player_data)}")
+
+        # Prüfen, ob die Spielerdaten leer sind
+        if not player_data:
+            self.logger.warning(f"[DATENFLUSS] EMPTY PLAYER DATA RECEIVED FOR CLIENT: {client_id}")
+            return
+
+        # Ausführlichere Log-Ausgabe für Spieler-Updates
+        self.logger.info(f"[DATENFLUSS] PLAYER UPDATE: Player {player_data.get('name', 'Unknown')}: x={player_data.get('x', '?')}, y={player_data.get('y', '?')}, direction={player_data.get('direction', '?')}")
+
+        # Prüfen, ob es sich um einen neuen Spieler handelt
+        is_new_player = client_id not in self.other_players
+        if is_new_player:
+            self.logger.info(f"[DATENFLUSS] NEW PLAYER JOINED: {player_data.get('name', 'Unknown')} (ID: {client_id})")
+
+        # Prüfen, ob es sich um die eigenen Daten handelt
+        own_player_id = self.player.player_id
+        received_player_id = player_data.get("player_id")
+
+        self.logger.info(f"[DATENFLUSS] PLAYER ID CHECK: received_player_id={received_player_id}, own_player_id={own_player_id}")
+
+        is_own_player = received_player_id == own_player_id
+        if is_own_player:
+            self.logger.info(f"[DATENFLUSS] RECEIVED UPDATE FOR OWN PLAYER. Not adding to other_players list.")
+
+            # Server-Reconciliation anwenden, wenn es sich um die eigenen Daten handelt
+            if self.config.get_reconciliation():
+                self.logger.debug(f"Applying server reconciliation for own player data")
+                self.player.apply_server_update(player_data, reconciliation=True)
+            return
+
+        # Prüfen, ob die Spielerdaten vollständig sind
+        if not player_data.get('x') or not player_data.get('y') or not player_data.get('player_id'):
+            self.logger.warning(f"[DATENFLUSS] INCOMPLETE PLAYER DATA: {json.dumps(player_data)}")
+            return
+
+        # Spielerdaten speichern (nur für andere Spieler)
+        self.logger.info(f"[DATENFLUSS] ADDING PLAYER TO OTHER_PLAYERS LIST: client_id={client_id}, player_data={json.dumps(player_data)}")
+        self.other_players[client_id] = player_data
+        self.logger.info(f"[DATENFLUSS] PLAYER ADDED TO OTHER_PLAYERS LIST: client_id={client_id}")
+
+        # Log-Ausgabe für alle bekannten Spieler
+        self.logger.info(f"[DATENFLUSS] UPDATED OTHER_PLAYERS LIST. Current count: {len(self.other_players)}")
+        self.logger.info(f"[DATENFLUSS] OTHER_PLAYERS LIST: {json.dumps([{'id': cid, 'name': data.get('name', 'Unknown'), 'x': data.get('x', '?'), 'y': data.get('y', '?')} for cid, data in self.other_players.items()])}")
+
+        # Prüfen, ob der Spieler tatsächlich in der Liste ist
+        if client_id in self.other_players:
+            self.logger.info(f"[DATENFLUSS] PLAYER VERIFICATION: client_id={client_id} IS in other_players list")
+        else:
+            self.logger.warning(f"[DATENFLUSS] PLAYER VERIFICATION FAILED: client_id={client_id} is NOT in other_players list")
+
+        # Erzwinge ein Rendering-Update
+        self.force_render_update = True
+
+    def _on_player_disconnected(self, client_id: str, player_name: str):
+        """Callback für Spieler-Disconnects
+
+        Args:
+            client_id: Client-ID des Spielers
+            player_name: Name des Spielers
+        """
+        self.logger.info(f"Player disconnected: {player_name}")
+
+        # Spieler aus der Liste entfernen
+        if client_id in self.other_players:
+            del self.other_players[client_id]
+
+    def _on_chat_message(self, client_id: str, player_name: str, message: str):
+        """Callback für Chat-Nachrichten
+
+        Args:
+            client_id: Client-ID des Spielers
+            player_name: Name des Spielers
+            message: Chat-Nachricht
+        """
+        self.logger.info(f"Chat message from {player_name}: {message}")
+
+        # TODO: Chat-Nachricht anzeigen
+
+        # Interpolierten Spieler entfernen, wenn vorhanden
+        if client_id in self.interpolated_players:
+            del self.interpolated_players[client_id]
+
+    def _on_chat_message(self, player_name: str, message: str):
+        """Callback für Chat-Nachrichten
+
+        Args:
+            player_name: Name des Spielers
+            message: Chat-Nachricht
+        """
+        self.logger.info(f"Chat message from {player_name}: {message}")
 
     def start_new_game(self, as_host: bool = False) -> None:
         """Startet ein neues Spiel
@@ -536,7 +878,8 @@ class Game:
             return False
 
         self.logger.info("=== STARTING MULTIPLAYER SESSION AS HOST ===")
-        success = self.multiplayer_manager.start_hosting()
+        port = self.config.get_server_port()
+        success = self.multiplayer_manager.start_hosting(port)
 
         if success:
             self.logger.info("=== SUCCESSFULLY STARTED HOSTING MULTIPLAYER SESSION ===")
@@ -549,36 +892,58 @@ class Game:
             self.logger.error("=== FAILED TO START HOSTING MULTIPLAYER SESSION ===")
             return False
 
-    def join_session(self, host: str, port: int = 8765) -> bool:
+    def join_session(self, host: str = None, port: int = None, latency: int = None, jitter: int = None) -> bool:
         """Verbindet mit einer Multiplayer-Session
 
         Args:
-            host: Host-Adresse
-            port: Host-Port
+            host: Host-Adresse (optional, sonst aus Konfiguration)
+            port: Host-Port (optional, sonst aus Konfiguration)
+            latency: Latenz-Simulation in Millisekunden (optional, sonst aus Konfiguration)
+            jitter: Jitter-Simulation in Millisekunden (optional, sonst aus Konfiguration)
+
+        Returns:
+            bool: True if the connection attempt was initiated successfully, False otherwise
         """
         if self.multiplayer_active:
             self.logger.warning("=== MULTIPLAYER ALREADY ACTIVE ===")
             return False
 
+        # Verwende die Werte aus der Konfiguration, wenn keine angegeben wurden
+        if host is None:
+            host = self.config.get_server_host()
+        if port is None:
+            port = self.config.get_server_port()
+        if latency is None:
+            latency = self.config.get_latency_simulation()
+        if jitter is None:
+            jitter = self.config.get_jitter_simulation()
+
         self.logger.info(f"=== JOINING MULTIPLAYER SESSION AT {host}:{port} ===")
+        if latency > 0 or jitter > 0:
+            self.logger.info(f"=== NETWORK SIMULATION ACTIVE: LATENCY={latency}ms, JITTER={jitter}ms ===")
 
         try:
             # Verbindung herstellen
-            success = self.multiplayer_manager.connect_to_session(host, port)
+            success = self.multiplayer_manager.connect_to_session(host, port, latency, jitter)
 
-            # Prüfen, ob die Verbindung erfolgreich war
+            # Prüfen, ob die Verbindung initiiert wurde (nicht unbedingt schon hergestellt)
             if success:
-                self.logger.info("=== SUCCESSFULLY CONNECTED TO MULTIPLAYER SESSION ===")
+                # Wir setzen multiplayer_active auf True, aber die tatsächliche Verbindung
+                # wird asynchron hergestellt. Die Verbindungsmeldung wird vom Client ausgegeben,
+                # wenn die WebSocket-Verbindung tatsächlich hergestellt wurde.
+                self.logger.info("=== CONNECTION ATTEMPT INITIATED ===")
                 self.multiplayer_active = True
 
                 # Spielzustand auf PLAYING setzen
                 self.state_manager.change_state(GameState.PLAYING)
 
-                # Spielerdaten an den Server senden
+                # Wir versuchen, Spielerdaten zu senden, aber es kann sein, dass die Verbindung
+                # noch nicht vollständig hergestellt ist. Der Client wird Warnungen ausgeben,
+                # wenn die Verbindung noch nicht hergestellt ist.
                 self._send_player_data()
                 return True
             else:
-                self.logger.error(f"=== FAILED TO CONNECT TO {host}:{port} ===")
+                self.logger.error(f"=== FAILED TO INITIATE CONNECTION TO {host}:{port} ===")
                 # Zurück zum Hauptmenü
                 self.state_manager.change_state(GameState.MAIN_MENU)
                 return False
@@ -604,11 +969,31 @@ class Game:
         # FPS-Font
         fps_font = pygame.font.SysFont(None, 24)
 
+        # FPS-Limit aus den Einstellungen holen
+        fps_limit = self.settings.get("video", "fps_limit")
+        self.logger.info(f"FPS limit set to {fps_limit}")
+
+        # Netzwerk-Update-Timer initialisieren
+        last_network_update = 0
+        network_update_interval = 1.0 / self.config.get_update_rate()
+        self.logger.info(f"Network update interval: {network_update_interval:.3f}s ({self.config.get_update_rate()} updates/s)")
+
+        # Netzwerk-Optimierungen aktivieren
+        self.logger.info(f"Network optimizations: interpolation={self.config.get_interpolation()}, "
+                       f"prediction={self.config.get_prediction()}, "
+                       f"reconciliation={self.config.get_reconciliation()}")
+
+        # Latenz-Simulation aktivieren, wenn konfiguriert
+        latency_simulation = self.config.get_latency_simulation()
+        jitter_simulation = self.config.get_jitter_simulation()
+        if latency_simulation > 0 or jitter_simulation > 0:
+            self.logger.info(f"Network simulation: latency={latency_simulation}ms, jitter={jitter_simulation}ms")
+
         try:
             while self.running:
                 try:
                     # Zeit messen
-                    dt = self.clock.tick(60) / 1000.0
+                    dt = self.clock.tick(fps_limit) / 1000.0
 
                     # Events verarbeiten
                     self.handle_events()
@@ -618,6 +1003,23 @@ class Game:
 
                     # Spielzustand aktualisieren
                     self.update(dt)
+
+                    # Multiplayer: Spielerdaten senden, wenn aktiv und Update-Intervall erreicht
+                    if self.multiplayer_active:
+                        last_network_update += dt
+                        if last_network_update >= network_update_interval:
+                            self.logger.debug(f"[DATENFLUSS] NETWORK UPDATE INTERVAL REACHED: {last_network_update:.3f}s >= {network_update_interval:.3f}s")
+                            self._send_player_data()
+                            last_network_update = 0
+                        else:
+                            self.logger.debug(f"[DATENFLUSS] NETWORK UPDATE INTERVAL NOT REACHED: {last_network_update:.3f}s < {network_update_interval:.3f}s")
+
+                    # Screenshots erstellen, wenn aktiviert
+                    if self.screenshots_enabled:
+                        current_time = time.time()
+                        if current_time - self.last_screenshot_time >= self.screenshot_interval:
+                            self._take_screenshot(f"auto_{self.state_manager.current_state.name.lower()}")
+                            self.last_screenshot_time = current_time
 
                     # FPS aktualisieren
                     self.render_manager.update_fps(self.clock.get_fps())

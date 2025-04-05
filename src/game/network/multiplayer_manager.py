@@ -117,12 +117,24 @@ class MultiplayerManager:
 
         self.is_host = False
 
-    def connect_to_session(self, host: str, port: int = 8765):
+    def set_network_simulation(self, latency: int = 0, jitter: int = 0) -> None:
+        """Set network simulation parameters
+
+        Args:
+            latency: Latency in milliseconds (default: 0)
+            jitter: Jitter in milliseconds (default: 0)
+        """
+        self.logger.info(f"=== SETTING NETWORK SIMULATION: LATENCY={latency}ms, JITTER={jitter}ms ===")
+        self.client.set_network_simulation(latency, jitter)
+
+    def connect_to_session(self, host: str, port: int = 8765, latency: int = 0, jitter: int = 0):
         """Connect to a multiplayer session
 
         Args:
             host: Host address
             port: Host port
+            latency: Latency simulation in milliseconds (default: 0)
+            jitter: Jitter simulation in milliseconds (default: 0)
 
         Returns:
             bool: True if connection was initiated successfully, False otherwise
@@ -131,6 +143,10 @@ class MultiplayerManager:
         if self.client.connected:
             self.logger.warning("Already connected to a session")
             return False
+
+        # Netzwerk-Simulation konfigurieren, wenn angegeben
+        if latency > 0 or jitter > 0:
+            self.set_network_simulation(latency, jitter)
 
         self.logger.info(f"Connecting to multiplayer session at {host}:{port}")
         try:
@@ -319,12 +335,30 @@ class MultiplayerManager:
         Args:
             data: Player update message data
         """
+        # Vollständige Nachricht loggen
+        self.logger.info(f"[DATENFLUSS] MULTIPLAYER_MANAGER RECEIVED MESSAGE: {json.dumps(data)}")
+
         client_id = data.get("client_id")
-        player_data = data.get("player_data", {})
+
+        # Extrahiere die Spielerdaten direkt aus der Nachricht
+        # Entferne die Schlüssel "type" und "client_id", um nur die Spielerdaten zu behalten
+        player_data = {k: v for k, v in data.items() if k not in ["type", "client_id"]}
+
+        self.logger.info(f"[DATENFLUSS] MULTIPLAYER_MANAGER EXTRACTED PLAYER DATA: {json.dumps(player_data)}")
 
         # Call the callback if registered
         if self.on_player_update:
-            self.on_player_update(client_id, player_data)
+            self.logger.info(f"[DATENFLUSS] CALLING ON_PLAYER_UPDATE CALLBACK: client_id={client_id}, player_data={json.dumps(player_data)}")
+            try:
+                self.logger.info(f"[DATENFLUSS] CALLBACK TYPE: {type(self.on_player_update).__name__}")
+                self.on_player_update(client_id, player_data)
+                self.logger.info(f"[DATENFLUSS] ON_PLAYER_UPDATE CALLBACK CALLED SUCCESSFULLY")
+            except Exception as e:
+                self.logger.error(f"[DATENFLUSS] ERROR CALLING ON_PLAYER_UPDATE CALLBACK: {e}")
+                import traceback
+                self.logger.error(f"[DATENFLUSS] TRACEBACK: {traceback.format_exc()}")
+        else:
+            self.logger.warning(f"[DATENFLUSS] ON_PLAYER_UPDATE CALLBACK NOT REGISTERED")
 
     async def _handle_player_disconnected(self, data: Dict[str, Any]):
         """Handle player disconnected message
@@ -351,7 +385,7 @@ class MultiplayerManager:
 
         # Call the callback if registered
         if self.on_chat_message:
-            self.on_chat_message(player_name, message)
+            self.on_chat_message(client_id, player_name, message)
 
     def send_player_update(self, player_data):
         """Send player data to the server
@@ -359,13 +393,21 @@ class MultiplayerManager:
         Args:
             player_data: Player data to send
         """
-        self.logger.debug(f"Sending player update: {player_data}")
+        self.logger.info(f"[DATENFLUSS] SENDING PLAYER UPDATE: {json.dumps(player_data)}")
 
         # Speichere die lokalen Spielerdaten
         self.local_player_data = player_data
 
         # Sende die Daten an den Server
         if self.client.connected:
-            self.client.send_message("player_update", player_data)
+            # Füge Zeitstempel hinzu
+            player_data_with_timestamp = player_data.copy()
+            player_data_with_timestamp["timestamp"] = time.time()
+
+            # Wir senden die Spielerdaten direkt ohne zusätzliche Verschachtelung
+            self.logger.info(f"[DATENFLUSS] SENDING MESSAGE TO SERVER: {json.dumps(player_data_with_timestamp)}")
+
+            self.client.send_message("player_update", player_data_with_timestamp)
+            self.logger.debug(f"Player update sent with timestamp: {player_data_with_timestamp['timestamp']}")
         else:
             self.logger.warning("Cannot send player update: not connected to server")

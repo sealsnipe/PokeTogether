@@ -1,0 +1,20 @@
+{
+    "player": {
+        "name": "Player2",
+        "character": "Blue"
+    },
+    "multiplayer": {
+        "server_host": "127.0.0.1",
+        "server_port": 8765,
+        "update_rate": 10
+    },
+    "paths": {
+        "save_dir": "saves",
+        "screenshots_dir": "screenshots",
+        "logs_dir": "logs"
+    },
+    "instance": {
+        "id": "player2",
+        "window_title": "PokeTogether - Player 2"
+    }
+}
