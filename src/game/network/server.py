@@ -17,7 +17,7 @@ from websockets.server import WebSocketServerProtocol
 class GameServer:
     """Game server for hosting multiplayer sessions"""
 
-    def __init__(self, host: str = "localhost", port: int = 8765):
+    def __init__(self, host: str = "0.0.0.0", port: int = 8765):
         """Initialize the game server
 
         Args:
@@ -105,6 +105,7 @@ class GameServer:
         # Add a clear marker for automated testing
         print(f"NEW CLIENT CONNECTED: {client_id}")
         print(f"[CONNECTION_STATUS] CLIENT {client_id} CONNECTED TO SERVER")
+        print(f"BROADCASTING TO {len(self.clients)} CLIENTS")
 
         try:
             # Send welcome message with client ID
