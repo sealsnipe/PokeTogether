@@ -54,12 +54,12 @@ class Camera:
         self.x = max(0, min(self.x, self.map_width - self.width))
         self.y = max(0, min(self.y, self.map_height - self.height))
 
-    def apply(self, x: int, y: int) -> Tuple[int, int]:
+    def apply(self, x: Any, y: Any) -> Tuple[int, int]:
         """Apply the camera offset to a position
 
         Args:
-            x: X position
-            y: Y position
+            x: X position (can be int, float, or string)
+            y: Y position (can be int, float, or string)
 
         Returns:
             Tuple[int, int]: Position with camera offset applied
@@ -77,14 +77,14 @@ class Camera:
         rel_x = x - self.x
         rel_y = y - self.y
 
-        # Skaliere die Position basierend auf dem Zoom-Faktor
-        # und zentriere sie auf dem Bildschirm
-        scaled_x = int(rel_x / self.zoom_factor) + (self.screen_width - int(self.width / self.zoom_factor)) // 2
-        scaled_y = int(rel_y / self.zoom_factor) + (self.screen_height - int(self.height / self.zoom_factor)) // 2
+        # Vereinfachte Transformation: Skaliere die Position basierend auf dem Zoom-Faktor
+        # Diese Formel ist einfacher und konsistenter
+        scaled_x = int(rel_x / self.zoom_factor)
+        scaled_y = int(rel_y / self.zoom_factor)
 
         # Ausführliche Debug-Ausgabe für die Kamera-Transformation
-        self.logger.info(f"[CAMERA] TRANSFORM: world=({x}, {y}), camera=({self.x}, {self.y}), rel=({rel_x}, {rel_y}), screen=({scaled_x}, {scaled_y})")
-        self.logger.info(f"[CAMERA] DETAILS: zoom={self.zoom_factor}, screen_size=({self.screen_width}, {self.screen_height}), camera_size=({self.width}, {self.height})")
+        self.logger.debug(f"[CAMERA] TRANSFORM: world=({x}, {y}), camera=({self.x}, {self.y}), rel=({rel_x}, {rel_y}), screen=({scaled_x}, {scaled_y})")
+        self.logger.debug(f"[CAMERA] DETAILS: zoom={self.zoom_factor}, screen_size=({self.screen_width}, {self.screen_height}), camera_size=({self.width}, {self.height})")
 
         return scaled_x, scaled_y
 

@@ -589,59 +589,110 @@ class Game:
             # Prüfen, ob der Spieler im erweiterten sichtbaren Bereich ist (mit Toleranz)
             screen_width = self.screen.get_width()
             screen_height = self.screen.get_height()
-            # Erweitere den sichtbaren Bereich um 50 Pixel in jede Richtung
-            tolerance = 50
+            # Erweitere den sichtbaren Bereich um 150 Pixel in jede Richtung für bessere Sichtbarkeit
+            tolerance = 150
 
-            self.logger.info(f"[VISIBILITY] CHECK: player={name}, screen_pos=({screen_x}, {screen_y}), screen_size=({screen_width}, {screen_height}), tolerance={tolerance}")
+            self.logger.debug(f"[VISIBILITY] CHECK: player={name}, screen_pos=({screen_x}, {screen_y}), screen_size=({screen_width}, {screen_height}), tolerance={tolerance}")
 
-            if (-tolerance <= screen_x <= screen_width + tolerance and
-                -tolerance <= screen_y <= screen_height + tolerance):
+            # Sichtbarkeitsprüfung nur für Debug-Zwecke
+            is_visible = (-tolerance <= screen_x <= screen_width + tolerance and
+                         -tolerance <= screen_y <= screen_height + tolerance)
 
-                # Farbe basierend auf dem Charaktertyp wählen
-                color = (0, 0, 255)  # Standard: Blau
-                if character_type == "Blue":
-                    color = (0, 0, 200)  # Dunkelblau
-                elif character_type == "Red":
-                    color = (200, 0, 0)  # Dunkelrot
-                elif character_type == "Green":
-                    color = (0, 200, 0)  # Dunkelgrün
-                elif character_type == "Yellow":
-                    color = (200, 200, 0)  # Gelb
+            # Debug-Ausgabe für die Sichtbarkeit
+            if is_visible:
+                self.logger.debug(f"[VISIBILITY] PLAYER {name} IS VISIBLE")
+            else:
+                self.logger.debug(f"[VISIBILITY] PLAYER {name} IS NOT VISIBLE")
 
-                # Spieler als farbiges Rechteck darstellen
-                player_rect = pygame.Rect(screen_x - 16, screen_y - 16, 32, 32)
-                pygame.draw.rect(self.screen, color, player_rect)
+            # Farbe basierend auf dem Charaktertyp wählen
+            color = (0, 0, 255)  # Standard: Blau
+            if character_type == "Blue":
+                color = (0, 0, 200)  # Dunkelblau
+            elif character_type == "Red":
+                color = (200, 0, 0)  # Dunkelrot
+            elif character_type == "Green":
+                color = (0, 200, 0)  # Dunkelgrün
+            elif character_type == "Yellow":
+                color = (200, 200, 0)  # Gelb
 
-                # Spielername anzeigen
-                name_text = font.render(name, True, (255, 255, 255))
-                self.screen.blit(name_text, (screen_x - name_text.get_width() // 2, screen_y - 30))
+            # Spieler als farbiges Rechteck darstellen
+            player_rect = pygame.Rect(screen_x - 16, screen_y - 16, 32, 32)
+            pygame.draw.rect(self.screen, color, player_rect)
 
-                # Richtungspfeil anzeigen
-                arrow_color = (255, 255, 0)  # Gelb
-                arrow_length = 20
-                arrow_start = (player_rect.centerx, player_rect.centery)
-                arrow_end = arrow_start
+            # Spielername anzeigen
+            name_text = font.render(name, True, (255, 255, 255))
+            self.screen.blit(name_text, (screen_x - name_text.get_width() // 2, screen_y - 30))
 
-                if direction == "up":
-                    arrow_end = (arrow_start[0], arrow_start[1] - arrow_length)
-                elif direction == "down":
-                    arrow_end = (arrow_start[0], arrow_start[1] + arrow_length)
-                elif direction == "left":
-                    arrow_end = (arrow_start[0] - arrow_length, arrow_start[1])
-                elif direction == "right":
-                    arrow_end = (arrow_start[0] + arrow_length, arrow_start[1])
+            # Richtungspfeil anzeigen
+            arrow_color = (255, 255, 0)  # Gelb
+            arrow_length = 20
+            arrow_start = (player_rect.centerx, player_rect.centery)
+            arrow_end = arrow_start
 
-                pygame.draw.line(self.screen, arrow_color, arrow_start, arrow_end, 2)
+            if direction == "up":
+                arrow_end = (arrow_start[0], arrow_start[1] - arrow_length)
+            elif direction == "down":
+                arrow_end = (arrow_start[0], arrow_start[1] + arrow_length)
+            elif direction == "left":
+                arrow_end = (arrow_start[0] - arrow_length, arrow_start[1])
+            elif direction == "right":
+                arrow_end = (arrow_start[0] + arrow_length, arrow_start[1])
 
-                # Debug-Informationen anzeigen
-                if self.settings.get("debug", "show_player_info"):
-                    debug_font = pygame.font.SysFont(None, 16)
-                    debug_text = debug_font.render(
-                        f"ID: {player_id[:8]}... Pos: ({x}, {y})",
-                        True, (200, 200, 200)
-                    )
-                    debug_rect = debug_text.get_rect(center=(player_rect.centerx, player_rect.bottom + 15))
-                    self.screen.blit(debug_text, debug_rect)
+            pygame.draw.line(self.screen, arrow_color, arrow_start, arrow_end, 2)
+
+            # Debug-Informationen anzeigen
+            if self.settings.get("debug", "show_player_info"):
+                debug_font = pygame.font.SysFont(None, 16)
+                debug_text = debug_font.render(
+                    f"ID: {player_id[:8]}... Pos: ({x}, {y})",
+                    True, (200, 200, 200)
+                )
+                debug_rect = debug_text.get_rect(center=(player_rect.centerx, player_rect.bottom + 15))
+                self.screen.blit(debug_text, debug_rect)
+
+            # Emote rendern, wenn vorhanden
+            emote = player_data.get("emote", None)
+            emote_timer = player_data.get("emote_timer", 0)
+            if emote and emote_timer > 0:
+                self._render_player_emote(screen_x, screen_y, emote)
+
+    def _render_player_emote(self, x: float, y: float, emote: str) -> None:
+        """Rendert einen Emote über einem Spieler
+
+        Args:
+            x: X-Position auf dem Bildschirm
+            y: Y-Position auf dem Bildschirm
+            emote: Emote-Typ ("wave", "smile", "thumbsup")
+        """
+        # Emote-Position über dem Spieler
+        emote_x = x  # Mitte des Spielers
+        emote_y = y - 40  # Über dem Spieler und über dem Namen
+
+        # Emote-Darstellung basierend auf dem Typ
+        emote_text = ""
+        emote_color = (255, 255, 255)  # Weiß als Standard
+
+        if emote == "wave":
+            emote_text = "✋"  # Winkende Hand
+            emote_color = (255, 255, 0)  # Gelb
+        elif emote == "smile":
+            emote_text = "☺"  # Smiley
+            emote_color = (255, 255, 0)  # Gelb
+        elif emote == "thumbsup":
+            emote_text = "ὄD"  # Daumen hoch
+            emote_color = (255, 255, 0)  # Gelb
+
+        if emote_text:
+            # Emote-Hintergrund (Sprechblase)
+            bubble_radius = 15
+            pygame.draw.circle(self.screen, (255, 255, 255), (int(emote_x), int(emote_y)), bubble_radius)
+            pygame.draw.circle(self.screen, (0, 0, 0), (int(emote_x), int(emote_y)), bubble_radius, 2)
+
+            # Emote-Text
+            font = pygame.font.SysFont(None, 24)
+            text = font.render(emote_text, True, emote_color)
+            text_rect = text.get_rect(center=(emote_x, emote_y))
+            self.screen.blit(text, text_rect)
 
     def enable_screenshots(self) -> None:
         """Aktiviert automatische Screenshots"""
