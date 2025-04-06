@@ -6,13 +6,14 @@ This script tests the local multiplayer functionality by:
 2. Starting two client processes with different configurations
 3. Verifying that both clients successfully connect to the server
 4. Analyzing logs to confirm proper connection
+5. Verifying that player positions are correctly synchronized between clients
 """
 
 import os
 import sys
 import subprocess
 import time
-import re
+# re-Modul wird nicht mehr benötigt
 import argparse
 import logging
 from datetime import datetime
@@ -35,8 +36,8 @@ CLIENT_STARTUP_TIME = 3  # seconds to wait between client starts
 TEST_DURATION = 15  # seconds to run the test after connections
 
 # Success markers in logs
-SERVER_SUCCESS_MARKER = "NEW CLIENT CONNECTED"
-CLIENT_SUCCESS_MARKER = "SUCCESSFULLY CONNECTED TO MULTIPLAYER SESSION"
+SERVER_SUCCESS_MARKER = "Received connection confirmation from client"
+CLIENT_SUCCESS_MARKER = "Connection acknowledged by server"
 
 def parse_arguments():
     """Parse command line arguments"""
@@ -71,7 +72,7 @@ def start_server(port, log_dir):
 
     # Start server process
     server_process = subprocess.Popen(
-        [sys.executable, "src/main_refactored.py", "--server", "--port", str(port)],
+        [sys.executable, "src/game/network/server.py"],
         stdout=stdout_file,
         stderr=stderr_file,
         text=True
@@ -103,7 +104,7 @@ def start_client(config_file, client_name, host, port, log_dir, enable_screensho
     stderr_file = open(stderr_log, 'w')
 
     # Prepare command
-    cmd = [sys.executable, "src/main_refactored.py", "--config", config_file, "--join", host, "--port", str(port)]
+    cmd = [sys.executable, "src/main_refactored.py", "--join", host, "--port", str(port)]
 
     # Add screenshots flag if enabled
     if enable_screenshots:
@@ -152,7 +153,7 @@ def check_for_connection_success(log_file, success_marker):
                 return True
 
             # Additional check for client connection success
-            if "SUCCESSFULLY CONNECTED TO SERVER" in content or "SUCCESSFULLY CONNECTED TO MULTIPLAYER SESSION" in content:
+            if "SUCCESSFULLY CONNECTED TO SERVER" in content or "SUCCESSFULLY CONNECTED TO MULTIPLAYER SESSION" in content or "Connection acknowledged by server" in content:
                 logger.info(f"Found alternative connection success marker in {log_file}")
                 return True
 
@@ -196,10 +197,10 @@ def monitor_connections(server_info, client1_info, client2_info, timeout=CONNECT
                 server_connected_clients = content.count(SERVER_SUCCESS_MARKER)
 
                 # Alternative check: look for client IDs in the server log
-                if server_connected_clients < 2 and "NEW CLIENT CONNECTED:" in content:
+                if server_connected_clients < 2 and "Received connection confirmation from client" in content:
                     # Count unique client IDs
                     import re
-                    client_ids = re.findall(r"NEW CLIENT CONNECTED: ([0-9a-f-]+)", content)
+                    client_ids = re.findall(r"Received connection confirmation from client ([0-9a-f-]+)", content)
                     unique_client_ids = set(client_ids)
                     if len(unique_client_ids) >= 2:
                         logger.info(f"Server has {len(unique_client_ids)} unique client IDs connected")
@@ -249,7 +250,7 @@ def monitor_connections(server_info, client1_info, client2_info, timeout=CONNECT
                     client2_content = f.read()
 
                 # Check if clients are receiving player updates
-                if "Received message" in client1_content and "Received message" in client2_content:
+                if "RECEIVED MESSAGE FROM SERVER" in client1_content and "RECEIVED MESSAGE FROM SERVER" in client2_content:
                     # Count unique client IDs in messages
                     import re
                     client1_received_ids = set(re.findall(r'"client_id": "([0-9a-f-]+)"', client1_content))
@@ -260,7 +261,7 @@ def monitor_connections(server_info, client1_info, client2_info, timeout=CONNECT
                         return True
 
                 # Check for connection success markers
-                if "SUCCESSFULLY CONNECTED TO MULTIPLAYER SESSION" in client1_content and "SUCCESSFULLY CONNECTED TO MULTIPLAYER SESSION" in client2_content:
+                if "Connection acknowledged by server" in client1_content and "Connection acknowledged by server" in client2_content:
                     logger.info("Both clients have successfully connected to the multiplayer session.")
                     return True
             except Exception as e:
@@ -308,12 +309,51 @@ def cleanup_processes(processes_info):
         except Exception as e:
             logger.error(f"Error cleaning up process: {e}")
 
+def extract_player_positions(log_file):
+    """Extract player positions from log file"""
+    logger.info(f"Extracting player positions from {log_file}...")
+
+    positions = {}
+
+    try:
+        with open(log_file, 'r', encoding='utf-8') as f:
+            for line in f:
+                if "[DATENFLUSS] RENDERING PLAYER" in line and ": x=" in line and ", y=" in line:
+                    # Example: [DATENFLUSS] RENDERING PLAYER Player2 (ID: e6adf86d-9767-4fb9-8f7e-c4af4123daef): x=560, y=448, screen_x=480, screen_y=360
+                    try:
+                        # Extract player name
+                        player_start = line.find("PLAYER ") + 7
+                        player_end = line.find(" (ID:")
+                        player_name = line[player_start:player_end]
+
+                        # Extract position
+                        x_start = line.find("x=") + 2
+                        x_end = line.find(",", x_start)
+                        y_start = line.find("y=") + 2
+                        y_end = line.find(",", y_start)
+
+                        x = int(line[x_start:x_end])
+                        y = int(line[y_start:y_end])
+
+                        positions[player_name] = (x, y)
+                        logger.info(f"Found position for {player_name}: ({x}, {y})")
+                    except Exception as e:
+                        logger.error(f"Error parsing player position: {e}")
+    except Exception as e:
+        logger.error(f"Error reading log file: {e}")
+
+    return positions
+
 def generate_test_report(server_info, client1_info, client2_info, connection_success, log_dir):
     """Generate a test report with the results"""
     logger.info("Generating test report...")
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     report_file = os.path.join(log_dir, f"test_report_{timestamp}.txt")
+
+    # Extract player positions
+    client1_positions = extract_player_positions(client1_info["stdout_file"].name)
+    client2_positions = extract_player_positions(client2_info["stdout_file"].name)
 
     with open(report_file, 'w') as f:
         f.write("=== LOCAL MULTIPLAYER TEST REPORT ===\n")
@@ -337,6 +377,39 @@ def generate_test_report(server_info, client1_info, client2_info, connection_suc
         f.write(f"Exit Code: {client2_info['process'].returncode if client2_info['process'].poll() is not None else 'Still running'}\n")
         f.write(f"Stdout Log: {client2_info['stdout_log']}\n")
         f.write(f"Stderr Log: {client2_info['stderr_log']}\n\n")
+
+        f.write("=== PLAYER POSITIONS ===\n")
+        f.write("Client 1 player positions:\n")
+        for player_name, position in client1_positions.items():
+            f.write(f"  {player_name}: {position}\n")
+
+        f.write("\nClient 2 player positions:\n")
+        for player_name, position in client2_positions.items():
+            f.write(f"  {player_name}: {position}\n")
+
+        f.write("\n=== POSITION SYNCHRONIZATION ===\n")
+
+        # Check if Player1 is visible in Client 2 and Player2 is visible in Client 1
+        player1_in_client2 = "Player1" in client2_positions
+        player2_in_client1 = "Player2" in client1_positions
+
+        if player1_in_client2 and player2_in_client1:
+            f.write("Both players are visible to each other.\n")
+
+            # Check if positions match
+            if client1_positions.get("Player2") == client2_positions.get("Player1"):
+                f.write("[SUCCESS] Player positions are correctly synchronized!\n")
+                f.write(f"Position: {client1_positions.get('Player2')}\n")
+            else:
+                f.write("[FAILURE] Player positions are NOT correctly synchronized!\n")
+                f.write(f"Player2 in Client1: {client1_positions.get('Player2')}\n")
+                f.write(f"Player1 in Client2: {client2_positions.get('Player1')}\n")
+        else:
+            f.write("[FAILURE] Not all players are visible to each other.\n")
+            if not player1_in_client2:
+                f.write("Player1 is not visible in Client2.\n")
+            if not player2_in_client1:
+                f.write("Player2 is not visible in Client1.\n")
 
         # Add log excerpts
         f.write("=== SERVER LOG EXCERPT ===\n")
