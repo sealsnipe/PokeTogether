@@ -196,7 +196,7 @@ def monitor_connections(server_info, client1_info, client2_info, timeout=CONNECT
         try:
             with open(server_info["stdout_log"], 'r') as f:
                 content = f.read()
-                server_connected_clients = content.count(SERVER_SUCCESS_MARKER)
+                server_connected_clients = content.count("=== NEW CLIENT CONNECTED:")
 
                 # Alternative check: look for client IDs in the server log
                 if server_connected_clients < 2 and "Received connection confirmation from client" in content:
