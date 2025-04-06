@@ -50,7 +50,6 @@ class GameMultiplayer:
         self.logger.info("Initializing multiplayer functionality")
 
         # Callbacks registrieren
-        self.multiplayer_manager.on_welcome = self._on_welcome
         self.multiplayer_manager.on_player_update = self._on_player_update
         self.multiplayer_manager.on_player_disconnected = self._on_player_disconnected
         self.multiplayer_manager.on_chat_message = self._on_chat_message
