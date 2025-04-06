@@ -27,6 +27,10 @@ class Player:
         if name is None:
             name = character_type
 
+        # Stelle sicher, dass der Name den Charaktertyp enthält
+        if character_type not in name:
+            name = f"{character_type}"
+
         self.logger.info(f"Creating player '{name}' of type '{character_type}' at position ({x}, {y})")
 
         # Netzwerk-relevante Attribute
@@ -307,7 +311,15 @@ class Player:
 
             # Draw player name above the sprite
             font = pygame.font.SysFont(None, 20)
-            name_text = font.render(self.name, True, (255, 255, 255))
+
+            # Farbe basierend auf dem Charaktertyp wählen
+            name_color = (255, 255, 255)  # Standard: Weiß
+            if self.character_type == "Red":
+                name_color = (255, 100, 100)  # Hellrot
+            elif self.character_type == "Blue":
+                name_color = (100, 100, 255)  # Hellblau
+
+            name_text = font.render(self.name, True, name_color)
             name_rect = name_text.get_rect(centerx=x + 16, bottom=y - 5)
 
             # Draw a semi-transparent background for the name
@@ -345,7 +357,15 @@ class Player:
 
             # Draw player name above the circle
             font = pygame.font.SysFont(None, 20)
-            name_text = font.render(self.name, True, (255, 255, 255))
+
+            # Farbe basierend auf dem Charaktertyp wählen
+            name_color = (255, 255, 255)  # Standard: Weiß
+            if self.character_type == "Red":
+                name_color = (255, 100, 100)  # Hellrot
+            elif self.character_type == "Blue":
+                name_color = (100, 100, 255)  # Hellblau
+
+            name_text = font.render(self.name, True, name_color)
             name_rect = name_text.get_rect(centerx=center_x, bottom=center_y - 20)
 
             # Draw a semi-transparent background for the name

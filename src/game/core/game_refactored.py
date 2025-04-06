@@ -606,22 +606,37 @@ class Game:
 
             # Farbe basierend auf dem Charaktertyp wählen
             color = (0, 0, 255)  # Standard: Blau
+            name_color = (255, 255, 255)  # Standard: Weiß
+
             if character_type == "Blue":
                 color = (0, 0, 200)  # Dunkelblau
+                name_color = (100, 100, 255)  # Hellblau
             elif character_type == "Red":
                 color = (200, 0, 0)  # Dunkelrot
+                name_color = (255, 100, 100)  # Hellrot
             elif character_type == "Green":
                 color = (0, 200, 0)  # Dunkelgrün
+                name_color = (100, 255, 100)  # Hellgrün
             elif character_type == "Yellow":
                 color = (200, 200, 0)  # Gelb
+                name_color = (255, 255, 100)  # Hellgelb
 
             # Spieler als farbiges Rechteck darstellen
             player_rect = pygame.Rect(screen_x - 16, screen_y - 16, 32, 32)
             pygame.draw.rect(self.screen, color, player_rect)
 
             # Spielername anzeigen
-            name_text = font.render(name, True, (255, 255, 255))
-            self.screen.blit(name_text, (screen_x - name_text.get_width() // 2, screen_y - 30))
+            name_text = font.render(name, True, name_color)
+            name_rect = name_text.get_rect(centerx=player_rect.centerx, bottom=player_rect.top - 5)
+
+            # Hintergrund für den Namen
+            bg_rect = name_rect.inflate(10, 5)
+            bg_surface = pygame.Surface((bg_rect.width, bg_rect.height), pygame.SRCALPHA)
+            bg_surface.fill((0, 0, 0, 128))  # Halbtransparentes Schwarz
+            self.screen.blit(bg_surface, bg_rect)
+
+            # Name rendern
+            self.screen.blit(name_text, name_rect)
 
             # Richtungspfeil anzeigen
             arrow_color = (255, 255, 0)  # Gelb
@@ -979,6 +994,7 @@ class Game:
 
         # Spieler-Typ auf Blue setzen
         self.player.character_type = "Blue"
+        self.player.name = "Blue"
 
         # Automatisch mit localhost verbinden (keine Dialog-Anzeige mehr)
         self.join_session("localhost", 8765)
@@ -1038,6 +1054,10 @@ class Game:
         if self.game_multiplayer.multiplayer_active:
             self.logger.warning("=== MULTIPLAYER ALREADY ACTIVE ===")
             return False
+
+        # Spieler-Typ auf Red setzen
+        self.player.character_type = "Red"
+        self.player.name = "Red"
 
         self.logger.info("=== STARTING MULTIPLAYER SESSION AS HOST ===")
         port = self.config.get_server_port()
