@@ -484,8 +484,13 @@ class Game:
                 # Alte Position speichern
                 old_x, old_y = self.player.x, self.player.y
 
+                # Hole die anderen Spieler für die Kollisionserkennung
+                other_players = {}
+                if self.multiplayer_active:
+                    other_players = self.other_players
+
                 # Spieler bewegen (mit Laufgeschwindigkeit multiplizieren)
-                self.player.move(movement[0] * run_speed, movement[1] * run_speed)
+                self.player.move(movement[0] * run_speed, movement[1] * run_speed, 1.0, True, other_players)
 
                 # Kollisionserkennung mit der Karte
                 if self.current_map.is_collision(self.player.x, self.player.y):

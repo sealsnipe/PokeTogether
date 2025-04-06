@@ -79,7 +79,7 @@ class Player:
             # Fallback to a simple rectangle
             self.sprite_sheet = None
 
-    def move(self, dx: int, dy: int, speed_multiplier: float = 1.0, prediction: bool = True) -> Dict[str, Any]:
+    def move(self, dx: int, dy: int, speed_multiplier: float = 1.0, prediction: bool = True, other_players: Dict[str, Dict[str, Any]] = None) -> Dict[str, Any]:
         """Move the player
 
         Args:
@@ -87,6 +87,7 @@ class Player:
             dy: Change in y position
             speed_multiplier: Multiplier for the player's speed (default: 1.0)
             prediction: Whether to use client-side prediction (default: True)
+            other_players: Dictionary of other players for collision detection (default: None)
 
         Returns:
             Dict[str, Any]: Input data for client-side prediction
@@ -107,11 +108,36 @@ class Player:
 
         # Position aktualisieren
         old_x, old_y = self.x, self.y
-        self.x += dx * self.speed * speed_multiplier
-        self.y += dy * self.speed * speed_multiplier
+        new_x = self.x + dx * self.speed * speed_multiplier
+        new_y = self.y + dy * self.speed * speed_multiplier
+
+        # Kollisionserkennung mit anderen Spielern
+        collision_with_player = False
+        if other_players:
+            for player_id, player_data in other_players.items():
+                # Überprüfe, ob der Spieler gültige Positionsdaten hat
+                if 'x' in player_data and 'y' in player_data:
+                    player_x = float(player_data['x'])
+                    player_y = float(player_data['y'])
+
+                    # Berechne die Distanz zwischen dem Spieler und dem anderen Spieler
+                    # Verwende die neue Position für die Berechnung
+                    distance = ((new_x - player_x) ** 2 + (new_y - player_y) ** 2) ** 0.5
+
+                    # Wenn die Distanz kleiner als die Summe der Radien ist, gibt es eine Kollision
+                    # Verwende 32 als Durchmesser für beide Spieler (16 + 16 = 32)
+                    if distance < 32:
+                        collision_with_player = True
+                        self.logger.info(f"[COLLISION] Kollision mit Spieler {player_id} bei Position ({player_x}, {player_y})")
+                        break
+
+        # Nur aktualisieren, wenn keine Kollision vorliegt
+        if not collision_with_player:
+            self.x = new_x
+            self.y = new_y
 
         # Bewegungsstatus aktualisieren
-        self.moving = dx != 0 or dy != 0
+        self.moving = (dx != 0 or dy != 0) and not collision_with_player
 
         # Debug-Logging für tatsächliche Bewegung
         if old_x != self.x or old_y != self.y:
@@ -123,7 +149,8 @@ class Player:
             "dx": dx,
             "dy": dy,
             "speed_multiplier": speed_multiplier,
-            "timestamp": time.time()
+            "timestamp": time.time(),
+            "collision": collision_with_player
         }
 
         # Erhöhe die Sequenznummer
@@ -143,10 +170,21 @@ class Player:
         """
         # Update animation
         if self.moving:
-            self.animation_timer += dt
+            # Schnellere Animation während der Bewegung
+            self.animation_timer += dt * 1.5
             if self.animation_timer >= self.animation_speed:
                 self.animation_timer = self.animation_timer - self.animation_speed
                 self.current_frame = (self.current_frame + 1) % 4
+        else:
+            # Langsam zurück zur Grundposition (Frame 0) animieren, wenn der Spieler steht
+            if self.current_frame != 0:
+                self.animation_timer += dt * 0.5  # Langsamere Animation im Stillstand
+                if self.animation_timer >= self.animation_speed:
+                    self.animation_timer = self.animation_timer - self.animation_speed
+                    # Zum nächsten Frame gehen, aber nur bis Frame 0
+                    self.current_frame = (self.current_frame + 1) % 4
+                    if self.current_frame == 1:  # Wenn wir bei Frame 1 ankommen, zurück zu Frame 0
+                        self.current_frame = 0
 
         # Aktualisiere den Zeitpunkt der letzten Aktualisierung
         self.last_update_time = time.time()
@@ -255,9 +293,58 @@ class Player:
 
             # Draw the sprite
             screen.blit(self.sprite_sheet, (x, y), (sprite_x, sprite_y, 32, 32))
+
+            # Draw player name above the sprite
+            font = pygame.font.SysFont(None, 20)
+            name_text = font.render(self.name, True, (255, 255, 255))
+            name_rect = name_text.get_rect(centerx=x + 16, bottom=y - 5)
+
+            # Draw a semi-transparent background for the name
+            bg_rect = name_rect.inflate(10, 5)
+            bg_surface = pygame.Surface((bg_rect.width, bg_rect.height), pygame.SRCALPHA)
+            bg_surface.fill((0, 0, 0, 128))  # Semi-transparent black
+            screen.blit(bg_surface, bg_rect)
+
+            # Draw the name
+            screen.blit(name_text, name_rect)
         else:
-            # Fallback: draw a simple rectangle
-            pygame.draw.rect(screen, (255, 0, 0), (x, y, 32, 32))
+            # Fallback: draw a more detailed representation
+            # Determine color based on character type
+            color = (255, 0, 0)  # Default: Red
+            if self.character_type == "Blue":
+                color = (0, 0, 255)
+
+            # Draw a circle with a white border
+            pygame.draw.circle(screen, color, (int(x + 16), int(y + 16)), 16)
+            pygame.draw.circle(screen, (255, 255, 255), (int(x + 16), int(y + 16)), 18, 2)
+
+            # Draw direction indicator
+            indicator_length = 10
+            center_x, center_y = int(x + 16), int(y + 16)
+            if self.direction == "right":
+                end_x, end_y = center_x + indicator_length, center_y
+            elif self.direction == "left":
+                end_x, end_y = center_x - indicator_length, center_y
+            elif self.direction == "down":
+                end_x, end_y = center_x, center_y + indicator_length
+            elif self.direction == "up":
+                end_x, end_y = center_x, center_y - indicator_length
+
+            pygame.draw.line(screen, (255, 255, 0), (center_x, center_y), (end_x, end_y), 3)
+
+            # Draw player name above the circle
+            font = pygame.font.SysFont(None, 20)
+            name_text = font.render(self.name, True, (255, 255, 255))
+            name_rect = name_text.get_rect(centerx=center_x, bottom=center_y - 20)
+
+            # Draw a semi-transparent background for the name
+            bg_rect = name_rect.inflate(10, 5)
+            bg_surface = pygame.Surface((bg_rect.width, bg_rect.height), pygame.SRCALPHA)
+            bg_surface.fill((0, 0, 0, 128))  # Semi-transparent black
+            screen.blit(bg_surface, bg_rect)
+
+            # Draw the name
+            screen.blit(name_text, name_rect)
 
     def add_pokemon(self, pokemon):
         """Add a Pokemon to the player's team

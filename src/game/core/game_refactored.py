@@ -409,7 +409,14 @@ class Game:
         if direction_x != 0 or direction_y != 0:
             # Verwende Client-Side Prediction, wenn aktiviert
             prediction = self.config.get_prediction()
-            self.player.move(direction_x, direction_y, speed_multiplier, prediction)
+
+            # Hole die anderen Spieler für die Kollisionserkennung
+            other_players = {}
+            if self.multiplayer_active:
+                other_players = self.game_multiplayer.get_other_players()
+
+            # Bewege den Spieler mit Kollisionserkennung
+            self.player.move(direction_x, direction_y, speed_multiplier, prediction, other_players)
 
             # Wenn im Multiplayer-Modus, wird die Bewegung automatisch synchronisiert
             # Die Synchronisierung erfolgt jetzt in der GameMultiplayer-Klasse
