@@ -125,12 +125,19 @@ class Game:
             player_character = self.config.get("player", "character") or player_character
             # Verwende die instance_id, um unterschiedliche Startpositionen zu bestimmen
             instance_id = self.config.get("instance", "id") or ""
+
+            # Beide Spieler starten an festen, vordefinierten Positionen
+            # Diese Positionen müssen auf beiden Clients identisch sein
             if "player1" in instance_id:
-                # Spieler 1 startet links von der Mitte
-                player_x = player_x - 100
+                # Spieler 1 startet immer bei (460, 448)
+                player_x = 460
+                player_y = 448
+                self.logger.info(f"[SPIELERSYNC] Player 1 spawning at fixed position: ({player_x}, {player_y})")
             elif "player2" in instance_id:
-                # Spieler 2 startet rechts von der Mitte
-                player_x = player_x + 100
+                # Spieler 2 startet immer bei (560, 448)
+                player_x = 560
+                player_y = 448
+                self.logger.info(f"[SPIELERSYNC] Player 2 spawning at fixed position: ({player_x}, {player_y})")
 
         self.player = Player(player_x, player_y, player_character)
 
