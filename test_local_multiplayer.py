@@ -12,7 +12,6 @@ This script tests the local multiplayer functionality by:
 import os
 import sys
 import subprocess
-from subprocess import CREATE_NEW_CONSOLE
 import time
 # re-Modul wird nicht mehr benötigt
 import argparse
@@ -76,8 +75,8 @@ def start_server(port, log_dir):
         [sys.executable, "src/game/network/server.py"],
         stdout=stdout_file,
         stderr=stderr_file,
-        text=True,
-        creationflags=CREATE_NEW_CONSOLE  # Eigenes Konsolenfenster für den Server
+        text=True
+        # Kein eigenes Konsolenfenster, um die Ausgabe besser zu sehen
     )
 
     logger.info(f"Server process started with PID {server_process.pid}")
@@ -118,8 +117,8 @@ def start_client(config_file, client_name, host, port, log_dir, enable_screensho
         cmd,
         stdout=stdout_file,
         stderr=stderr_file,
-        text=True,
-        creationflags=CREATE_NEW_CONSOLE  # Eigenes Konsolenfenster für den Client
+        text=True
+        # Kein eigenes Konsolenfenster, um die Ausgabe besser zu sehen
     )
 
     logger.info(f"{client_name} process started with PID {client_process.pid}")
