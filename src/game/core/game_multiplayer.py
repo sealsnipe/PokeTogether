@@ -53,7 +53,6 @@ class GameMultiplayer:
         self.multiplayer_manager.on_player_update = self._on_player_update
         self.multiplayer_manager.on_player_disconnected = self._on_player_disconnected
         self.multiplayer_manager.on_chat_message = self._on_chat_message
-        self.multiplayer_manager.on_positions_update = self._on_positions_update  # Neuer Handler für Positionsupdates
 
         # Jitter-Puffer-Konfiguration
         self.multiplayer_manager.jitter_buffer_size = self.config.get_jitter_buffer_size()
