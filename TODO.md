@@ -1,6 +1,10 @@
 # PokeTogether TODO-Liste Überarbeitet
 
 ## 1. Multiplayer-Funktionalität
+- [ ] Multiplayer-Refactoring abschließen und Verbindungsprobleme beheben
+  - [ ] Server-Verbindungsprobleme beheben
+  - [ ] Client-Verbindungsprobleme beheben
+  - [ ] Automatisierte Tests zum Laufen bringen
 - [x] Grundlegende Client-Server-Kommunikation implementieren
 - [x] Spieler-Sichtbarkeit im Multiplayer-Modus implementieren
 - [x] Bewegungsflüssigkeit im Multiplayer-Modus verbessern
