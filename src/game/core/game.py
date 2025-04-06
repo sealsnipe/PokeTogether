@@ -1200,13 +1200,27 @@ class Game:
             # Spieler 1 (460, 448) ist rot, Spieler 2 (560, 448) ist blau
             player_color = (0, 0, 255)  # Standard: Blau
 
-            # Identifiziere den Spieler anhand seiner Startposition
-            if 450 <= x <= 470 and 440 <= y <= 460:  # Spieler 1 Bereich
+            # Identifiziere den Spieler anhand seiner Startposition oder instance_id
+            instance_id = player_data.get("instance_id", "")
+
+            # Prüfe zuerst die instance_id
+            if "player1" in instance_id:
                 player_color = (255, 0, 0)  # Rot für Spieler 1
-                self.logger.info(f"[SPIELERSYNC] Identified player as Player 1: {player_id}, instance_id={instance_id}")
+                self.logger.info(f"[SPIELERSYNC] Identified player as Player 1 by instance_id: {player_id}, instance_id={instance_id}")
+            elif "player2" in instance_id:
+                player_color = (0, 0, 255)  # Blau für Spieler 2
+                self.logger.info(f"[SPIELERSYNC] Identified player as Player 2 by instance_id: {player_id}, instance_id={instance_id}")
+            # Fallback: Identifiziere anhand der Position
+            elif 450 <= x <= 470 and 440 <= y <= 460:  # Spieler 1 Bereich
+                player_color = (255, 0, 0)  # Rot für Spieler 1
+                self.logger.info(f"[SPIELERSYNC] Identified player as Player 1 by position: {player_id}, position=({x}, {y})")
             elif 550 <= x <= 570 and 440 <= y <= 460:  # Spieler 2 Bereich
                 player_color = (0, 0, 255)  # Blau für Spieler 2
-                self.logger.info(f"[SPIELERSYNC] Identified player as Player 2: {player_id}, instance_id={instance_id}")
+                self.logger.info(f"[SPIELERSYNC] Identified player as Player 2 by position: {player_id}, position=({x}, {y})")
+            else:
+                # Wenn keine eindeutige Identifikation möglich ist, verwende eine andere Farbe
+                player_color = (0, 255, 0)  # Grün für unbekannte Spieler
+                self.logger.warning(f"[SPIELERSYNC] Could not identify player: {player_id}, instance_id={instance_id}, position=({x}, {y})")
 
             # Ausführliche Debug-Ausgabe für die Weltkoordinaten
             self.logger.info(f"[DEBUG] REMOTE PLAYER WORLD POSITION: player={name}, world=({x}, {y}), player_id={player_id}, instance_id={instance_id}")
@@ -1224,7 +1238,11 @@ class Game:
 
             # Immer rendern, unabhängig von der Sichtbarkeitsprüfung
             # Einfache Darstellung als farbiger Kreis mit der bestimmten Farbe
-            pygame.draw.circle(self.screen, player_color, (int(screen_x), int(screen_y)), 16)
+            # Größerer Kreis für bessere Sichtbarkeit
+            pygame.draw.circle(self.screen, player_color, (int(screen_x), int(screen_y)), 20)
+
+            # Zusätzlich einen Rahmen um den Spieler zeichnen für bessere Sichtbarkeit
+            pygame.draw.circle(self.screen, (255, 255, 255), (int(screen_x), int(screen_y)), 22, 2)
 
             # Debug-Ausgabe für die Spielerposition
             self.logger.info(f"[DATENFLUSS] RENDERING PLAYER {name} (ID: {client_id}, player_id: {player_id}): x={x}, y={y}, screen_x={screen_x}, screen_y={screen_y}")

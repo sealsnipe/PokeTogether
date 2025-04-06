@@ -260,6 +260,19 @@ class GameMultiplayer:
             player_data["x"] = 0.0
             player_data["y"] = 0.0
 
+        # Prüfen, ob die Koordinaten in einem sinnvollen Bereich liegen
+        # Wenn die Koordinaten zu weit vom Ursprung entfernt sind, setze sie auf die Standardposition
+        if abs(player_data["x"]) > 2000 or abs(player_data["y"]) > 2000:
+            self.logger.warning(f"[SPIELERSYNC] COORDINATES OUT OF RANGE: client_id={client_id}, x={player_data['x']}, y={player_data['y']}")
+            # Setze auf Standardposition basierend auf der instance_id
+            instance_id = player_data.get("instance_id", "")
+            if "player1" in instance_id:
+                player_data["x"] = 460.0
+                player_data["y"] = 448.0
+            elif "player2" in instance_id:
+                player_data["x"] = 560.0
+                player_data["y"] = 448.0
+
         self.other_players[client_id] = player_data
         self.logger.info(f"[DATENFLUSS] PLAYER ADDED TO OTHER_PLAYERS LIST: client_id={client_id}")
         self.logger.info(f"[SPIELERSYNC] PLAYER ADDED: client_id={client_id}, player_id={player_data.get('player_id')}, x={player_data.get('x')}, y={player_data.get('y')}")
