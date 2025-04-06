@@ -357,7 +357,13 @@ class GameMultiplayer:
         if not self.multiplayer_active:
             return
 
+        # Debug-Ausgabe für die Anzahl der anderen Spieler
+        self.logger.info(f"[SPIELERSYNC] UPDATING OTHER PLAYERS: count={len(self.other_players)}")
+
         for player_id, player_data in self.other_players.items():
+            # Vollständige Spielerdaten loggen
+            self.logger.info(f"[SPIELERSYNC] UPDATING PLAYER: player_id={player_id}, data={json.dumps(player_data)}")
+
             # Erstelle einen temporären Spieler für die Interpolation oder exakte Positionierung
             if player_id not in self.interpolated_players:
                 temp_player = Player()
@@ -367,34 +373,52 @@ class GameMultiplayer:
                 temp_player.name = player_data.get("name", "Player")
                 temp_player.character_type = player_data.get("character_type", "Red")
                 self.interpolated_players[player_id] = temp_player
+                self.logger.info(f"[SPIELERSYNC] CREATED NEW INTERPOLATED PLAYER: player_id={player_id}, position=({temp_player.x}, {temp_player.y})")
 
             # Prüfe, ob exakte Positionierung aktiviert ist
             if self.config.get_exact_positioning():
                 # Exakte Positionierung ohne Interpolation
-                self.logger.debug(f"Using exact positioning for player {player_id}")
+                self.logger.info(f"[SPIELERSYNC] USING EXACT POSITIONING FOR PLAYER: player_id={player_id}")
                 # Direkte Übernahme der Position ohne Interpolation
-                self.interpolated_players[player_id].x = player_data.get("x", self.interpolated_players[player_id].x)
-                self.interpolated_players[player_id].y = player_data.get("y", self.interpolated_players[player_id].y)
+                old_x = self.interpolated_players[player_id].x
+                old_y = self.interpolated_players[player_id].y
+                new_x = player_data.get("x", old_x)
+                new_y = player_data.get("y", old_y)
+
+                self.interpolated_players[player_id].x = new_x
+                self.interpolated_players[player_id].y = new_y
                 self.interpolated_players[player_id].direction = player_data.get("direction", self.interpolated_players[player_id].direction)
                 # Setze die Geschwindigkeit auf 0, um Nachschleppen zu vermeiden
                 self.interpolated_players[player_id].velocity_x = 0
                 self.interpolated_players[player_id].velocity_y = 0
                 # Setze den Bewegungsstatus basierend auf den Daten
                 self.interpolated_players[player_id].moving = player_data.get("moving", False)
+
+                self.logger.info(f"[SPIELERSYNC] UPDATED PLAYER POSITION: player_id={player_id}, old=({old_x}, {old_y}), new=({new_x}, {new_y})")
             elif self.config.get_interpolation():
                 # Interpoliere die Position des Spielers
-                self.logger.debug(f"Using interpolation for player {player_id}")
+                self.logger.info(f"[SPIELERSYNC] USING INTERPOLATION FOR PLAYER: player_id={player_id}")
                 self.interpolated_players[player_id].interpolate(player_data)
             else:
                 # Fallback: Einfache Positionierung ohne Interpolation
-                self.logger.debug(f"Using simple positioning for player {player_id}")
-                self.interpolated_players[player_id].x = player_data.get("x", self.interpolated_players[player_id].x)
-                self.interpolated_players[player_id].y = player_data.get("y", self.interpolated_players[player_id].y)
+                self.logger.info(f"[SPIELERSYNC] USING SIMPLE POSITIONING FOR PLAYER: player_id={player_id}")
+                old_x = self.interpolated_players[player_id].x
+                old_y = self.interpolated_players[player_id].y
+                new_x = player_data.get("x", old_x)
+                new_y = player_data.get("y", old_y)
+
+                self.interpolated_players[player_id].x = new_x
+                self.interpolated_players[player_id].y = new_y
                 self.interpolated_players[player_id].direction = player_data.get("direction", self.interpolated_players[player_id].direction)
+
+                self.logger.info(f"[SPIELERSYNC] UPDATED PLAYER POSITION: player_id={player_id}, old=({old_x}, {old_y}), new=({new_x}, {new_y})")
 
             # Aktualisiere die Spielerdaten mit den interpolierten oder exakten Werten
             self.other_players[player_id]["x"] = self.interpolated_players[player_id].x
             self.other_players[player_id]["y"] = self.interpolated_players[player_id].y
+
+            # Debug-Ausgabe für die aktualisierten Spielerdaten
+            self.logger.info(f"[SPIELERSYNC] PLAYER DATA UPDATED: player_id={player_id}, position=({self.other_players[player_id]['x']}, {self.other_players[player_id]['y']})")
 
     def get_other_players(self) -> Dict[str, Dict[str, Any]]:
         """Gibt die anderen Spieler zurück
@@ -412,30 +436,77 @@ class GameMultiplayer:
         """
         return self.interpolated_players
 
-    def _on_positions_update(self, positions: Dict[str, Dict[str, Any]]) -> None:
+    def _on_positions_update(self, positions_data: Dict[str, Any]) -> None:
         """Callback für Positions-Updates
 
         Args:
-            positions: Positionsdaten aller Spieler
+            positions_data: Positionsdaten aller Spieler mit Metadaten
         """
-        self.logger.info(f"[SPIELERSYNC] RECEIVED POSITIONS UPDATE: {positions}")
+        # Extrahiere die Positionsdaten und den Server-Zeitstempel
+        if isinstance(positions_data, dict):
+            positions = positions_data.get("positions", {})
+            server_timestamp = positions_data.get("server_timestamp", time.time())
+        else:
+            # Fallback für ältere Nachrichten ohne Metadaten
+            positions = positions_data
+            server_timestamp = time.time()
+            self.logger.warning(f"[SPIELERSYNC] RECEIVED POSITIONS UPDATE WITHOUT METADATA: {json.dumps(positions)}")
+
+        self.logger.info(f"[SPIELERSYNC] RECEIVED POSITIONS UPDATE: {json.dumps(positions)}")
+        self.logger.info(f"[SPIELERSYNC] SERVER TIMESTAMP: {server_timestamp}")
 
         # Lokale Spielerposition zum Vergleich
         if hasattr(self, 'player'):
             local_x = self.player.x
             local_y = self.player.y
+            client_id = self.multiplayer_manager.client.client_id
+
+            self.logger.info(f"[SPIELERSYNC] LOCAL PLAYER INFO: client_id={client_id}, position=({local_x}, {local_y})")
+            self.logger.info(f"[SPIELERSYNC] CURRENT OTHER PLAYERS: {json.dumps(self.other_players)}")
 
             # Vergleiche die Positionen aller Spieler mit der lokalen Position
-            for client_id, pos_data in positions.items():
+            for remote_client_id, pos_data in positions.items():
                 if 'x' in pos_data and 'y' in pos_data:
                     remote_x = float(pos_data['x'])
                     remote_y = float(pos_data['y'])
+                    spawn_index = pos_data.get('spawn_index', -1)
 
                     # Berechne die Differenz zwischen der Remote-Position und der lokalen Position
                     diff_x = remote_x - local_x
                     diff_y = remote_y - local_y
 
-                    self.logger.info(f"[POSITION_SYNC] POSITIONS COMPARISON: client_id={client_id}, remote=({remote_x}, {remote_y}), local=({local_x}, {local_y}), difference=({diff_x}, {diff_y})")
+                    self.logger.info(f"[POSITION_SYNC] POSITIONS COMPARISON: client_id={remote_client_id}, remote=({remote_x}, {remote_y}), local=({local_x}, {local_y}), difference=({diff_x}, {diff_y}), spawn_index={spawn_index}")
+
+                    # Wenn dies unsere eigene Client-ID ist, aktualisiere unsere Position basierend auf den Serverdaten
+                    if remote_client_id == client_id and self.config.get_exact_positioning():
+                        self.logger.info(f"[POSITION_SYNC] UPDATING LOCAL PLAYER POSITION FROM SERVER: old=({self.player.x}, {self.player.y}), new=({remote_x}, {remote_y})")
+                        self.player.x = remote_x
+                        self.player.y = remote_y
+
+                    # Aktualisiere die Position des anderen Spielers in der Liste
+                    if remote_client_id != client_id:
+                        # Wenn der Spieler noch nicht in der Liste ist, füge ihn hinzu
+                        if remote_client_id not in self.other_players:
+                            self.logger.info(f"[POSITION_SYNC] ADDING NEW PLAYER FROM POSITIONS UPDATE: client_id={remote_client_id}, position=({remote_x}, {remote_y})")
+                            self.other_players[remote_client_id] = {
+                                "x": remote_x,
+                                "y": remote_y,
+                                "name": f"Player {spawn_index + 1}",  # Temporärer Name basierend auf Spawn-Index
+                                "character_type": "Blue" if spawn_index == 1 else "Red",  # Charaktertyp basierend auf Spawn-Index
+                                "direction": "down",  # Standardrichtung
+                                "server_timestamp": server_timestamp,
+                                "player_id": remote_client_id,  # Speichere die Client-ID als player_id
+                                "spawn_index": spawn_index  # Speichere den Spawn-Index
+                            }
+                            self.logger.info(f"[POSITION_SYNC] ADDED NEW PLAYER: {json.dumps(self.other_players[remote_client_id])}")
+                        else:
+                            # Aktualisiere nur die Position und den Zeitstempel
+                            old_x = self.other_players[remote_client_id].get("x", 0)
+                            old_y = self.other_players[remote_client_id].get("y", 0)
+                            self.other_players[remote_client_id]["x"] = remote_x
+                            self.other_players[remote_client_id]["y"] = remote_y
+                            self.other_players[remote_client_id]["server_timestamp"] = server_timestamp
+                            self.logger.info(f"[POSITION_SYNC] UPDATED PLAYER POSITION: client_id={remote_client_id}, old=({old_x}, {old_y}), new=({remote_x}, {remote_y})")
 
         # Callback aufrufen, wenn vorhanden
         if self.on_positions_update:

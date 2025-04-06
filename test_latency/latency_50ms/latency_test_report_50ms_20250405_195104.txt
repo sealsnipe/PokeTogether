@@ -1,0 +1,43 @@
+=== NETWORK LATENCY TEST REPORT ===
+Test Date: 2025-04-05 19:51:04
+Latency: 50ms
+Test Result: FAILURE
+
+=== SERVER LOG EXCERPT ===
+r
+    await connection.handshake(
+    ...<3 lines>...
+    )
+  File "C:\Users\Matthias\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\websockets\asyncio\server.py", line 207, in handshake
+    raise self.protocol.handshake_exc
+websockets.exceptions.InvalidMessage: did not receive a valid HTTP request
+2025-04-05 19:50:36 - websockets.server - INFO - connection open
+2025-04-05 19:50:36 - game.network.server - INFO - === NEW CLIENT CONNECTED: 49f383dd-9ea6-43f1-979e-9a2b92d36447 ===
+NEW CLIENT CONNECTED: 49f383dd-9ea6-43f1-979e-9a2b92d36447
+2025-04-05 19:50:36 - game.network.server - INFO - Received connection confirmation from client 49f383dd-9ea6-43f1-979e-9a2b92d36447
+2025-04-05 19:50:36 - game.network.server - INFO - Client info: {'hostname': 'DESKTOP-MQITL2U', 'ip': '192.168.0.60'}
+2025-04-05 19:50:36 - game.network.server - INFO - Sent connection acknowledgement to client 49f383dd-9ea6-43f1-979e-9a2b92d36447
+
+=== CLIENT 1 LOG EXCERPT ===
+e
+2025-04-05 19:50:32 - game.core.game_refactored - INFO - Network simulation: latency=50ms, jitter=0ms
+2025-04-05 19:50:33 - game.network.client - INFO - === SUCCESSFULLY CONNECTED TO SERVER AT ws://localhost:8765 ===
+SUCCESSFULLY CONNECTED TO MULTIPLAYER SESSION
+2025-04-05 19:50:33 - game.network.client - INFO - Received message: {"type": "welcome", "client_id": "fc69e98a-c36a-40c5-a9b1-95f842016194", "players": {}}
+2025-04-05 19:50:33 - game.network.client - INFO - Received welcome message. Client ID: fc69e98a-c36a-40c5-a9b1-95f842016194
+2025-04-05 19:50:33 - game.network.client - INFO - Current players: 0
+2025-04-05 19:50:33 - game.network.client - INFO - Received message: {"type": "connection_acknowledged", "server_time": 1743875433.872239, "message": "Connection confirm...
+2025-04-05 19:50:33 - game.network.client - INFO - Connection acknowledged by server: Connection confirmed and acknowledged
+2025-04-05 19:50:33 - game.network.client - INFO - Estimated latency (RTT): 101.30 ms
+
+=== CLIENT 2 LOG EXCERPT ===
+e
+2025-04-05 19:50:35 - game.core.game_refactored - INFO - Network simulation: latency=50ms, jitter=0ms
+2025-04-05 19:50:36 - game.network.client - INFO - === SUCCESSFULLY CONNECTED TO SERVER AT ws://localhost:8765 ===
+SUCCESSFULLY CONNECTED TO MULTIPLAYER SESSION
+2025-04-05 19:50:36 - game.network.client - INFO - Received message: {"type": "welcome", "client_id": "49f383dd-9ea6-43f1-979e-9a2b92d36447", "players": {}}
+2025-04-05 19:50:36 - game.network.client - INFO - Received welcome message. Client ID: 49f383dd-9ea6-43f1-979e-9a2b92d36447
+2025-04-05 19:50:36 - game.network.client - INFO - Current players: 0
+2025-04-05 19:50:36 - game.network.client - INFO - Received message: {"type": "connection_acknowledged", "server_time": 1743875436.8960662, "message": "Connection confir...
+2025-04-05 19:50:36 - game.network.client - INFO - Connection acknowledged by server: Connection confirmed and acknowledged
+2025-04-05 19:50:36 - game.network.client - INFO - Estimated latency (RTT): 101.67 ms

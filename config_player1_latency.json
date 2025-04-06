@@ -1,0 +1,32 @@
+{
+    "player": {
+        "name": "Player1",
+        "character": "Red"
+    },
+    "multiplayer": {
+        "server_host": "127.0.0.1",
+        "server_port": 8765,
+        "update_rate": 10,
+        "interpolation": true,
+        "prediction": true,
+        "reconciliation": true,
+        "latency_simulation": 500,
+        "jitter_simulation": 0
+    },
+    "video": {
+        "fullscreen": false,
+        "resolution": [
+            800,
+            600
+        ],
+        "vsync": true,
+        "fps_limit": 60
+    },
+    "debug": {
+        "show_fps": true,
+        "show_player_info": true,
+        "show_collision_boxes": false,
+        "show_network_stats": true,
+        "log_level": "INFO"
+    }
+}

@@ -1,0 +1,190 @@
+[
+  {
+    "type": "key_press",
+    "key": "tab"
+  },
+  {
+    "type": "wait",
+    "duration": 0.2
+  },
+  {
+    "type": "key_release",
+    "key": "tab"
+  },
+  {
+    "type": "wait",
+    "duration": 1.0
+  },
+  {
+    "type": "key_press",
+    "key": "down"
+  },
+  {
+    "type": "wait",
+    "duration": 0.2
+  },
+  {
+    "type": "key_release",
+    "key": "down"
+  },
+  {
+    "type": "wait",
+    "duration": 0.5
+  },
+  {
+    "type": "key_press",
+    "key": "down"
+  },
+  {
+    "type": "wait",
+    "duration": 0.2
+  },
+  {
+    "type": "key_release",
+    "key": "down"
+  },
+  {
+    "type": "wait",
+    "duration": 0.5
+  },
+  {
+    "type": "key_press",
+    "key": "down"
+  },
+  {
+    "type": "wait",
+    "duration": 0.2
+  },
+  {
+    "type": "key_release",
+    "key": "down"
+  },
+  {
+    "type": "wait",
+    "duration": 0.5
+  },
+  {
+    "type": "key_press",
+    "key": "down"
+  },
+  {
+    "type": "wait",
+    "duration": 0.2
+  },
+  {
+    "type": "key_release",
+    "key": "down"
+  },
+  {
+    "type": "wait",
+    "duration": 0.5
+  },
+  {
+    "type": "key_press",
+    "key": "up"
+  },
+  {
+    "type": "wait",
+    "duration": 0.2
+  },
+  {
+    "type": "key_release",
+    "key": "up"
+  },
+  {
+    "type": "wait",
+    "duration": 0.5
+  },
+  {
+    "type": "key_press",
+    "key": "up"
+  },
+  {
+    "type": "wait",
+    "duration": 0.2
+  },
+  {
+    "type": "key_release",
+    "key": "up"
+  },
+  {
+    "type": "wait",
+    "duration": 0.5
+  },
+  {
+    "type": "key_press",
+    "key": "up"
+  },
+  {
+    "type": "wait",
+    "duration": 0.2
+  },
+  {
+    "type": "key_release",
+    "key": "up"
+  },
+  {
+    "type": "wait",
+    "duration": 0.5
+  },
+  {
+    "type": "key_press",
+    "key": "up"
+  },
+  {
+    "type": "wait",
+    "duration": 0.2
+  },
+  {
+    "type": "key_release",
+    "key": "up"
+  },
+  {
+    "type": "wait",
+    "duration": 0.5
+  },
+  {
+    "type": "key_press",
+    "key": "return"
+  },
+  {
+    "type": "wait",
+    "duration": 0.2
+  },
+  {
+    "type": "key_release",
+    "key": "return"
+  },
+  {
+    "type": "wait",
+    "duration": 1.0
+  },
+  {
+    "type": "key_press",
+    "key": "escape"
+  },
+  {
+    "type": "wait",
+    "duration": 0.2
+  },
+  {
+    "type": "key_release",
+    "key": "escape"
+  },
+  {
+    "type": "wait",
+    "duration": 1.0
+  },
+  {
+    "type": "key_press",
+    "key": "tab"
+  },
+  {
+    "type": "wait",
+    "duration": 0.2
+  },
+  {
+    "type": "key_release",
+    "key": "tab"
+  }
+]

@@ -1,0 +1,63 @@
+=== LOCAL MULTIPLAYER TEST REPORT ===
+Test Date: 2025-04-06 04:45:37
+Test Result: FAILURE
+
+=== SERVER INFO ===
+PID: 27872
+Exit Code: 0
+Stdout Log: test_logs\server\server_stdout_20250406_044529.log
+Stderr Log: test_logs\server\server_stderr_20250406_044529.log
+
+=== CLIENT 1 INFO ===
+PID: 15516
+Exit Code: Still running
+Stdout Log: test_logs\client1\client1_stdout_20250406_044534.log
+Stderr Log: test_logs\client1\client1_stderr_20250406_044534.log
+
+=== CLIENT 2 INFO ===
+PID: 10896
+Exit Code: Still running
+Stdout Log: test_logs\client2\client2_stdout_20250406_044537.log
+Stderr Log: test_logs\client2\client2_stderr_20250406_044537.log
+
+=== PLAYER POSITIONS ===
+Client 1 player positions:
+
+Client 2 player positions:
+
+=== POSITION SYNCHRONIZATION ===
+[FAILURE] Not all players are visible to each other.
+Player1 is not visible in Client2.
+Player2 is not visible in Client1.
+=== SERVER LOG EXCERPT ===
+
+
+=== CLIENT 1 LOG EXCERPT ===
+d)
+2025-04-06 04:45:35 - game.ui.chat_ui - INFO - Initializing chat UI
+2025-04-06 04:45:35 - game.core.game_refactored - INFO - [DATENFLUSS] REGISTERING MULTIPLAYER CALLBACKS
+2025-04-06 04:45:35 - game.core.game_refactored - INFO - [DATENFLUSS] MULTIPLAYER CALLBACKS REGISTERED SUCCESSFULLY
+2025-04-06 04:45:35 - game.ui.main_menu_refactored - INFO - Showing main menu
+2025-04-06 04:45:35 - __main__ - INFO - Joining game at localhost:8765
+2025-04-06 04:45:35 - game.core.game_refactored - INFO - === JOINING MULTIPLAYER SESSION AT localhost:8765 ===
+2025-04-06 04:45:35 - game.core.game_multiplayer - INFO - Initializing multiplayer functionality
+2025-04-06 04:45:35 - game.core.game_multiplayer - INFO - Connecting to multiplayer server at localhost:8765
+2025-04-06 04:45:35 - game.core.game_refactored - ERROR - === ERROR CONNECTING TO MULTIPLAYER SESSION: 'MultiplayerManager' object has no attribute 'connect_to_server' ===
+2025-04-06 04:45:35 - game.core.game_refactored - ERROR - Traceback (most recent call last):
+  File "C:\Users\Matthias\Documents\augment-projects\PokeTogether\src\game\core\game_refactored.py", line 905, in join_session
+    self.game_multiplayer.connect_to_server(host, port)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "C:\Users\Matthias\Documents\augment-projects\PokeTogether\src\game\core\game_multiplayer.py", line 80, in connect_to_server
+    self.multiplayer_manager.connect_to_server(host, port)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MultiplayerManager' object has no attribute 'connect_to_server'. Did you mean: 'connect_to_session'?
+
+2025-04-06 04:45:35 - game.core.game_refactored - INFO - Starting game loop
+2025-04-06 04:45:35 - game.core.game_refactored - INFO - FPS limit set to 30
+2025-04-06 04:45:35 - game.core.game_refactored - INFO - Network update rate: 30 updates/s
+2025-04-06 04:45:35 - game.core.game_refactored - INFO - Network optimizations: interpolation=False, prediction=True, reconciliation=True
+
+
+=== CLIENT 2 LOG EXCERPT ===
+
+

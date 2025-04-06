@@ -389,3 +389,9 @@ class InputHandler:
         self.input_state = {}
         self.input_pressed = {}
         self.last_input_state = {}
+
+        # Aktualisiere den Zustand, um sicherzustellen, dass alle Tasten als nicht gedrückt erkannt werden
+        self.update()
+
+        # Warte einen kurzen Moment, um sicherzustellen, dass alle Eingaben verarbeitet wurden
+        pygame.time.wait(10)

@@ -1,0 +1,76 @@
+=== LOCAL MULTIPLAYER TEST REPORT ===
+Test Date: 2025-04-05 22:31:11
+Test Result: SUCCESS
+
+=== SERVER INFO ===
+PID: 14236
+Exit Code: Still running
+Stdout Log: test_logs\server\server_stdout_20250405_223045.log
+Stderr Log: test_logs\server\server_stderr_20250405_223045.log
+
+=== CLIENT 1 INFO ===
+PID: 30380
+Exit Code: Still running
+Stdout Log: test_logs\client1\client1_stdout_20250405_223050.log
+Stderr Log: test_logs\client1\client1_stderr_20250405_223050.log
+
+=== CLIENT 2 INFO ===
+PID: 4448
+Exit Code: Still running
+Stdout Log: test_logs\client2\client2_stdout_20250405_223053.log
+Stderr Log: test_logs\client2\client2_stderr_20250405_223053.log
+
+=== SERVER LOG EXCERPT ===
+-04-05 22:31:10 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "ad5fd511-6e84-4b43-8441-ec35d0ebae63", "player_data": {}}
+2025-04-05 22:31:10 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "ad5fd511-6e84-4b43-8441-ec35d0ebae63", "player_data": {}}
+2025-04-05 22:31:10 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "ad5fd511-6e84-4b43-8441-ec35d0ebae63", "player_data": {}}
+2025-04-05 22:31:10 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "ad5fd511-6e84-4b43-8441-ec35d0ebae63", "player_data": {}}
+2025-04-05 22:31:10 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "ad5fd511-6e84-4b43-8441-ec35d0ebae63", "player_data": {}}
+2025-04-05 22:31:10 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "ad5fd511-6e84-4b43-8441-ec35d0ebae63", "player_data": {}}
+2025-04-05 22:31:10 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "ad5fd511-6e84-4b43-8441-ec35d0ebae63", "player_data": {}}
+2025-04-05 22:31:11 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "ad5fd511-6e84-4b43-8441-ec35d0ebae63", "player_data": {}}
+2025-04-05 22:31:11 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "ad5fd511-6e84-4b43-8441-ec35d0ebae63", "player_data": {}}
+2025-04-05 22:31:11 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "ad5fd511-6e84-4b43-8441-ec35d0ebae63", "player_data": {}}
+2025-04-05 22:31:11 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "ad5fd511-6e84-4b43-8441-ec35d0ebae63", "player_data": {}}
+2025-04-05 22:31:11 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "ad5fd511-6e84-4b43-8441-ec35d0ebae63", "player_data": {}}
+
+
+=== CLIENT 1 LOG EXCERPT ===
+-04-05 22:31:10 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "ad5fd511-6e84-4b43-8441-ec35d0ebae63", "player_data": {}}
+2025-04-05 22:31:10 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "ad5fd511-6e84-4b43-8441-ec35d0ebae63", "player_data": {}}
+2025-04-05 22:31:10 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "ad5fd511-6e84-4b43-8441-ec35d0ebae63", "player_data": {}}
+2025-04-05 22:31:10 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "ad5fd511-6e84-4b43-8441-ec35d0ebae63", "player_data": {}}
+2025-04-05 22:31:10 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "ad5fd511-6e84-4b43-8441-ec35d0ebae63", "player_data": {}}
+2025-04-05 22:31:10 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "ad5fd511-6e84-4b43-8441-ec35d0ebae63", "player_data": {}}
+2025-04-05 22:31:10 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "ad5fd511-6e84-4b43-8441-ec35d0ebae63", "player_data": {}}
+2025-04-05 22:31:11 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "ad5fd511-6e84-4b43-8441-ec35d0ebae63", "player_data": {}}
+2025-04-05 22:31:11 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "ad5fd511-6e84-4b43-8441-ec35d0ebae63", "player_data": {}}
+2025-04-05 22:31:11 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "ad5fd511-6e84-4b43-8441-ec35d0ebae63", "player_data": {}}
+2025-04-05 22:31:11 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "ad5fd511-6e84-4b43-8441-ec35d0ebae63", "player_data": {}}
+2025-04-05 22:31:11 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "ad5fd511-6e84-4b43-8441-ec35d0ebae63", "player_data": {}}
+
+
+=== CLIENT 2 LOG EXCERPT ===
+1-ec35d0ebae63", "players": {"a91ba697-729d-...
+2025-04-05 22:30:56 - game.network.client - INFO - Received welcome message. Client ID: ad5fd511-6e84-4b43-8441-ec35d0ebae63
+2025-04-05 22:30:56 - game.network.client - INFO - Current players: 1
+2025-04-05 22:30:56 - game.network.client - INFO - Received message: {"type": "connection_acknowledged", "server_time": 1743885056.2650497, "message": "Connection confir...
+2025-04-05 22:30:56 - game.network.client - INFO - Connection acknowledged by server: Connection confirmed and acknowledged
+2025-04-05 22:30:56 - game.network.client - INFO - Estimated latency (RTT): 0.21 ms
+[CONNECTION_STATUS] CONNECTION ACKNOWLEDGED BY SERVER
+2025-04-05 22:31:06 - game.core.game_state_manager - INFO - Changing game state from GameState.PLAYING to GameState.INGAME_MENU
+2025-04-05 22:31:06 - game.core.game_refactored - INFO - Entering INGAME_MENU state
+2025-04-05 22:31:06 - game.ui.ingame_menu_refactored - INFO - Showing in-game menu
+2025-04-05 22:31:06 - game.ui.ingame_menu_refactored - INFO - Resuming game
+2025-04-05 22:31:06 - game.ui.ingame_menu_refactored - INFO - Hiding in-game menu
+2025-04-05 22:31:06 - game.core.game_state_manager - INFO - Changing game state from GameState.INGAME_MENU to GameState.PLAYING
+2025-04-05 22:31:06 - game.core.game_refactored - INFO - Entering PLAYING state
+2025-04-05 22:31:06 - game.core.game_state_manager - INFO - Changing game state from GameState.PLAYING to GameState.INGAME_MENU
+2025-04-05 22:31:06 - game.core.game_refactored - INFO - Entering INGAME_MENU state
+2025-04-05 22:31:06 - game.ui.ingame_menu_refactored - INFO - Showing in-game menu
+2025-04-05 22:31:06 - game.ui.ingame_menu_refactored - INFO - Resuming game
+2025-04-05 22:31:06 - game.ui.ingame_menu_refactored - INFO - Hiding in-game menu
+2025-04-05 22:31:06 - game.core.game_state_manager - INFO - Changing game state from GameState.INGAME_MENU to GameState.PLAYING
+2025-04-05 22:31:06 - game.core.game_refactored - INFO - Entering PLAYING state
+
+

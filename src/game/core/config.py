@@ -34,11 +34,13 @@ class Config:
             "multiplayer": {
                 "server_host": "127.0.0.1",
                 "server_port": 8765,
-                "update_rate": 30,  # Updates per second (erhöht für bessere Synchronisierung)
-                "interpolation": False,  # Bewegungen interpolieren (deaktiviert für exakte Positionierung)
+                "update_rate": 30,  # Updates pro Sekunde (erhöht von 10 auf 30 für flüssigere Bewegungen)
+                "interpolation": True,  # Bewegungen interpolieren
                 "prediction": True,  # Client-Side-Prediction aktivieren
                 "reconciliation": True,  # Server-Reconciliation aktivieren
-                "exact_positioning": True,  # Exakte Positionierung ohne Interpolation
+                "exact_positioning": False,  # Exakte Positionierung ohne Interpolation (deaktiviert für Interpolation)
+                "position_smoothing": True,  # Glättung der Positionsupdates
+                "smoothing_factor": 0.3,  # Glättungsfaktor (0.0 = keine Glättung, 1.0 = maximale Glättung)
                 "latency_simulation": 0,  # Künstliche Latenz in Millisekunden (0 = deaktiviert)
                 "jitter_simulation": 0,  # Künstliche Jitter in Millisekunden (0 = deaktiviert)
                 "jitter_buffer_size": 3,  # Größe des Jitter-Puffers
@@ -239,6 +241,22 @@ class Config:
             bool: True if exact positioning is enabled, False otherwise
         """
         return self.config["multiplayer"].get("exact_positioning", False)
+
+    def get_position_smoothing(self) -> bool:
+        """Get the position smoothing setting
+
+        Returns:
+            bool: True if position smoothing is enabled, False otherwise
+        """
+        return self.config["multiplayer"].get("position_smoothing", True)
+
+    def get_smoothing_factor(self) -> float:
+        """Get the smoothing factor
+
+        Returns:
+            float: Smoothing factor (0.0 = no smoothing, 1.0 = maximum smoothing)
+        """
+        return self.config["multiplayer"].get("smoothing_factor", 0.3)
 
     def get_jitter_buffer_size(self) -> int:
         """Get the jitter buffer size

@@ -13,6 +13,7 @@ import uuid
 from typing import Dict, List, Any, Optional, Set
 import websockets
 from websockets.server import WebSocketServerProtocol
+from game.network.player_manager import PlayerManager
 
 class GameServer:
     """Game server for hosting multiplayer sessions"""
@@ -29,12 +30,19 @@ class GameServer:
         self.host = host
         self.port = port
         self.clients: Dict[str, WebSocketServerProtocol] = {}
+
+        # Initialisiere den PlayerManager für die zentrale Spielerverwaltung
+        self.player_manager = PlayerManager()
+        self.logger.info("=== INITIALIZED PLAYER MANAGER ===")
+
+        # Behalte diese Variablen für Abwärtskompatibilität bei
         self.players: Dict[str, Dict[str, Any]] = {}
-        self.player_positions: Dict[str, Dict[str, float]] = {}  # Zentrale Positionsverwaltung
+        self.player_positions: Dict[str, Dict[str, Any]] = {}  # Zentrale Positionsverwaltung
+
         self.server = None
         self.running = False
 
-        # Feste Startpositionen für Spieler
+        # Feste Startpositionen für Spieler (wird jetzt vom PlayerManager verwaltet)
         self.spawn_positions = [
             {"x": 460.0, "y": 448.0},  # Spieler 1
             {"x": 560.0, "y": 448.0},  # Spieler 2
@@ -147,9 +155,18 @@ class GameServer:
             if client_id in self.clients:
                 del self.clients[client_id]
 
-            if client_id in self.players:
-                player_data = self.players[client_id]
-                del self.players[client_id]
+            # Hole die Spielerdaten vom PlayerManager
+            player_data = self.player_manager.get_player(client_id)
+
+            # Entferne den Spieler aus dem PlayerManager
+            if player_data:
+                self.player_manager.remove_player(client_id)
+
+                # Für Abwärtskompatibilität: Entferne den Spieler auch aus den alten Datenstrukturen
+                if client_id in self.players:
+                    del self.players[client_id]
+                if client_id in self.player_positions:
+                    del self.player_positions[client_id]
 
                 # Notify other clients about the disconnection
                 await self.broadcast({
@@ -164,28 +181,37 @@ class GameServer:
         Args:
             client_id: Client-ID des Spielers
         """
-        # Bestimme die Spawn-Position basierend auf der Anzahl der verbundenen Spieler
-        spawn_index = len(self.player_positions) % len(self.spawn_positions)
-        spawn_position = self.spawn_positions[spawn_index]
+        # Verwende den PlayerManager, um dem Spieler eine Position zuzuweisen
+        player_data = self.player_manager.add_player(client_id)
 
-        # Weise dem Spieler die Position zu
-        self.player_positions[client_id] = {
-            "x": spawn_position["x"],
-            "y": spawn_position["y"]
-        }
+        # Für Abwärtskompatibilität: Aktualisiere auch die alten Datenstrukturen
+        self.player_positions[client_id] = player_data
 
-        self.logger.info(f"[SPIELERSYNC] ASSIGNED POSITION TO PLAYER: client_id={client_id}, position=({spawn_position['x']}, {spawn_position['y']})")
+        self.logger.info(f"[SPIELERSYNC] ASSIGNED POSITION TO PLAYER: client_id={client_id}, position=({player_data['x']}, {player_data['y']}), spawn_index={player_data['spawn_index']}, character_type={player_data['character_type']}")
 
         # Sende die aktualisierten Positionen an alle Clients
         await self._broadcast_positions()
 
     async def _broadcast_positions(self):
         """Sendet die aktuellen Positionen aller Spieler an alle Clients"""
+        # Hole die aktuellen Spielerpositionen vom PlayerManager
+        positions = self.player_manager.get_player_positions()
+
+        # Für Abwärtskompatibilität: Aktualisiere auch die alte Datenstruktur
+        self.player_positions = positions
+
+        # Füge einen Zeitstempel hinzu, um die Aktualität der Daten zu kennzeichnen
         message = {
             "type": "positions_update",
-            "positions": self.player_positions
+            "positions": positions,
+            "server_timestamp": time.time()
         }
-        self.logger.info(f"[SPIELERSYNC] BROADCASTING POSITIONS: {json.dumps(message)}")
+
+        # Ausführliche Debug-Ausgabe für die Spielersynchronisierung
+        self.logger.info(f"[SPIELERSYNC] BROADCASTING POSITIONS: player_count={len(positions)}")
+        self.logger.debug(f"[SPIELERSYNC] POSITIONS DATA: {json.dumps(positions)}")
+
+        # Sende die Nachricht an alle Clients
         await self.broadcast(message)
 
     async def process_message(self, client_id: str, message: str):
@@ -226,23 +252,16 @@ class GameServer:
                 # Füge Server-Zeitstempel hinzu
                 player_data["server_timestamp"] = time.time()
 
-                # Stellen Sie sicher, dass die Koordinaten als Zahlen vorliegen
-                try:
-                    player_data["x"] = float(player_data.get("x", 0))
-                    player_data["y"] = float(player_data.get("y", 0))
-                except (ValueError, TypeError):
-                    self.logger.error(f"[SPIELERSYNC] INVALID COORDINATES IN PLAYER DATA: client_id={client_id}, x={player_data.get('x')}, y={player_data.get('y')}")
-                    player_data["x"] = 0.0
-                    player_data["y"] = 0.0
-
                 # Debug-Ausgabe für die Spielersynchronisierung
                 self.logger.info(f"[SPIELERSYNC] SERVER PROCESSING PLAYER UPDATE: client_id={client_id}, player_id={player_data.get('player_id')}, x={player_data.get('x')}, y={player_data.get('y')}")
 
-                # Aktualisiere die Position des Spielers in der zentralen Positionsverwaltung
-                self.player_positions[client_id] = {
-                    "x": player_data["x"],
-                    "y": player_data["y"]
-                }
+                # Verwende den PlayerManager, um die Spielerdaten zu aktualisieren
+                updated_data = self.player_manager.update_player(client_id, player_data)
+
+                # Für Abwärtskompatibilität: Aktualisiere auch die alte Datenstruktur
+                self.player_positions[client_id] = updated_data
+
+                self.logger.info(f"[SPIELERSYNC] UPDATED PLAYER POSITION WITH METADATA: client_id={client_id}, position=({updated_data['x']}, {updated_data['y']}), direction={updated_data['direction']}, moving={updated_data['moving']}, character_type={updated_data['character_type']}")
 
                 # Sende die aktualisierten Positionen an alle Clients
                 await self._broadcast_positions()

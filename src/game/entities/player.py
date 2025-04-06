@@ -59,6 +59,8 @@ class Player:
         # Netzwerk-Synchronisierung
         self.last_sent_position = (x, y)
         self.last_sent_direction = self.direction
+        self.server_assigned_position = None  # Vom Server zugewiesene Position
+        self.spawn_index = -1  # Spawn-Index für Debugging
 
         # Client-Side Prediction und Server-Reconciliation
         self.input_sequence_number = 0
@@ -212,15 +214,23 @@ class Player:
             alpha: Interpolation factor (0.0 - 1.0, default: 0.3)
         """
         # Extrahiere die Daten des anderen Spielers
-        other_x = other_player_data.get("x", self.x)
-        other_y = other_player_data.get("y", self.y)
+        other_x = float(other_player_data.get("x", self.x))
+        other_y = float(other_player_data.get("y", self.y))
         other_direction = other_player_data.get("direction", self.direction)
+
         # Verwende Server-Zeitstempel, wenn verfügbar, sonst Client-Zeitstempel, sonst aktuelle Zeit
         other_timestamp = other_player_data.get("server_timestamp",
                                              other_player_data.get("timestamp", time.time()))
         other_moving = other_player_data.get("moving", False)
 
-        self.logger.debug(f"Using timestamp: server_timestamp={other_player_data.get('server_timestamp')}, timestamp={other_player_data.get('timestamp')}, final={other_timestamp}")
+        # Prüfe, ob Position-Smoothing aktiviert ist
+        from game.core.config import Config
+        config = Config()
+        position_smoothing = config.get_position_smoothing()
+        smoothing_factor = config.get_smoothing_factor()
+
+        self.logger.info(f"[INTERPOLATION] USING TIMESTAMP: server_timestamp={other_player_data.get('server_timestamp')}, timestamp={other_player_data.get('timestamp')}, final={other_timestamp}")
+        self.logger.info(f"[INTERPOLATION] POSITION SMOOTHING: enabled={position_smoothing}, factor={smoothing_factor}")
 
         # Berechne die Zeit seit dem letzten Update
         current_time = time.time()
@@ -237,7 +247,7 @@ class Player:
             self.last_position = (other_x, other_y)
             self.last_position_time = other_timestamp
 
-            self.logger.debug(f"Velocity: vx={self.velocity_x:.2f}, vy={self.velocity_y:.2f}")
+            self.logger.info(f"[INTERPOLATION] VELOCITY: vx={self.velocity_x:.2f}, vy={self.velocity_y:.2f}")
 
         # Bewegungsprognose: Berechne die vorhergesagte Position basierend auf der Geschwindigkeit
         predicted_x = other_x + self.velocity_x * time_since_update
@@ -267,13 +277,25 @@ class Player:
         if other_moving:
             effective_alpha = min(0.9, effective_alpha * 1.5)  # Schnellere Interpolation bei Bewegung
 
-        # Interpoliere die Position mit Easing-Funktion (quadratische Interpolation)
-        # Dies erzeugt natürlichere Bewegungen als lineare Interpolation
-        t = 1.0 - (1.0 - effective_alpha) * (1.0 - effective_alpha)  # Quadratisches Easing
+        # Wenn Position-Smoothing aktiviert ist, passe den Interpolationsfaktor an
+        if position_smoothing:
+            # Verwende den benutzerdefinierten Smoothing-Faktor
+            effective_alpha = effective_alpha * smoothing_factor
+
+        # Wähle die Easing-Funktion basierend auf der Bewegung
+        if other_moving:
+            # Kubisches Easing für flüssigere Bewegungen bei aktiver Bewegung
+            t = 1.0 - (1.0 - effective_alpha) * (1.0 - effective_alpha) * (1.0 - effective_alpha)  # Kubisches Easing
+        else:
+            # Quadratisches Easing für natürlichere Bewegungen im Stillstand
+            t = 1.0 - (1.0 - effective_alpha) * (1.0 - effective_alpha)  # Quadratisches Easing
 
         # Interpoliere zwischen der aktuellen Position und der vorhergesagten Position
         target_x = predicted_x if other_moving else other_x
         target_y = predicted_y if other_moving else other_y
+
+        # Speichere die aktuelle Position für Debug-Zwecke
+        old_x, old_y = self.x, self.y
 
         # Interpoliere die Position
         self.x = self.x + (target_x - self.x) * t
@@ -286,9 +308,10 @@ class Player:
         self.moving = (abs(target_x - self.x) > 0.1 or abs(target_y - self.y) > 0.1)
 
         # Debug-Logging
-        self.logger.debug(f"Interpolation: time_factor={time_factor:.2f}, effective_alpha={effective_alpha:.2f}, t={t:.2f}, moving={self.moving}")
+        self.logger.info(f"[INTERPOLATION] FACTORS: time_factor={time_factor:.2f}, effective_alpha={effective_alpha:.2f}, t={t:.2f}, moving={self.moving}")
+        self.logger.info(f"[INTERPOLATION] POSITION: old=({old_x:.1f}, {old_y:.1f}), target=({target_x:.1f}, {target_y:.1f}), new=({self.x:.1f}, {self.y:.1f})")
         if other_moving:
-            self.logger.debug(f"Prediction: other=({other_x:.1f}, {other_y:.1f}), predicted=({predicted_x:.1f}, {predicted_y:.1f}), final=({self.x:.1f}, {self.y:.1f})")
+            self.logger.info(f"[INTERPOLATION] PREDICTION: other=({other_x:.1f}, {other_y:.1f}), predicted=({predicted_x:.1f}, {predicted_y:.1f}), final=({self.x:.1f}, {self.y:.1f})")
 
     def render(self, screen: pygame.Surface, camera_offset: Tuple[int, int] = (0, 0)):
         """Render the player
@@ -441,7 +464,7 @@ class Player:
         # Erstelle ein Logging-Eintrag für die Netzwerkdaten
         self.logger.info(f"[SPIELERSYNC] SERIALIZING PLAYER DATA: player_id={self.player_id}, x={self.x}, y={self.y}, direction={self.direction}")
 
-        return {
+        data = {
             "player_id": self.player_id,
             "name": self.name,
             "character_type": self.character_type,
@@ -455,6 +478,16 @@ class Player:
             "emote": self.emote,
             "emote_timer": self.emote_timer if self.emote else 0
         }
+
+        # Füge Spawn-Index hinzu, wenn verfügbar
+        if self.spawn_index >= 0:
+            data["spawn_index"] = self.spawn_index
+
+        # Füge Server-zugewiesene Position hinzu, wenn verfügbar
+        if self.server_assigned_position is not None:
+            data["server_assigned_position"] = self.server_assigned_position
+
+        return data
 
     def has_significant_changes(self) -> bool:
         """Check if the player has significant changes that should be sent over the network

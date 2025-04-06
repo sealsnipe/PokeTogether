@@ -1,0 +1,23 @@
+Testbericht für Spielerposition-Synchronisierung (20250406_172907)
+================================================================================
+
+Phase: before
+----------------------------------------
+  client1:
+  client2:
+
+Phase: after_client1_move
+----------------------------------------
+  client1:
+  client2:
+
+Phase: after_client2_move
+----------------------------------------
+  client1:
+  client2:
+
+Auswertung
+----------------------------------------
+
+Zusammenfassung
+----------------------------------------

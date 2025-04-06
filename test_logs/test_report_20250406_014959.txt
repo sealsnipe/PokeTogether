@@ -1,0 +1,69 @@
+=== LOCAL MULTIPLAYER TEST REPORT ===
+Test Date: 2025-04-06 01:49:59
+Test Result: FAILURE
+
+=== SERVER INFO ===
+PID: 28772
+Exit Code: Still running
+Stdout Log: test_logs\server\server_stdout_20250406_014951.log
+Stderr Log: test_logs\server\server_stderr_20250406_014951.log
+
+=== CLIENT 1 INFO ===
+PID: 3268
+Exit Code: 1
+Stdout Log: test_logs\client1\client1_stdout_20250406_014956.log
+Stderr Log: test_logs\client1\client1_stderr_20250406_014956.log
+
+=== CLIENT 2 INFO ===
+PID: 23672
+Exit Code: Still running
+Stdout Log: test_logs\client2\client2_stdout_20250406_014959.log
+Stderr Log: test_logs\client2\client2_stderr_20250406_014959.log
+
+=== SERVER LOG EXCERPT ===
+SERVER
+SUCCESSFULLY CONNECTED TO MULTIPLAYER SESSION
+[CONNECTION_STATUS] CONNECTED TO SERVER: True
+2025-04-06 01:49:54 - game.network.client - INFO - [DATENFLUSS] STARTING MESSAGE LISTENER LOOP
+2025-04-06 01:49:54 - game.network.client - INFO - [DATENFLUSS] RECEIVED MESSAGE FROM SERVER: {"type": "welcome", "client_id": "78bfcfea-b897-49fd-93b5-0cbb7d6a3c65", "players": {}}
+2025-04-06 01:49:54 - game.network.server - INFO - Received connection confirmation from client 78bfcfea-b897-49fd-93b5-0cbb7d6a3c65
+2025-04-06 01:49:54 - game.network.client - INFO - [DATENFLUSS] PROCESSING MESSAGE: type=welcome, data={"type": "welcome", "client_id": "78bfcfea-b897-49fd-93b5-0cbb7d6a3c65", "players": {}}
+2025-04-06 01:49:54 - game.network.server - INFO - Client info: {'hostname': 'DESKTOP-MQITL2U', 'ip': '192.168.0.60'}
+2025-04-06 01:49:54 - game.network.client - INFO - [DATENFLUSS] CALLING HANDLER FOR MESSAGE TYPE: welcome
+2025-04-06 01:49:54 - game.network.client - INFO - Received welcome message. Client ID: 78bfcfea-b897-49fd-93b5-0cbb7d6a3c65
+2025-04-06 01:49:54 - game.network.server - INFO - Sent connection acknowledgement to client 78bfcfea-b897-49fd-93b5-0cbb7d6a3c65
+2025-04-06 01:49:54 - game.network.client - INFO - Current players: 0
+2025-04-06 01:49:54 - game.network.client - INFO - [DATENFLUSS] RECEIVED MESSAGE FROM SERVER: {"type": "connection_acknowledged", "server_time": 1743896994.4273152, "message": "Connection confir...
+2025-04-06 01:49:54 - game.network.client - INFO - [DATENFLUSS] PROCESSING MESSAGE: type=connection_acknowledged, data={"type": "connection_acknowledged", "server_time": 1743896994.4273152, "message": "Connection confir...
+2025-04-06 01:49:54 - game.network.client - INFO - [DATENFLUSS] CALLING HANDLER FOR MESSAGE TYPE: connection_acknowledged
+2025-04-06 01:49:54 - game.network.client - INFO - Connection acknowledged by server: Connection confirmed and acknowledged
+2025-04-06 01:49:54 - game.network.client - INFO - Estimated latency (RTT): 0.65 ms
+
+
+=== CLIENT 1 LOG EXCERPT ===
+RIBUTE 'on_player_update'
+2025-04-06 01:49:56 - game.core.game_refactored - INFO - [DATENFLUSS] GAME HAS METHOD '_on_player_update'
+2025-04-06 01:49:56 - game.core.game_refactored - INFO - [DATENFLUSS] REGISTERING CALLBACK: on_player_update = self._on_player_update
+2025-04-06 01:49:56 - game.core.game_refactored - INFO - [DATENFLUSS] CALLBACK REGISTERED: on_player_update
+2025-04-06 01:49:56 - game.core.game_refactored - INFO - [DATENFLUSS] REGISTERING CALLBACK: on_player_disconnected = self._on_player_disconnected
+2025-04-06 01:49:56 - game.core.game_refactored - INFO - [DATENFLUSS] CALLBACK REGISTERED: on_player_disconnected
+2025-04-06 01:49:56 - game.core.game_refactored - INFO - [DATENFLUSS] REGISTERING CALLBACK: on_chat_message = self._on_chat_message
+2025-04-06 01:49:56 - game.core.game_refactored - INFO - [DATENFLUSS] CALLBACK REGISTERED: on_chat_message
+2025-04-06 01:49:56 - game.core.game_refactored - INFO - [DATENFLUSS] CALLBACK VERIFICATION: on_player_update is correctly registered
+2025-04-06 01:49:56 - game.core.game_refactored - INFO - [DATENFLUSS] MULTIPLAYER CALLBACKS REGISTERED SUCCESSFULLY
+2025-04-06 01:49:56 - game.ui.main_menu_refactored - INFO - Showing main menu
+2025-04-06 01:49:56 - __main__ - INFO - Screenshots enabled
+2025-04-06 01:49:56 - game.core.game_refactored - INFO - Enabling automatic screenshots
+2025-04-06 01:49:56 - game.core.game_refactored - INFO - Screenshot erstellt: screenshots\player1/test_20250406_014956_single_enabled.png
+2025-04-06 01:49:56 - __main__ - INFO - Joining game at localhost:8765
+2025-04-06 01:49:56 - __main__ - ERROR - Error running game: Game.join_session() got an unexpected keyword argument 'config'
+Traceback (most recent call last):
+  File "C:\Users\Matthias\Documents\augment-projects\PokeTogether\src\main_refactored.py", line 174, in main
+    game.join_session(host, port, config=config)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: Game.join_session() got an unexpected keyword argument 'config'
+
+
+=== CLIENT 2 LOG EXCERPT ===
+
+

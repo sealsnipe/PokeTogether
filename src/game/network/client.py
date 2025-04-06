@@ -66,14 +66,17 @@ class GameClient:
             data: Positions update message data
         """
         positions = data.get("positions", {})
+        server_timestamp = data.get("server_timestamp", time.time())
 
         self.logger.info(f"[SPIELERSYNC] RECEIVED POSITIONS UPDATE: {json.dumps(positions)}")
+        self.logger.info(f"[SPIELERSYNC] SERVER TIMESTAMP: {server_timestamp}")
 
         # Callback aufrufen, wenn registriert
         if hasattr(self, 'on_positions_update') and self.on_positions_update:
             self.logger.info(f"[DATENFLUSS] CALLING ON_POSITIONS_UPDATE CALLBACK")
             try:
-                self.on_positions_update(positions)
+                # Sende die vollständigen Daten mit Metadaten
+                self.on_positions_update(data)
                 self.logger.info(f"[DATENFLUSS] ON_POSITIONS_UPDATE CALLBACK CALLED SUCCESSFULLY")
             except Exception as e:
                 self.logger.error(f"[DATENFLUSS] ERROR CALLING ON_POSITIONS_UPDATE CALLBACK: {e}")

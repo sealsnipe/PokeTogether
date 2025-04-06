@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PokeTogether - Dokumentation</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        h1, h2, h3, h4 {
+            color: #e53935;
+        }
+        h1 {
+            text-align: center;
+            border-bottom: 2px solid #e53935;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+        h2 {
+            margin-top: 30px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+        }
+        code {
+            background-color: #f0f0f0;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: Consolas, Monaco, 'Andale Mono', monospace;
+            font-size: 0.9em;
+        }
+        pre {
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: Consolas, Monaco, 'Andale Mono', monospace;
+            font-size: 0.9em;
+        }
+        .key {
+            display: inline-block;
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            padding: 2px 6px;
+            margin: 0 2px;
+            font-family: Consolas, Monaco, 'Andale Mono', monospace;
+            font-size: 0.9em;
+            box-shadow: 0 1px 1px rgba(0,0,0,0.2);
+        }
+        .note {
+            background-color: #fff8e1;
+            border-left: 4px solid #ffc107;
+            padding: 10px;
+            margin: 15px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        .warning {
+            background-color: #ffebee;
+            border-left: 4px solid #e53935;
+            padding: 10px;
+            margin: 15px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            font-size: 0.9em;
+            color: #777;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #f5f5f5;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .step {
+            background-color: #f5f5f5;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 10px;
+            counter-increment: step-counter;
+            position: relative;
+            padding-left: 50px;
+        }
+        .step:before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: #e53935;
+            color: white;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 25px;
+            font-weight: bold;
+        }
+        .task-list {
+            counter-reset: task-counter;
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .task-list > li {
+            background-color: #f5f5f5;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+            counter-increment: task-counter;
+            position: relative;
+            padding-left: 40px;
+        }
+        .task-list > li:before {
+            content: counter(task-counter);
+            position: absolute;
+            left: 10px;
+            top: 15px;
+            background-color: #e53935;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 24px;
+            font-weight: bold;
+        }
+        .task-list ul {
+            margin-top: 10px;
+            margin-bottom: 0;
+        }
+        .task-list ul li {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PokeTogether - Dokumentation</h1>
+
+        <h2>Übersicht</h2>
+        <p>
+            PokeTogether ist ein Pokémon-ähnliches Spiel mit Multiplayer-Funktionalität, das mit Python und Pygame entwickelt wurde.
+            Spieler können sich in einer gemeinsamen Spielwelt bewegen und miteinander interagieren.
+        </p>
+    </div>
+
+    <div class="container">
+        <h2>Installation</h2>
+
+        <h3>Methode 1: Ausführbare Datei (Windows)</h3>
+        <div class="step">
+            Entpacke die ZIP-Datei in einen beliebigen Ordner
+        </div>
+        <div class="step">
+            Starte das Spiel durch Doppelklick auf <code>PokeTogether.exe</code> oder <code>start_game.bat</code>
+        </div>
+
+        <h3>Methode 2: Quellcode (alle Plattformen)</h3>
+        <div class="step">
+            Stelle sicher, dass Python 3.8 oder höher installiert ist
+        </div>
+        <div class="step">
+            Klone das Repository oder lade es als ZIP-Datei herunter
+        </div>
+        <div class="step">
+            Öffne eine Kommandozeile im Projektverzeichnis
+        </div>
+        <div class="step">
+            Installiere die erforderlichen Pakete:
+            <pre>pip install -r requirements.txt</pre>
+        </div>
+        <div class="step">
+            Starte das Spiel:
+            <pre>python src/main.py</pre>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>Steuerung</h2>
+        <table>
+            <tr>
+                <th>Aktion</th>
+                <th>Tastatur</th>
+                <th>Controller</th>
+            </tr>
+            <tr>
+                <td>Bewegen</td>
+                <td><span class="key">↑</span> <span class="key">↓</span> <span class="key">←</span> <span class="key">→</span></td>
+                <td>D-Pad</td>
+            </tr>
+            <tr>
+                <td>Bestätigen</td>
+                <td><span class="key">Enter</span></td>
+                <td>A-Taste</td>
+            </tr>
+            <tr>
+                <td>Zurück/Menü schließen</td>
+                <td><span class="key">Escape</span></td>
+                <td>B-Taste</td>
+            </tr>
+            <tr>
+                <td>Rennen</td>
+                <td><span class="key">Shift</span></td>
+                <td>RB-Taste</td>
+            </tr>
+            <tr>
+                <td>Vorspulen</td>
+                <td><span class="key">F</span> oder <span class="key">Leertaste</span></td>
+                <td>LB-Taste</td>
+            </tr>
+            <tr>
+                <td>Ingame-Menü öffnen</td>
+                <td><span class="key">Enter</span></td>
+                <td>Start-Taste</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="container">
+        <h2>Multiplayer-Modus</h2>
+        <p>
+            PokeTogether bietet einen integrierten Multiplayer-Modus, der es mehreren Spielern ermöglicht,
+            sich in der Spielwelt zu sehen und zu interagieren.
+        </p>
+
+        <h3>Als Host (Server)</h3>
+        <div class="step">
+            Starte das Spiel und wähle "New Game"
+        </div>
+        <div class="step">
+            Drücke <span class="key">Enter</span> oder die Start-Taste, um das Ingame-Menü zu öffnen
+        </div>
+        <div class="step">
+            Wähle "MULTIPLAYER"
+        </div>
+        <div class="step">
+            Wähle "HOST GAME", um eine Multiplayer-Session zu starten
+        </div>
+        <div class="step">
+            Teile deine IP-Adresse mit anderen Spielern (siehe unten)
+        </div>
+
+        <h3>Als Client</h3>
+        <div class="step">
+            Starte das Spiel und wähle "New Game"
+        </div>
+        <div class="step">
+            Drücke <span class="key">Enter</span> oder die Start-Taste, um das Ingame-Menü zu öffnen
+        </div>
+        <div class="step">
+            Wähle "MULTIPLAYER"
+        </div>
+        <div class="step">
+            Wähle "JOIN GAME", um einer Multiplayer-Session beizutreten
+        </div>
+        <div class="step">
+            Gib die IP-Adresse des Hosts ein (standardmäßig wird "localhost" verwendet)
+        </div>
+
+        <h3>IP-Adresse herausfinden (für den Host)</h3>
+        <p>
+            Öffne eine Kommandozeile und gib ein:
+        </p>
+        <ul>
+            <li>Windows: <code>ipconfig</code></li>
+            <li>Mac/Linux: <code>ifconfig</code> oder <code>ip addr</code></li>
+        </ul>
+        <p>
+            Suche nach der IPv4-Adresse deines LAN-Adapters (in der Regel beginnt sie mit 192.168.x.x).
+        </p>
+
+        <div class="note">
+            <strong>Hinweis:</strong> Stelle sicher, dass keine Firewall den Port 8765 blockiert,
+            da dieser für die Multiplayer-Verbindung verwendet wird.
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>Fehlerbehebung</h2>
+        <h3>Verbindungsprobleme</h3>
+        <ul>
+            <li>Stelle sicher, dass keine Firewall den Port 8765 blockiert</li>
+            <li>Überprüfe, ob die IP-Adresse korrekt eingegeben wurde</li>
+            <li>Stelle sicher, dass Host und Client im selben Netzwerk sind</li>
+        </ul>
+
+        <h3>Spiel startet nicht</h3>
+        <ul>
+            <li>Überprüfe, ob alle erforderlichen Pakete installiert sind</li>
+            <li>Stelle sicher, dass Python 3.8 oder höher installiert ist</li>
+            <li>Überprüfe, ob alle Dateien im richtigen Verzeichnis sind</li>
+        </ul>
+
+        <h3>Steuerung funktioniert nicht</h3>
+        <ul>
+            <li>Überprüfe, ob ein Controller angeschlossen ist</li>
+            <li>Stelle sicher, dass der Controller von Pygame erkannt wird</li>
+            <li>Versuche, die Tastatur anstelle des Controllers zu verwenden</li>
+        </ul>
+    </div>
+
+    <div class="container">
+        <h2>Technische Details</h2>
+        <h3>Architektur</h3>
+        <p>
+            PokeTogether verwendet eine Client-Server-Architektur für den Multiplayer-Modus:
+        </p>
+        <ul>
+            <li><strong>Server:</strong> Verwaltet die Spieler-Sessions und synchronisiert die Spielerdaten</li>
+            <li><strong>Client:</strong> Verbindet sich mit dem Server und sendet/empfängt Spielerdaten</li>
+            <li><strong>WebSockets:</strong> Werden für die Echtzeit-Kommunikation zwischen Client und Server verwendet</li>
+        </ul>
+
+        <h3>Verwendete Technologien</h3>
+        <ul>
+            <li><strong>Python:</strong> Programmiersprache</li>
+            <li><strong>Pygame:</strong> Spiel-Engine</li>
+            <li><strong>WebSockets:</strong> Netzwerkkommunikation</li>
+            <li><strong>PyInstaller:</strong> Erstellung ausführbarer Dateien</li>
+        </ul>
+    </div>
+
+    <div class="container">
+        <h2>Codestruktur und Zusammenhänge</h2>
+
+        <h3>Projektstruktur</h3>
+        <p>Das Projekt ist in mehrere Module unterteilt, die jeweils spezifische Funktionalitäten bereitstellen:</p>
+        <pre>
+/PokeTogether
+├── assets/                  # Spielressourcen (Grafiken, Sounds, Maps)
+├── src/                     # Quellcode
+│   ├── game/                # Hauptspielcode
+│   │   ├── core/            # Kernfunktionalität
+│   │   │   ├── game.py      # Hauptspielklasse
+│   │   │   ├── camera.py    # Kamerasteuerung
+│   │   │   ├── input_handler.py # Eingabebehandlung
+│   │   │   └── settings.py  # Spieleinstellungen
+│   │   ├── entities/        # Spielentitäten
+│   │   │   ├── player.py    # Spielerklasse
+│   │   │   └── npc.py       # NPC-Klassen
+│   │   ├── maps/            # Kartenimplementierung
+│   │   │   └── simple_map.py # Einfache Kartenklasse
+│   │   ├── network/         # Netzwerkfunktionalität
+│   │   │   ├── server.py    # Server-Implementierung
+│   │   │   ├── client.py    # Client-Implementierung
+│   │   │   └── multiplayer_manager.py # Multiplayer-Verwaltung
+│   │   └── ui/              # Benutzeroberfläche
+│   │       ├── main_menu.py # Hauptmenü
+│   │       ├── ingame_menu.py # Ingame-Menü
+│   │       └── options_menu.py # Optionsmenü
+│   └── main.py              # Haupteinstiegspunkt
+├── settings.json            # Konfigurationsdatei
+└── requirements.txt         # Abhängigkeiten
+        </pre>
+
+        <h3>Hauptkomponenten und ihre Zusammenhänge</h3>
+
+        <h4>Game-Klasse (src/game/core/game.py)</h4>
+        <p>Die zentrale Klasse, die das gesamte Spiel steuert:</p>
+        <ul>
+            <li>Initialisiert alle Komponenten (Spieler, Kamera, Karte, Menüs)</li>
+            <li>Implementiert die Hauptspielschleife (Game Loop)</li>
+            <li>Verwaltet die verschiedenen Spielzustände (Hauptmenü, Spielen, Pause, etc.)</li>
+            <li>Koordiniert die Eingabebehandlung und Rendering</li>
+            <li>Integriert die Multiplayer-Funktionalität</li>
+        </ul>
+        <pre>
+# Vereinfachter Ausschnitt aus game.py
+class Game:
+    def __init__(self):
+        # Initialisierung der Komponenten
+        self.screen = pygame.display.set_mode((800, 600))
+        self.input_handler = InputHandler()
+        self.player = Player("Red", 560, 448)
+        self.camera = Camera(800, 600, 1120, 896)
+        self.current_map = SimpleMap(35, 28, 32)
+
+        # Multiplayer-Komponenten
+        self.multiplayer_manager = MultiplayerManager()
+        self.other_players = {}
+        self.multiplayer_active = False
+
+    def run(self):
+        # Hauptspielschleife
+        while self.running:
+            self.handle_events()
+            self.update()
+            self.render()
+            pygame.display.flip()
+            self.clock.tick(60)
+        </pre>
+
+        <h4>InputHandler-Klasse (src/game/core/input_handler.py)</h4>
+        <p>Verarbeitet Tastatur- und Controller-Eingaben:</p>
+        <ul>
+            <li>Erkennt angeschlossene Controller</li>
+            <li>Mappt Tasten und Controller-Buttons auf Aktionen</li>
+            <li>Stellt Methoden bereit, um den Zustand von Eingaben abzufragen</li>
+        </ul>
+        <pre>
+# Vereinfachter Ausschnitt aus input_handler.py
+class InputHandler:
+    def __init__(self):
+        self.input_state = {}
+        self.input_pressed = {}
+        self.last_input_state = {}
+        self.controllers = []
+
+    def update(self):
+        # Aktualisiert den Eingabezustand
+        self.last_input_state = self.input_state.copy()
+        self.input_pressed = {}
+
+        # Tastatureingaben verarbeiten
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_UP]: self.input_state["up"] = True
+        # ... weitere Tasten
+
+        # Controller-Eingaben verarbeiten
+        for controller in self.controllers:
+            if controller.get_button(0): self.input_state["a"] = True
+            # ... weitere Buttons
+        </pre>
+
+        <h4>Player-Klasse (src/game/entities/player.py)</h4>
+        <p>Repräsentiert den Spielercharakter:</p>
+        <ul>
+            <li>Verwaltet Position und Bewegung</li>
+            <li>Implementiert Animation und Rendering</li>
+            <li>Reagiert auf Eingaben</li>
+        </ul>
+
+        <h4>MultiplayerManager-Klasse (src/game/network/multiplayer_manager.py)</h4>
+        <p>Koordiniert die Multiplayer-Funktionalität:</p>
+        <ul>
+            <li>Verwaltet Server- und Client-Instanzen</li>
+            <li>Startet und stoppt Multiplayer-Sessions</li>
+            <li>Synchronisiert Spielerdaten zwischen Clients</li>
+        </ul>
+        <pre>
+# Vereinfachter Ausschnitt aus multiplayer_manager.py
+class MultiplayerManager:
+    def __init__(self):
+        self.server = GameServer()
+        self.client = GameClient()
+        self.is_host = False
+        self.local_player_data = {}
+
+    def start_hosting(self, port=8765):
+        # Server starten und als Host fungieren
+        self.server.start()
+        self.connect_to_session("localhost", port)
+        self.is_host = True
+
+    def connect_to_session(self, host, port=8765):
+        # Mit einem Host verbinden
+        self.client.connect(host, port)
+
+    def update_player(self, player_data):
+        # Spielerdaten aktualisieren und an Server senden
+        self.local_player_data = player_data
+        self.client.send_player_update(player_data)
+        </pre>
+
+        <h4>Server- und Client-Klassen (src/game/network/server.py, src/game/network/client.py)</h4>
+        <p>Implementieren die Netzwerkkommunikation:</p>
+        <ul>
+            <li><strong>GameServer:</strong> Verwaltet Verbindungen und Broadcast von Spielerdaten</li>
+            <li><strong>GameClient:</strong> Verbindet sich mit dem Server und verarbeitet eingehende Nachrichten</li>
+        </ul>
+
+        <h3>Datenfluss im Multiplayer-Modus</h3>
+        <ol>
+            <li>Der Host startet eine Multiplayer-Session mit <code>multiplayer_manager.start_hosting()</code></li>
+            <li>Clients verbinden sich mit <code>multiplayer_manager.connect_to_session(host_ip)</code></li>
+            <li>Bei jeder Aktualisierung sendet jeder Client seine Spielerdaten (Position, Richtung, etc.) an den Server</li>
+            <li>Der Server broadcastet diese Daten an alle anderen verbundenen Clients</li>
+            <li>Jeder Client rendert die anderen Spieler basierend auf den empfangenen Daten</li>
+        </ol>
+
+        <h3>Rendering-Pipeline</h3>
+        <p>Der Rendering-Prozess folgt diesem Ablauf:</p>
+        <ol>
+            <li>Die Karte wird gerendert (Hintergrund, Terrain, Objekte)</li>
+            <li>Der lokale Spieler wird gerendert</li>
+            <li>Andere Spieler werden gerendert (im Multiplayer-Modus)</li>
+            <li>UI-Elemente werden über allem anderen gerendert</li>
+        </ol>
+        <pre>
+# Vereinfachter Ausschnitt aus game.py (render-Methode)
+def render(self):
+    # Bildschirm löschen
+    self.screen.fill((0, 0, 0))
+
+    if self.current_state == self.states["PLAYING"]:
+        # Karte rendern
+        self.current_map.render(self.screen, self.camera.get_offset())
+
+        # Spieler rendern
+        self.player.render(self.screen, self.camera.get_offset())
+
+        # Andere Spieler rendern (Multiplayer)
+        if self.multiplayer_active:
+            self._render_other_players()
+
+    # UI-Elemente rendern je nach Spielzustand
+    if self.current_state == self.states["MAIN_MENU"]:
+        self.main_menu.render()
+    elif self.current_state == self.states["INGAME_MENU"]:
+        self.ingame_menu.render()
+        </pre>
+    </div>
+
+    <div class="container">
+        <h2>Implementierungsdetails</h2>
+
+        <h3>Eingabebehandlung</h3>
+        <p>
+            Die Eingabebehandlung ist so konzipiert, dass sie sowohl Tastatur- als auch Controller-Eingaben unterstützt.
+            Der <code>InputHandler</code> abstrahiert die physischen Eingaben in logische Aktionen wie "up", "down", "a", "b", etc.
+        </p>
+        <p>
+            Besonders wichtig ist die Behandlung von Eingaben in verschiedenen Spielzuständen:
+        </p>
+        <ul>
+            <li>Im Spielzustand steuern die Eingaben den Spieler</li>
+            <li>In Menüs navigieren die Eingaben durch die Menüoptionen</li>
+            <li>Beim Wechsel zwischen Zuständen müssen Eingaben zurückgesetzt werden, um unerwünschte Aktionen zu vermeiden</li>
+        </ul>
+
+        <h3>Multiplayer-Synchronisation</h3>
+        <p>
+            Die Multiplayer-Implementierung verwendet ein einfaches Client-Server-Modell mit WebSockets für die Echtzeit-Kommunikation.
+            Jeder Client sendet regelmäßig seine Spielerdaten an den Server, der diese dann an alle anderen Clients weiterleitet.
+        </p>
+        <p>
+            Das Protokoll verwendet JSON-formatierte Nachrichten mit folgenden Typen:
+        </p>
+        <ul>
+            <li><code>welcome</code>: Begrüßungsnachricht vom Server mit Client-ID und aktuellen Spielern</li>
+            <li><code>player_update</code>: Aktualisierung der Spielerdaten (Position, Richtung, etc.)</li>
+            <li><code>player_disconnected</code>: Benachrichtigung, wenn ein Spieler die Session verlässt</li>
+            <li><code>chat_message</code>: Chat-Nachrichten zwischen Spielern</li>
+        </ul>
+        <pre>
+# Beispiel einer player_update-Nachricht
+{
+    "type": "player_update",
+    "client_id": "550e8400-e29b-41d4-a716-446655440000",
+    "player_data": {
+        "name": "Red",
+        "x": 560,
+        "y": 448,
+        "direction": "down",
+        "moving": false
+    }
+}
+        </pre>
+
+        <h3>Kamera und Rendering</h3>
+        <p>
+            Die Kamera folgt dem Spieler und sorgt dafür, dass er immer im sichtbaren Bereich bleibt.
+            Sie berechnet einen Offset, der auf alle gerenderten Objekte angewendet wird, um die korrekte Position auf dem Bildschirm zu bestimmen.
+        </p>
+        <pre>
+# Vereinfachter Ausschnitt aus camera.py
+class Camera:
+    def __init__(self, width, height, map_width, map_height, zoom=1.0):
+        self.width = width
+        self.height = height
+        self.map_width = map_width
+        self.map_height = map_height
+        self.zoom = zoom
+        self.x = 0
+        self.y = 0
+
+    def update(self, target_x, target_y):
+        # Kamera auf Spieler zentrieren
+        self.x = target_x - self.width / (2 * self.zoom)
+        self.y = target_y - self.height / (2 * self.zoom)
+
+        # Kamera innerhalb der Kartengrenzen halten
+        self.x = max(0, min(self.x, self.map_width - self.width / self.zoom))
+        self.y = max(0, min(self.y, self.map_height - self.height / self.zoom))
+
+    def get_offset(self):
+        # Offset für Rendering berechnen
+        return (-self.x * self.zoom, -self.y * self.zoom)
+        </pre>
+    </div>
+
+    <div class="container">
+        <h2>To-Do-Liste zur Fertigstellung des Spiels</h2>
+        <p>
+            Die folgende To-Do-Liste enthält kleinschrittige Aufgaben, die noch erledigt werden müssen, um das Spiel zu vervollständigen.
+            Die Aufgaben sind nach Priorität und logischer Reihenfolge geordnet.
+        </p>
+
+        <h3>1. Grundlegende Spielwelt</h3>
+        <ol class="task-list">
+            <li>
+                <strong>Kartenerstellung vervollständigen</strong>
+                <ul>
+                    <li>Erstellen einer vollständigen Karte von Pallet Town mit Tiled Map Editor</li>
+                    <li>Hinzufügen von Kollisionsdaten für alle Objekte</li>
+                    <li>Implementieren von Gebäudeeintritten und -austritten</li>
+                    <li>Erstellen von Innenräumen für Gebäude</li>
+                    <li>Hinzufügen von Verbindungen zu angrenzenden Gebieten (Route 1)</li>
+                </ul>
+            </li>
+            <li>
+                <strong>Spieler-Animation verbessern</strong>
+                <ul>
+                    <li>Implementieren von Lauf-Animationen für alle vier Richtungen</li>
+                    <li>Hinzufügen von Übergangsanimationen zwischen Stehen und Laufen</li>
+                    <li>Implementieren von Interaktionsanimationen (z.B. Sprechen, Gegenstände aufheben)</li>
+                </ul>
+            </li>
+            <li>
+                <strong>NPC-System implementieren</strong>
+                <ul>
+                    <li>Erstellen einer Basis-NPC-Klasse</li>
+                    <li>Implementieren von einfachen Bewegungsmustern (stehen, umherwandern)</li>
+                    <li>Hinzufügen von NPCs zu Pallet Town</li>
+                    <li>Implementieren eines einfachen Dialogsystems</li>
+                </ul>
+            </li>
+        </ol>
+
+        <h3>2. Interaktionen und Gameplay</h3>
+        <ol class="task-list">
+            <li>
+                <strong>Interaktionssystem implementieren</strong>
+                <ul>
+                    <li>Erkennung von interaktiven Objekten vor dem Spieler</li>
+                    <li>Implementieren von Interaktionen mit der A-Taste</li>
+                    <li>Hinzufügen von interaktiven Objekten (Türen, Schilder, NPCs)</li>
+                </ul>
+            </li>
+            <li>
+                <strong>Dialogsystem erweitern</strong>
+                <ul>
+                    <li>Implementieren eines Textbox-Systems mit Schreibmaschineneffekt</li>
+                    <li>Hinzufügen von Dialogoptionen und Verzweigungen</li>
+                    <li>Implementieren von Ereignissen, die durch Dialoge ausgelöst werden</li>
+                </ul>
+            </li>
+            <li>
+                <strong>Menüsystem vervollständigen</strong>
+                <ul>
+                    <li>Implementieren eines vollständigen Pokémon-Menüs</li>
+                    <li>Hinzufügen eines Inventarmenüs</li>
+                    <li>Implementieren eines Spielerprofilmenüs</li>
+                    <li>Hinzufügen eines Speicher- und Ladebildschirms</li>
+                </ul>
+            </li>
+        </ol>
+
+        <h3>3. Pokémon-Mechaniken</h3>
+        <ol class="task-list">
+            <li>
+                <strong>Pokémon-Datenmodell erstellen</strong>
+                <ul>
+                    <li>Definieren der Pokémon-Klasse mit allen Attributen</li>
+                    <li>Implementieren von Typen, Attacken und Statuswerten</li>
+                    <li>Erstellen einer Datenbank mit den ersten 151 Pokémon</li>
+                </ul>
+            </li>
+            <li>
+                <strong>Wildes Pokémon-Encounter-System</strong>
+                <ul>
+                    <li>Implementieren von Begegnungszonen (hohes Gras, Höhlen, etc.)</li>
+                    <li>Erstellen eines Zufallsgenerators für Pokémon-Begegnungen</li>
+                    <li>Implementieren des Übergangs zum Kampfbildschirm</li>
+                </ul>
+            </li>
+            <li>
+                <strong>Kampfsystem implementieren</strong>
+                <ul>
+                    <li>Erstellen des Kampfbildschirm-Layouts</li>
+                    <li>Implementieren der rundenbasierten Kampflogik</li>
+                    <li>Hinzufügen von Attacken und deren Effekten</li>
+                    <li>Implementieren von Statusänderungen und Statuseffekten</li>
+                    <li>Hinzufügen von Items im Kampf</li>
+                    <li>Implementieren des Fangsystems</li>
+                </ul>
+            </li>
+        </ol>
+
+        <h3>4. Multiplayer-Verbesserungen</h3>
+        <ol class="task-list">
+            <li>
+                <strong>Spielersynchronisation verbessern</strong>
+                <ul>
+                    <li>Implementieren von Interpolation für flüssigere Bewegungen</li>
+                    <li>Hinzufügen von Animationssynchronisation</li>
+                    <li>Verbessern der Fehlerbehandlung bei Verbindungsabbruch</li>
+                </ul>
+            </li>
+            <li>
+                <strong>Chat-System implementieren</strong>
+                <ul>
+                    <li>Erstellen einer Chat-Oberfläche</li>
+                    <li>Implementieren von Nachrichtenversand und -empfang</li>
+                    <li>Hinzufügen von Emotes und Schnellnachrichten</li>
+                </ul>
+            </li>
+            <li>
+                <strong>Spieler-Interaktionen hinzufügen</strong>
+                <ul>
+                    <li>Implementieren von Spieler-zu-Spieler-Dialogen</li>
+                    <li>Hinzufügen von Handelssystem</li>
+                    <li>Implementieren von Pokémon-Kämpfen zwischen Spielern</li>
+                </ul>
+            </li>
+        </ol>
+
+        <h3>5. Polishing und Optimierung</h3>
+        <ol class="task-list">
+            <li>
+                <strong>Sound und Musik hinzufügen</strong>
+                <ul>
+                    <li>Implementieren eines Sound-Systems</li>
+                    <li>Hinzufügen von Hintergrundmusik für verschiedene Gebiete</li>
+                    <li>Erstellen von Soundeffekten für Aktionen und Ereignisse</li>
+                </ul>
+            </li>
+            <li>
+                <strong>Speichersystem implementieren</strong>
+                <ul>
+                    <li>Erstellen eines Speicherformats für Spielstatus</li>
+                    <li>Implementieren von Speichern und Laden</li>
+                    <li>Hinzufügen von Autosave-Funktionalität</li>
+                </ul>
+            </li>
+            <li>
+                <strong>Performance-Optimierung</strong>
+                <ul>
+                    <li>Profiling und Identifizierung von Engpässen</li>
+                    <li>Optimieren des Renderings für größere Karten</li>
+                    <li>Verbessern der Netzwerkeffizienz im Multiplayer</li>
+                </ul>
+            </li>
+            <li>
+                <strong>Benutzerfreundlichkeit verbessern</strong>
+                <ul>
+                    <li>Hinzufügen von Tutorials und Hilfetexten</li>
+                    <li>Implementieren von anpassbaren Steuerungsoptionen</li>
+                    <li>Verbessern der UI für verschiedene Bildschirmgrößen</li>
+                </ul>
+            </li>
+        </ol>
+
+        <h3>6. Deployment und Distribution</h3>
+        <ol class="task-list">
+            <li>
+                <strong>Executable-Erstellung verbessern</strong>
+                <ul>
+                    <li>Optimieren des PyInstaller-Builds</li>
+                    <li>Hinzufügen eines Installationsprogramms</li>
+                    <li>Erstellen von Builds für verschiedene Plattformen</li>
+                </ul>
+            </li>
+            <li>
+                <strong>Dokumentation vervollständigen</strong>
+                <ul>
+                    <li>Erstellen einer Spielanleitung</li>
+                    <li>Aktualisieren der technischen Dokumentation</li>
+                    <li>Hinzufügen von Kommentaren im Code</li>
+                </ul>
+            </li>
+            <li>
+                <strong>Testen und Fehlerbehebung</strong>
+                <ul>
+                    <li>Durchführen von umfassenden Tests</li>
+                    <li>Beheben von bekannten Fehlern</li>
+                    <li>Sammeln von Feedback und Implementieren von Verbesserungen</li>
+                </ul>
+            </li>
+        </ol>
+    </div>
+
+    <div class="container">
+        <h2>Erweiterungsmöglichkeiten</h2>
+        <p>
+            PokeTogether bietet eine solide Grundlage, die in verschiedene Richtungen erweitert werden kann:
+        </p>
+
+        <h3>Spielmechaniken</h3>
+        <ul>
+            <li><strong>Kampfsystem:</strong> Implementierung eines rundenbasierten Kampfsystems ähnlich wie in den originalen Pokémon-Spielen</li>
+            <li><strong>Pokémon-Fangen:</strong> Möglichkeit, wilde Pokémon zu fangen und zu trainieren</li>
+            <li><strong>Inventarsystem:</strong> Verwaltung von Items und deren Verwendung</li>
+            <li><strong>Quest-System:</strong> Implementierung von Haupt- und Nebenquests</li>
+        </ul>
+
+        <h3>Technische Erweiterungen</h3>
+        <ul>
+            <li><strong>Dedizierter Server:</strong> Implementierung eines separaten Server-Prozesses für größere Multiplayer-Sessions</li>
+            <li><strong>Persistente Welt:</strong> Speichern des Weltzustands in einer Datenbank</li>
+            <li><strong>Verbesserte Grafik:</strong> Implementierung von Lichteffekten, Partikelsystemen, etc.</li>
+            <li><strong>KI-gesteuerte NPCs:</strong> Implementierung von intelligenten NPCs mit Pathfinding</li>
+        </ul>
+
+        <h3>Plattformübergreifende Unterstützung</h3>
+        <ul>
+            <li><strong>Mobile Version:</strong> Anpassung für Android und iOS</li>
+            <li><strong>Web-Version:</strong> Portierung zu WebAssembly mit Pygbag</li>
+            <li><strong>Cross-Platform-Multiplayer:</strong> Ermöglichung von plattformübergreifendem Multiplayer</li>
+        </ul>
+    </div>
+
+    <div class="footer">
+        <p>PokeTogether &copy; 2025 - Ein Pokémon-ähnliches Spiel mit Multiplayer-Funktionalität</p>
+    </div>
+</body>
+</html>

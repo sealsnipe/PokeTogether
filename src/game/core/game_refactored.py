@@ -52,7 +52,10 @@ class Game:
 
         # Fenster erstellen
         self.screen = pygame.display.set_mode((800, 600))
-        pygame.display.set_caption(self.config.get_window_title() + (" (Test Mode)" if minimized else ""))
+
+        # Fenstertitel setzen, mit Umgebungsvariable für Tests
+        window_title = os.environ.get("PYGAME_WINDOW_TITLE", self.config.get_window_title())
+        pygame.display.set_caption(window_title + (" (Test Mode)" if minimized else ""))
 
         # Fenster minimieren, wenn gewünscht
         if minimized:
@@ -478,6 +481,10 @@ class Game:
         # Karte rendern
         self.current_map.render(self.screen, self.camera.get_offset())
 
+        # Debug: Sichtbarkeitsbereich visualisieren, wenn aktiviert
+        if self.settings.get("debug", "show_visibility_area", False):
+            self._render_visibility_area()
+
         # Spieler rendern
         self.player.render(self.screen, self.camera.get_offset())
 
@@ -544,6 +551,44 @@ class Game:
         # Dialog rendern
         self.render_manager.render_input_dialog()
 
+    def _render_visibility_area(self) -> None:
+        """Rendert den Sichtbarkeitsbereich für Debugging"""
+        # Bildschirmgröße ermitteln
+        screen_width = self.screen.get_width()
+        screen_height = self.screen.get_height()
+
+        # Dynamische Toleranz berechnen (wie in _render_other_players)
+        base_tolerance = 200
+        zoom_factor = self.camera.zoom_factor
+        tolerance = int(base_tolerance * (1 + (1 / zoom_factor)))
+
+        # Sichtbarkeitsbereich als halbtransparentes Rechteck darstellen
+        visibility_surface = pygame.Surface((screen_width + 2*tolerance, screen_height + 2*tolerance), pygame.SRCALPHA)
+        visibility_surface.fill((0, 255, 0, 30))  # Grün, sehr transparent
+
+        # Rahmen um den Sichtbarkeitsbereich zeichnen
+        pygame.draw.rect(visibility_surface, (0, 255, 0, 100), (0, 0, screen_width + 2*tolerance, screen_height + 2*tolerance), 2)
+
+        # Gitternetzlinien für bessere Orientierung
+        grid_spacing = 100
+        for x in range(0, screen_width + 2*tolerance, grid_spacing):
+            pygame.draw.line(visibility_surface, (0, 255, 0, 50), (x, 0), (x, screen_height + 2*tolerance), 1)
+        for y in range(0, screen_height + 2*tolerance, grid_spacing):
+            pygame.draw.line(visibility_surface, (0, 255, 0, 50), (0, y), (screen_width + 2*tolerance, y), 1)
+
+        # Mittelpunkt markieren
+        center_x = (screen_width + 2*tolerance) // 2
+        center_y = (screen_height + 2*tolerance) // 2
+        pygame.draw.circle(visibility_surface, (255, 0, 0, 150), (center_x, center_y), 10)
+
+        # Sichtbarkeitsbereich auf den Bildschirm zeichnen (zentriert)
+        self.screen.blit(visibility_surface, (-tolerance, -tolerance))
+
+        # Informationstext anzeigen
+        font = pygame.font.SysFont(None, 20)
+        info_text = font.render(f"Visibility Area (Tolerance: {tolerance}, Zoom: {zoom_factor:.2f})", True, (0, 255, 0))
+        self.screen.blit(info_text, (10, 70))
+
     def _render_other_players(self) -> None:
         """Rendert die anderen Spieler im Multiplayer-Modus"""
         # Hole die anderen Spieler vom GameMultiplayer
@@ -561,6 +606,10 @@ class Game:
         # Temporärer Font für Spielernamen
         font = pygame.font.SysFont(None, 18)
 
+        # Debug-Ausgabe für die Kamera
+        camera_x, camera_y = self.camera.get_offset()
+        self.logger.info(f"[DATENFLUSS] CAMERA OFFSET: ({camera_x}, {camera_y})")
+
         for player_id, player_data in other_players.items():
             # Vollständige Spielerdaten loggen
             self.logger.info(f"[DATENFLUSS] RENDERING PLAYER: {player_id}, data={json.dumps(player_data)}")
@@ -573,36 +622,47 @@ class Game:
                 name = interpolated_player.name
                 character_type = interpolated_player.character_type
                 direction = interpolated_player.direction
+                self.logger.info(f"[DATENFLUSS] USING INTERPOLATED PLAYER: {player_id}, position=({x}, {y})")
             else:
-                x = player_data.get("x", 0)
-                y = player_data.get("y", 0)
+                x = float(player_data.get("x", 0))
+                y = float(player_data.get("y", 0))
                 name = player_data.get("name", "Player")
                 character_type = player_data.get("character_type", "Red")
                 direction = player_data.get("direction", "down")
+                self.logger.info(f"[DATENFLUSS] USING RAW PLAYER DATA: {player_id}, position=({x}, {y})")
 
             # Kamera-Offset anwenden
             screen_x, screen_y = self.camera.apply(x, y)
 
             # Debug-Ausgabe für das Rendering
-            self.logger.info(f"[DATENFLUSS] RENDERING PLAYER {name} (ID: {player_id}): x={x}, y={y}, screen_x={screen_x}, screen_y={screen_y}")
+            self.logger.info(f"[DATENFLUSS] RENDERING PLAYER {name} (ID: {player_id}): world_pos=({x}, {y}), screen_pos=({screen_x}, {screen_y})")
 
-            # Prüfen, ob der Spieler im erweiterten sichtbaren Bereich ist (mit Toleranz)
+            # Prüfen, ob der Spieler im erweiterten sichtbaren Bereich ist (mit dynamischer Toleranz)
             screen_width = self.screen.get_width()
             screen_height = self.screen.get_height()
-            # Erweitere den sichtbaren Bereich um 150 Pixel in jede Richtung für bessere Sichtbarkeit
-            tolerance = 150
 
-            self.logger.info(f"[VISIBILITY] CHECK: player={name}, world_pos=({x}, {y}), screen_pos=({screen_x}, {screen_y}), screen_size=({screen_width}, {screen_height}), tolerance={tolerance}")
+            # Dynamische Toleranz basierend auf Zoom-Faktor und Bildschirmgröße
+            base_tolerance = 200  # Erhöht von 150 auf 200 für größeren Sichtbarkeitsbereich
+            zoom_factor = self.camera.zoom_factor
+            # Größere Toleranz bei höherem Zoom
+            tolerance = int(base_tolerance * (1 + (1 / zoom_factor)))
 
-            # Sichtbarkeitsprüfung nur für Debug-Zwecke
+            self.logger.info(f"[VISIBILITY] CHECK: player={name}, world_pos=({x}, {y}), screen_pos=({screen_x}, {screen_y}), screen_size=({screen_width}, {screen_height}), tolerance={tolerance}, zoom={zoom_factor}")
+
+            # Verbesserte Sichtbarkeitsprüfung mit dynamischer Toleranz
             is_visible = (-tolerance <= screen_x <= screen_width + tolerance and
                          -tolerance <= screen_y <= screen_height + tolerance)
 
+            # Debug-Option: Erzwinge Sichtbarkeit, wenn in den Einstellungen aktiviert
+            if self.settings.get("debug", "force_player_visibility", False):
+                is_visible = True
+                self.logger.info(f"[VISIBILITY] FORCING VISIBILITY FOR PLAYER {name} (DEBUG SETTING)")
+
             # Debug-Ausgabe für die Sichtbarkeit
             if is_visible:
-                self.logger.debug(f"[VISIBILITY] PLAYER {name} IS VISIBLE")
+                self.logger.info(f"[VISIBILITY] PLAYER {name} IS VISIBLE")
             else:
-                self.logger.debug(f"[VISIBILITY] PLAYER {name} IS NOT VISIBLE")
+                self.logger.info(f"[VISIBILITY] PLAYER {name} IS NOT VISIBLE")
 
             # Farbe basierend auf dem Charaktertyp wählen
             color = (0, 0, 255)  # Standard: Blau
@@ -624,6 +684,20 @@ class Game:
             # Spieler als farbiges Rechteck darstellen
             player_rect = pygame.Rect(screen_x - 16, screen_y - 16, 32, 32)
             pygame.draw.rect(self.screen, color, player_rect)
+
+            # Koordinatengitter für bessere Sichtbarkeit der Position
+            grid_color = (255, 255, 255, 128)  # Halbtransparentes Weiß
+            # Horizontale Linie
+            pygame.draw.line(self.screen, grid_color, (screen_x - 20, screen_y), (screen_x + 20, screen_y), 1)
+            # Vertikale Linie
+            pygame.draw.line(self.screen, grid_color, (screen_x, screen_y - 20), (screen_x, screen_y + 20), 1)
+
+            # Spawn-Index anzeigen, wenn verfügbar
+            spawn_index = player_data.get("spawn_index", -1)
+            if spawn_index >= 0:
+                spawn_text = font.render(f"Spawn: {spawn_index}", True, (255, 255, 0))
+                spawn_rect = spawn_text.get_rect(centerx=player_rect.centerx, top=player_rect.bottom + 20)
+                self.screen.blit(spawn_text, spawn_rect)
 
             # Spielername anzeigen
             name_text = font.render(name, True, name_color)
@@ -658,12 +732,29 @@ class Game:
             # Debug-Informationen anzeigen
             if self.settings.get("debug", "show_player_info"):
                 debug_font = pygame.font.SysFont(None, 16)
-                debug_text = debug_font.render(
-                    f"ID: {player_id[:8]}... Pos: ({x}, {y})",
+                # Zeige mehr Debug-Informationen an
+                debug_text1 = debug_font.render(
+                    f"ID: {player_id[:8]}... Pos: ({x:.1f}, {y:.1f})",
                     True, (200, 200, 200)
                 )
-                debug_rect = debug_text.get_rect(center=(player_rect.centerx, player_rect.bottom + 15))
-                self.screen.blit(debug_text, debug_rect)
+                debug_text2 = debug_font.render(
+                    f"Screen: ({screen_x}, {screen_y})",
+                    True, (200, 200, 200)
+                )
+                debug_rect1 = debug_text1.get_rect(centerx=player_rect.centerx, top=player_rect.bottom + 5)
+                debug_rect2 = debug_text2.get_rect(centerx=player_rect.centerx, top=debug_rect1.bottom + 2)
+
+                # Hintergrund für Debug-Informationen
+                bg_rect = pygame.Rect(debug_rect1.left - 5, debug_rect1.top - 2,
+                                     max(debug_rect1.width, debug_rect2.width) + 10,
+                                     debug_rect1.height + debug_rect2.height + 6)
+                bg_surface = pygame.Surface((bg_rect.width, bg_rect.height), pygame.SRCALPHA)
+                bg_surface.fill((0, 0, 0, 128))  # Halbtransparentes Schwarz
+                self.screen.blit(bg_surface, bg_rect)
+
+                # Debug-Texte rendern
+                self.screen.blit(debug_text1, debug_rect1)
+                self.screen.blit(debug_text2, debug_rect2)
 
             # Emote rendern, wenn vorhanden
             emote = player_data.get("emote", None)
@@ -995,6 +1086,7 @@ class Game:
         # Spieler-Typ auf Blue setzen
         self.player.character_type = "Blue"
         self.player.name = "Blue"
+        self.player.spawn_index = 1  # Spieler 2 hat Spawn-Index 1
 
         # Automatisch mit localhost verbinden (keine Dialog-Anzeige mehr)
         self.join_session("localhost", 8765)
@@ -1003,6 +1095,9 @@ class Game:
         self.player.x = 560
         self.player.y = 448
         self.logger.info("[INFO] Spieler 2 startet bei Position (560, 448)")
+
+        # Initialisiere den GameMultiplayer mit dem Spieler
+        self.game_multiplayer.initialize(self.player)
 
     def _show_join_dialog(self) -> None:
         """Zeigt einen Dialog zum Beitreten einer Multiplayer-Session"""
@@ -1058,12 +1153,21 @@ class Game:
         # Spieler-Typ auf Red setzen
         self.player.character_type = "Red"
         self.player.name = "Red"
+        self.player.spawn_index = 0  # Spieler 1 hat Spawn-Index 0
+
+        # Spieler 1 startet bei Position (460, 448)
+        self.player.x = 460
+        self.player.y = 448
+        self.logger.info("[INFO] Spieler 1 startet bei Position (460, 448)")
 
         self.logger.info("=== STARTING MULTIPLAYER SESSION AS HOST ===")
         port = self.config.get_server_port()
         self.game_multiplayer.initialize(self.player)
         self.game_multiplayer.set_player(self.player)
         self.game_multiplayer.start_hosting(port)
+
+        # Chat-UI initialisieren
+        self.chat_ui = ChatUI(self.screen, self.game_multiplayer.send_chat_message)
 
         self.logger.info("=== SUCCESSFULLY STARTED HOSTING MULTIPLAYER SESSION ===")
         self.multiplayer_active = True
@@ -1113,6 +1217,9 @@ class Game:
             # wenn die WebSocket-Verbindung tatsächlich hergestellt wurde.
             self.logger.info("=== CONNECTION ATTEMPT INITIATED ===")
             self.multiplayer_active = True
+
+            # Chat-UI initialisieren
+            self.chat_ui = ChatUI(self.screen, self.game_multiplayer.send_chat_message)
 
             # Spielzustand auf PLAYING setzen
             self.state_manager.change_state(GameState.PLAYING)

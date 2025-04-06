@@ -91,7 +91,7 @@ def start_server(port, log_dir):
         "stderr_log": stderr_log
     }
 
-def start_client(config_file, client_name, host, port, log_dir, enable_screenshots=False):
+def start_client(config_file, client_name, is_host, host, port, log_dir, enable_screenshots=False):
     """Start a client instance and capture its output"""
     logger.info(f"Starting {client_name} with config {config_file}...")
 
@@ -104,8 +104,15 @@ def start_client(config_file, client_name, host, port, log_dir, enable_screensho
     stdout_file = open(stdout_log, 'w')
     stderr_file = open(stderr_log, 'w')
 
-    # Prepare command
-    cmd = [sys.executable, "src/main_refactored.py", "--join", host, "--port", str(port)]
+    # Prepare command based on whether this is a host or client
+    if is_host:
+        # Start as host
+        cmd = [sys.executable, "src/main_refactored.py", "--host", "--port", str(port)]
+        logger.info(f"{client_name} will start as HOST")
+    else:
+        # Start as client joining the host
+        cmd = [sys.executable, "src/main_refactored.py", "--join", host, "--port", str(port)]
+        logger.info(f"{client_name} will JOIN host at {host}:{port}")
 
     # Add screenshots flag if enabled
     if enable_screenshots:
@@ -532,24 +539,25 @@ def main():
     processes_info = []
 
     try:
-        # Start server
-        server_info = start_server(args.port, log_dir)
-        processes_info.append(server_info)
-
-        # Wait for server to initialize
-        logger.info(f"Waiting {SERVER_STARTUP_TIME} seconds for server to initialize...")
-        time.sleep(SERVER_STARTUP_TIME)
-
-        # Start client 1
-        client1_info = start_client("config_player1.json", "Client1", "localhost", args.port, log_dir, args.screenshots)
+        # Start client 1 as HOST (this will also start the server)
+        logger.info("Starting Client1 as HOST...")
+        client1_info = start_client("config_player1.json", "Client1", True, "localhost", args.port, log_dir, args.screenshots)
         processes_info.append(client1_info)
 
-        # Wait between client starts
-        logger.info(f"Waiting {CLIENT_STARTUP_TIME} seconds before starting client 2...")
-        time.sleep(CLIENT_STARTUP_TIME)
+        # Create a dummy server_info for compatibility with the rest of the code
+        server_info = {
+            "stdout_log": client1_info["stdout_log"],  # Use the host's log as server log
+            "stderr_log": client1_info["stderr_log"],
+            "process": client1_info["process"]  # Reference the same process
+        }
 
-        # Start client 2
-        client2_info = start_client("config_player2.json", "Client2", "localhost", args.port, log_dir, args.screenshots)
+        # Wait for host to initialize
+        logger.info(f"Waiting {SERVER_STARTUP_TIME} seconds for host to initialize...")
+        time.sleep(SERVER_STARTUP_TIME)
+
+        # Start client 2 as JOIN
+        logger.info("Starting Client2 to JOIN the host...")
+        client2_info = start_client("config_player2.json", "Client2", False, "localhost", args.port, log_dir, args.screenshots)
         processes_info.append(client2_info)
 
         # Monitor connections

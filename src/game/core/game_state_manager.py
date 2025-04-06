@@ -34,15 +34,15 @@ class GameStateManager:
 
         self.current_state = initial_state
         self.previous_state = None
-        
+
         # State-spezifische Daten
         self.state_data: Dict[GameState, Dict[str, Any]] = {
             state: {} for state in GameState
         }
-        
+
         # Callbacks für State-Änderungen
         self.on_state_changed: Dict[GameState, Callable] = {}
-        
+
         # Input-Dialog-Variablen (für INPUT_DIALOG-State)
         self.input_dialog_text = ""
         self.input_dialog_title = ""
@@ -60,7 +60,7 @@ class GameStateManager:
         self.logger.info(f"Changing game state from {self.current_state} to {new_state}")
         self.previous_state = self.current_state
         self.current_state = new_state
-        
+
         # Callback für State-Änderung aufrufen, falls vorhanden
         if new_state in self.on_state_changed and self.on_state_changed[new_state]:
             self.on_state_changed[new_state]()
@@ -114,7 +114,7 @@ class GameStateManager:
         self.input_dialog_title = title
         self.input_dialog_text = default_text
         self.input_dialog_callback = callback
-        
+
         # Zum INPUT_DIALOG-State wechseln
         self.change_state(GameState.INPUT_DIALOG)
 
@@ -124,10 +124,14 @@ class GameStateManager:
             self.logger.info(f"Confirming input dialog with text: {self.input_dialog_text}")
             callback = self.input_dialog_callback
             text = self.input_dialog_text
-            
+
+            # Tastaturwiederholung deaktivieren
+            import pygame
+            pygame.key.set_repeat()
+
             # Zurück zum vorherigen State wechseln
             self.return_to_previous_state()
-            
+
             # Callback aufrufen
             callback(text)
         else:
@@ -137,6 +141,11 @@ class GameStateManager:
         """Bricht den Eingabedialog ab und kehrt zum vorherigen State zurück"""
         if self.current_state == GameState.INPUT_DIALOG:
             self.logger.info("Canceling input dialog")
+
+            # Tastaturwiederholung deaktivieren
+            import pygame
+            pygame.key.set_repeat()
+
             self.return_to_previous_state()
         else:
             self.logger.warning("Cannot cancel input dialog: not in INPUT_DIALOG state")
@@ -155,8 +164,11 @@ class GameStateManager:
 
     def remove_character_from_input_dialog(self) -> None:
         """Entfernt das letzte Zeichen aus dem Eingabedialog"""
-        if self.current_state == GameState.INPUT_DIALOG and self.input_dialog_text:
-            self.input_dialog_text = self.input_dialog_text[:-1]
-            self.logger.info(f"Character removed, text now: {self.input_dialog_text}")
+        if self.current_state == GameState.INPUT_DIALOG:
+            if self.input_dialog_text:
+                self.input_dialog_text = self.input_dialog_text[:-1]
+                self.logger.info(f"Character removed, text now: {self.input_dialog_text}")
+            else:
+                self.logger.debug("Cannot remove character: text is already empty")
         else:
-            self.logger.warning("Cannot remove character from input dialog: not in INPUT_DIALOG state or text is empty")
+            self.logger.warning("Cannot remove character from input dialog: not in INPUT_DIALOG state")

@@ -1,0 +1,99 @@
+=== LOCAL MULTIPLAYER TEST REPORT ===
+Test Date: 2025-04-06 01:17:54
+Test Result: SUCCESS
+
+=== SERVER INFO ===
+PID: 19116
+Exit Code: Still running
+Stdout Log: test_logs\server\server_stdout_20250406_011728.log
+Stderr Log: test_logs\server\server_stderr_20250406_011728.log
+
+=== CLIENT 1 INFO ===
+PID: 3268
+Exit Code: Still running
+Stdout Log: test_logs\client1\client1_stdout_20250406_011733.log
+Stderr Log: test_logs\client1\client1_stderr_20250406_011733.log
+
+=== CLIENT 2 INFO ===
+PID: 29676
+Exit Code: Still running
+Stdout Log: test_logs\client2\client2_stdout_20250406_011736.log
+Stderr Log: test_logs\client2\client2_stderr_20250406_011736.log
+
+=== SERVER LOG EXCERPT ===
+ield from Request.parse(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.reader.read_line,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Matthias\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\websockets\http11.py", line 140, in parse
+    raise EOFError("connection closed while reading HTTP request line") from exc
+EOFError: connection closed while reading HTTP request line
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Matthias\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\websockets\asyncio\server.py", line 356, in conn_handler
+    await connection.handshake(
+    ...<3 lines>...
+    )
+  File "C:\Users\Matthias\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\websockets\asyncio\server.py", line 207, in handshake
+    raise self.protocol.handshake_exc
+websockets.exceptions.InvalidMessage: did not receive a valid HTTP request
+2025-04-06 01:17:39 - websockets.server - INFO - connection open
+2025-04-06 01:17:39 - game.network.server - INFO - === NEW CLIENT CONNECTED: 213d9578-4ea4-4004-8484-1b3f2b68e869 ===
+2025-04-06 01:17:39 - game.network.server - INFO - [DATENFLUSS] CLIENT CONNECTED: ID=213d9578-4ea4-4004-8484-1b3f2b68e869, Path=None
+NEW CLIENT CONNECTED: 213d9578-4ea4-4004-8484-1b3f2b68e869
+[CONNECTION_STATUS] CLIENT 213d9578-4ea4-4004-8484-1b3f2b68e869 CONNECTED TO SERVER
+2025-04-06 01:17:39 - game.network.server - INFO - Received connection confirmation from client 213d9578-4ea4-4004-8484-1b3f2b68e869
+2025-04-06 01:17:39 - game.network.server - INFO - Client info: {'hostname': 'DESKTOP-MQITL2U', 'ip': '192.168.0.60'}
+2025-04-06 01:17:39 - game.network.server - INFO - Sent connection acknowledgement to client 213d9578-4ea4-4004-8484-1b3f2b68e869
+
+
+=== CLIENT 1 LOG EXCERPT ===
+- game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-06 01:17:54 - game.core.game_refactored - INFO - [DATENFLUSS] RENDERING OTHER PLAYERS. Count: 0
+2025-04-06 01:17:54 - game.core.game_refactored - INFO - [DATENFLUSS] OTHER_PLAYERS CONTENT: {}
+2025-04-06 01:17:54 - game.core.game_refactored - INFO - [DATENFLUSS] NO OTHER PLAYERS TO RENDER
+2025-04-06 01:17:54 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-06 01:17:54 - game.core.game_refactored - INFO - [DATENFLUSS] RENDERING OTHER PLAYERS. Count: 0
+2025-04-06 01:17:54 - game.core.game_refactored - INFO - [DATENFLUSS] OTHER_PLAYERS CONTENT: {}
+2025-04-06 01:17:54 - game.core.game_refactored - INFO - [DATENFLUSS] NO OTHER PLAYERS TO RENDER
+2025-04-06 01:17:54 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-06 01:17:54 - game.core.game_refactored - INFO - [DATENFLUSS] RENDERING OTHER PLAYERS. Count: 0
+2025-04-06 01:17:54 - game.core.game_refactored - INFO - [DATENFLUSS] OTHER_PLAYERS CONTENT: {}
+2025-04-06 01:17:54 - game.core.game_refactored - INFO - [DATENFLUSS] NO OTHER PLAYERS TO RENDER
+2025-04-06 01:17:54 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-06 01:17:54 - game.core.game_refactored - INFO - [DATENFLUSS] RENDERING OTHER PLAYERS. Count: 0
+2025-04-06 01:17:54 - game.core.game_refactored - INFO - [DATENFLUSS] OTHER_PLAYERS CONTENT: {}
+2025-04-06 01:17:54 - game.core.game_refactored - INFO - [DATENFLUSS] NO OTHER PLAYERS TO RENDER
+2025-04-06 01:17:54 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-06 01:17:54 - game.core.game_refactored - INFO - [DATENFLUSS] RENDERING OTHER PLAYERS. Count: 0
+2025-04-06 01:17:54 - game.core.game_refactored - INFO - [DATENFLUSS] OTHER_PLAYERS CONTENT: {}
+2025-04-06 01:17:54 - game.core.game_refactored - INFO - [DATENFLUSS] NO OTHER PLAYERS TO RENDER
+
+
+=== CLIENT 2 LOG EXCERPT ===
+- game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-06 01:17:54 - game.core.game_refactored - INFO - [DATENFLUSS] RENDERING OTHER PLAYERS. Count: 0
+2025-04-06 01:17:54 - game.core.game_refactored - INFO - [DATENFLUSS] OTHER_PLAYERS CONTENT: {}
+2025-04-06 01:17:54 - game.core.game_refactored - INFO - [DATENFLUSS] NO OTHER PLAYERS TO RENDER
+2025-04-06 01:17:54 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-06 01:17:54 - game.core.game_refactored - INFO - [DATENFLUSS] RENDERING OTHER PLAYERS. Count: 0
+2025-04-06 01:17:54 - game.core.game_refactored - INFO - [DATENFLUSS] OTHER_PLAYERS CONTENT: {}
+2025-04-06 01:17:54 - game.core.game_refactored - INFO - [DATENFLUSS] NO OTHER PLAYERS TO RENDER
+2025-04-06 01:17:54 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-06 01:17:54 - game.core.game_refactored - INFO - [DATENFLUSS] RENDERING OTHER PLAYERS. Count: 0
+2025-04-06 01:17:54 - game.core.game_refactored - INFO - [DATENFLUSS] OTHER_PLAYERS CONTENT: {}
+2025-04-06 01:17:54 - game.core.game_refactored - INFO - [DATENFLUSS] NO OTHER PLAYERS TO RENDER
+2025-04-06 01:17:54 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-06 01:17:54 - game.core.game_refactored - INFO - [DATENFLUSS] RENDERING OTHER PLAYERS. Count: 0
+2025-04-06 01:17:54 - game.core.game_refactored - INFO - [DATENFLUSS] OTHER_PLAYERS CONTENT: {}
+2025-04-06 01:17:54 - game.core.game_refactored - INFO - [DATENFLUSS] NO OTHER PLAYERS TO RENDER
+2025-04-06 01:17:54 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-06 01:17:54 - game.core.game_refactored - INFO - [DATENFLUSS] RENDERING OTHER PLAYERS. Count: 0
+2025-04-06 01:17:54 - game.core.game_refactored - INFO - [DATENFLUSS] OTHER_PLAYERS CONTENT: {}
+2025-04-06 01:17:54 - game.core.game_refactored - INFO - [DATENFLUSS] NO OTHER PLAYERS TO RENDER
+
+

@@ -1,0 +1,68 @@
+[
+  {"type": "wait", "duration": 2.0},
+
+  {"type": "key_press", "key": "down"},
+  {"type": "wait", "duration": 0.5},
+  {"type": "key_release", "key": "down"},
+  {"type": "wait", "duration": 0.5},
+
+  {"type": "key_press", "key": "action"},
+  {"type": "wait", "duration": 0.5},
+  {"type": "key_release", "key": "action"},
+  {"type": "wait", "duration": 3.0},
+
+  {"type": "key_press", "key": "up"},
+  {"type": "wait", "duration": 1.0},
+  {"type": "key_release", "key": "up"},
+  {"type": "wait", "duration": 0.5},
+
+  {"type": "key_press", "key": "right"},
+  {"type": "wait", "duration": 1.0},
+  {"type": "key_release", "key": "right"},
+  {"type": "wait", "duration": 0.5},
+
+  {"type": "key_press", "key": "down"},
+  {"type": "wait", "duration": 1.0},
+  {"type": "key_release", "key": "down"},
+  {"type": "wait", "duration": 0.5},
+
+  {"type": "key_press", "key": "left"},
+  {"type": "wait", "duration": 1.0},
+  {"type": "key_release", "key": "left"},
+  {"type": "wait", "duration": 1.0},
+
+  {"type": "key_press", "key": "menu"},
+  {"type": "wait", "duration": 0.5},
+  {"type": "key_release", "key": "menu"},
+  {"type": "wait", "duration": 1.0},
+
+  {"type": "key_press", "key": "down"},
+  {"type": "wait", "duration": 0.5},
+  {"type": "key_release", "key": "down"},
+  {"type": "wait", "duration": 0.5},
+
+  {"type": "key_press", "key": "down"},
+  {"type": "wait", "duration": 0.5},
+  {"type": "key_release", "key": "down"},
+  {"type": "wait", "duration": 0.5},
+
+  {"type": "key_press", "key": "down"},
+  {"type": "wait", "duration": 0.5},
+  {"type": "key_release", "key": "down"},
+  {"type": "wait", "duration": 0.5},
+
+  {"type": "key_press", "key": "down"},
+  {"type": "wait", "duration": 0.5},
+  {"type": "key_release", "key": "down"},
+  {"type": "wait", "duration": 0.5},
+
+  {"type": "key_press", "key": "down"},
+  {"type": "wait", "duration": 0.5},
+  {"type": "key_release", "key": "down"},
+  {"type": "wait", "duration": 0.5},
+
+  {"type": "key_press", "key": "action"},
+  {"type": "wait", "duration": 0.5},
+  {"type": "key_release", "key": "action"},
+  {"type": "wait", "duration": 2.0}
+]

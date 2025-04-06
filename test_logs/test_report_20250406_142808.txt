@@ -1,0 +1,96 @@
+=== LOCAL MULTIPLAYER TEST REPORT ===
+Test Date: 2025-04-06 14:28:08
+Test Result: FAILURE
+
+=== SERVER INFO ===
+PID: 12752
+Exit Code: 1
+Stdout Log: test_logs\client1\client1_stdout_20250406_142803.log
+Stderr Log: test_logs\client1\client1_stderr_20250406_142803.log
+
+=== CLIENT 1 INFO ===
+PID: 12752
+Exit Code: 1
+Stdout Log: test_logs\client1\client1_stdout_20250406_142803.log
+Stderr Log: test_logs\client1\client1_stderr_20250406_142803.log
+
+=== CLIENT 2 INFO ===
+PID: 22388
+Exit Code: Still running
+Stdout Log: test_logs\client2\client2_stdout_20250406_142808.log
+Stderr Log: test_logs\client2\client2_stderr_20250406_142808.log
+
+=== PLAYER POSITIONS ===
+Client 1 player positions:
+
+Client 2 player positions:
+
+=== POSITION SYNCHRONIZATION ===
+[FAILURE] Not all players are visible to each other.
+No players visible in Client2.
+No players visible in Client1.
+
+Positions found in Client1:
+
+Positions found in Client2:
+=== SERVER LOG EXCERPT ===
+tinue, Options, Exit
+2025-04-06 14:28:04 - game.ui.options_menu_refactored - INFO - Initializing options menu (refactored)
+2025-04-06 14:28:04 - game.ui.ingame_menu_refactored - INFO - Initializing in-game menu (refactored)
+2025-04-06 14:28:04 - game.ui.chat_ui - INFO - Initializing chat UI
+2025-04-06 14:28:04 - game.core.game_refactored - INFO - [DATENFLUSS] REGISTERING MULTIPLAYER CALLBACKS
+2025-04-06 14:28:04 - game.core.game_refactored - INFO - [DATENFLUSS] MULTIPLAYER CALLBACKS REGISTERED SUCCESSFULLY
+2025-04-06 14:28:04 - game.ui.main_menu_refactored - INFO - Showing main menu
+2025-04-06 14:28:04 - __main__ - INFO - Starting game as host
+2025-04-06 14:28:04 - game.core.game_refactored - INFO - Starting new game (as_host=True)
+2025-04-06 14:28:04 - game.core.game_refactored - INFO - === STARTING MULTIPLAYER SESSION AS HOST ===
+2025-04-06 14:28:04 - game.core.game_multiplayer - INFO - Initializing multiplayer functionality
+2025-04-06 14:28:04 - __main__ - ERROR - Error running game: 'GameMultiplayer' object has no attribute '_on_welcome'
+Traceback (most recent call last):
+  File "C:\Users\Matthias\Documents\augment-projects\PokeTogether\src\main_refactored.py", line 189, in main
+    game.start_new_game(as_host=True)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "C:\Users\Matthias\Documents\augment-projects\PokeTogether\src\game\core\game_refactored.py", line 888, in start_new_game
+    self.start_hosting()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Matthias\Documents\augment-projects\PokeTogether\src\game\core\game_refactored.py", line 968, in start_hosting
+    self.game_multiplayer.initialize(self.player)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\Matthias\Documents\augment-projects\PokeTogether\src\game\core\game_multiplayer.py", line 53, in initialize
+    self.multiplayer_manager.on_welcome = self._on_welcome
+                                          ^^^^^^^^^^^^^^^^
+AttributeError: 'GameMultiplayer' object has no attribute '_on_welcome'
+
+
+=== CLIENT 1 LOG EXCERPT ===
+tinue, Options, Exit
+2025-04-06 14:28:04 - game.ui.options_menu_refactored - INFO - Initializing options menu (refactored)
+2025-04-06 14:28:04 - game.ui.ingame_menu_refactored - INFO - Initializing in-game menu (refactored)
+2025-04-06 14:28:04 - game.ui.chat_ui - INFO - Initializing chat UI
+2025-04-06 14:28:04 - game.core.game_refactored - INFO - [DATENFLUSS] REGISTERING MULTIPLAYER CALLBACKS
+2025-04-06 14:28:04 - game.core.game_refactored - INFO - [DATENFLUSS] MULTIPLAYER CALLBACKS REGISTERED SUCCESSFULLY
+2025-04-06 14:28:04 - game.ui.main_menu_refactored - INFO - Showing main menu
+2025-04-06 14:28:04 - __main__ - INFO - Starting game as host
+2025-04-06 14:28:04 - game.core.game_refactored - INFO - Starting new game (as_host=True)
+2025-04-06 14:28:04 - game.core.game_refactored - INFO - === STARTING MULTIPLAYER SESSION AS HOST ===
+2025-04-06 14:28:04 - game.core.game_multiplayer - INFO - Initializing multiplayer functionality
+2025-04-06 14:28:04 - __main__ - ERROR - Error running game: 'GameMultiplayer' object has no attribute '_on_welcome'
+Traceback (most recent call last):
+  File "C:\Users\Matthias\Documents\augment-projects\PokeTogether\src\main_refactored.py", line 189, in main
+    game.start_new_game(as_host=True)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "C:\Users\Matthias\Documents\augment-projects\PokeTogether\src\game\core\game_refactored.py", line 888, in start_new_game
+    self.start_hosting()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Matthias\Documents\augment-projects\PokeTogether\src\game\core\game_refactored.py", line 968, in start_hosting
+    self.game_multiplayer.initialize(self.player)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\Matthias\Documents\augment-projects\PokeTogether\src\game\core\game_multiplayer.py", line 53, in initialize
+    self.multiplayer_manager.on_welcome = self._on_welcome
+                                          ^^^^^^^^^^^^^^^^
+AttributeError: 'GameMultiplayer' object has no attribute '_on_welcome'
+
+
+=== CLIENT 2 LOG EXCERPT ===
+
+

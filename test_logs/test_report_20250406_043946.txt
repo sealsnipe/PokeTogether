@@ -1,0 +1,42 @@
+=== LOCAL MULTIPLAYER TEST REPORT ===
+Test Date: 2025-04-06 04:39:46
+Test Result: FAILURE
+
+=== SERVER INFO ===
+PID: 24380
+Exit Code: 0
+Stdout Log: test_logs\server\server_stdout_20250406_043938.log
+Stderr Log: test_logs\server\server_stderr_20250406_043938.log
+
+=== CLIENT 1 INFO ===
+PID: 22084
+Exit Code: 2
+Stdout Log: test_logs\client1\client1_stdout_20250406_043943.log
+Stderr Log: test_logs\client1\client1_stderr_20250406_043943.log
+
+=== CLIENT 2 INFO ===
+PID: 30556
+Exit Code: Still running
+Stdout Log: test_logs\client2\client2_stdout_20250406_043946.log
+Stderr Log: test_logs\client2\client2_stderr_20250406_043946.log
+
+=== PLAYER POSITIONS ===
+Client 1 player positions:
+
+Client 2 player positions:
+
+=== POSITION SYNCHRONIZATION ===
+[FAILURE] Not all players are visible to each other.
+Player1 is not visible in Client2.
+Player2 is not visible in Client1.
+=== SERVER LOG EXCERPT ===
+
+
+=== CLIENT 1 LOG EXCERPT ===
+pygame 2.6.1 (SDL 2.28.4, Python 3.13.2)
+Hello from the pygame community. https://www.pygame.org/contribute.html
+
+
+=== CLIENT 2 LOG EXCERPT ===
+
+

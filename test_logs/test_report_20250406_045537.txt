@@ -1,0 +1,58 @@
+=== LOCAL MULTIPLAYER TEST REPORT ===
+Test Date: 2025-04-06 04:55:37
+Test Result: FAILURE
+
+=== SERVER INFO ===
+PID: 24364
+Exit Code: 0
+Stdout Log: test_logs\server\server_stdout_20250406_045529.log
+Stderr Log: test_logs\server\server_stderr_20250406_045529.log
+
+=== CLIENT 1 INFO ===
+PID: 30448
+Exit Code: Still running
+Stdout Log: test_logs\client1\client1_stdout_20250406_045534.log
+Stderr Log: test_logs\client1\client1_stderr_20250406_045534.log
+
+=== CLIENT 2 INFO ===
+PID: 11280
+Exit Code: Still running
+Stdout Log: test_logs\client2\client2_stdout_20250406_045537.log
+Stderr Log: test_logs\client2\client2_stderr_20250406_045537.log
+
+=== PLAYER POSITIONS ===
+Client 1 player positions:
+
+Client 2 player positions:
+
+=== POSITION SYNCHRONIZATION ===
+[FAILURE] Not all players are visible to each other.
+Player1 is not visible in Client2.
+Player2 is not visible in Client1.
+=== SERVER LOG EXCERPT ===
+Server running. Press Ctrl+C to stop.
+Error: There is no current event loop in thread 'MainThread'.
+
+
+=== CLIENT 1 LOG EXCERPT ===
+ed6-433b-84bb-0ce061307fed", "name": "Player", "character_type": "Red", "x": 560, "y": 448, "direction": "down", "moving": false, "current_frame": 0, "input_sequence_number": 0, "timestamp": 1743908137.1626625, "instance_id": "instance_DESKTOP-MQITL2U_30448_1743908134", "force_update": false, "client_time": 1743908137.1626644}
+2025-04-06 04:55:37 - game.core.game_multiplayer - INFO - [DATENFLUSS] SENDING PLAYER UPDATE: player_id=b8f29a10-1ed6-433b-84bb-0ce061307fed, x=560, y=448, direction=down
+2025-04-06 04:55:37 - game.network.multiplayer_manager - INFO - [DATENFLUSS] SENDING PLAYER UPDATE: {"player_id": "b8f29a10-1ed6-433b-84bb-0ce061307fed", "name": "Player", "character_type": "Red", "x": 560, "y": 448, "direction": "down", "moving": false, "current_frame": 0, "input_sequence_number": 0, "timestamp": 1743908137.1626625, "instance_id": "instance_DESKTOP-MQITL2U_30448_1743908134", "force_update": false, "client_time": 1743908137.1626644}
+2025-04-06 04:55:37 - game.network.multiplayer_manager - WARNING - Cannot send player update: not connected to server
+2025-04-06 04:55:37 - game.core.game_refactored - ERROR - Error in game loop: 'Game' object has no attribute 'other_players'
+Traceback (most recent call last):
+  File "C:\Users\Matthias\Documents\augment-projects\PokeTogether\src\game\core\game_refactored.py", line 989, in run
+    self.render_manager.render()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Matthias\Documents\augment-projects\PokeTogether\src\game\core\render_manager.py", line 57, in render
+    self.render_functions[current_state]()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Matthias\Documents\augment-projects\PokeTogether\src\game\core\game_refactored.py", line 467, in _render_playing
+    self.logger.info(f"[INFO] Rendering other players. Active: {len(self.other_players)} players")
+                                                                    ^^^^^^^^^^^^^^^^^^
+AttributeError: 'Game' object has no attribute 'other_players'
+
+
+=== CLIENT 2 LOG EXCERPT ===
+
+

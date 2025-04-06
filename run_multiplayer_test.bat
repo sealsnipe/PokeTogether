@@ -3,11 +3,12 @@ echo PokeTogether Multiplayer Test
 echo ==========================
 echo.
 
-echo Dieser Test startet zwei Instanzen des Spiels:
-echo 1. Eine Host-Instanz, die eine Multiplayer-Session hostet
-echo 2. Eine Client-Instanz, die sich mit der Host-Instanz verbindet
+echo Dieser Test startet einen Server und zwei Client-Instanzen:
+echo 1. Ein Server, der die Multiplayer-Verbindungen verwaltet
+echo 2. Client 1 (Player1), der sich mit dem Server verbindet
+echo 3. Client 2 (Player2), der sich mit dem Server verbindet
 echo.
-echo Bitte stelle sicher, dass du genug Arbeitsspeicher hast, um zwei Spielinstanzen gleichzeitig auszuführen.
+echo Der Test überprüft automatisch, ob beide Clients erfolgreich eine Verbindung zum Server herstellen können.
 echo.
 
 REM Frage den Benutzer, ob er fortfahren möchte
@@ -18,40 +19,21 @@ if /i not "%continue%"=="j" (
 )
 
 echo.
-echo Starte Host-Instanz...
+echo Starte automatisierten Multiplayer-Test...
 echo.
 
-REM Kopiere die Host-Testdatei in das input_instructions-Verzeichnis
-copy test_documentation\test_json\multiplayer_host_test.json input_instructions\current_test.json
-
-REM Starte die Host-Instanz minimiert
-start /min "PokeTogether Host" python src/main.py --minimized
-
-echo Host-Instanz gestartet. Warte 10 Sekunden, damit die Host-Instanz die Multiplayer-Session starten kann...
-timeout /t 10 /nobreak > nul
+REM Starte den automatisierten Test
+python test_local_multiplayer.py %*
+set EXIT_CODE=%ERRORLEVEL%
 
 echo.
-echo Starte Client-Instanz...
-echo.
+if %EXIT_CODE% == 0 (
+    echo TEST ERFOLGREICH: Beide Clients haben erfolgreich eine Verbindung zum Server hergestellt!
+) else (
+    echo TEST FEHLGESCHLAGEN: Es gab Probleme bei der Verbindung zum Server. Fehlercode: %EXIT_CODE%
+    echo Bitte überprüfe die Testberichte im Verzeichnis test_logs für weitere Details.
+)
 
-REM Kopiere die Client-Testdatei in das input_instructions-Verzeichnis
-copy test_documentation\test_json\multiplayer_client_test.json input_instructions\current_test.json
-
-REM Starte die Client-Instanz minimiert
-start /min "PokeTogether Client" python src/main.py --minimized
-
-echo Client-Instanz gestartet.
 echo.
-echo Beide Instanzen laufen jetzt. Die Tests werden automatisch ausgeführt.
-echo Überprüfe die Screenshots im screenshots-Verzeichnis, um die Ergebnisse zu sehen.
-echo.
-echo Drücke eine beliebige Taste, um die Tests zu beenden...
+echo Drücke eine beliebige Taste, um fortzufahren...
 pause > nul
-
-echo Beende die Tests...
-taskkill /FI "WINDOWTITLE eq PokeTogether Host" /F
-taskkill /FI "WINDOWTITLE eq PokeTogether Client" /F
-
-echo.
-echo Tests beendet. Überprüfe die Screenshots im screenshots-Verzeichnis.
-echo.
