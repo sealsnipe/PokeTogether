@@ -77,10 +77,9 @@ class Camera:
         rel_x = x - self.x
         rel_y = y - self.y
 
-        # Vereinfachte Transformation: Skaliere die Position basierend auf dem Zoom-Faktor
-        # Diese Formel ist einfacher und konsistenter
-        scaled_x = int(rel_x / self.zoom_factor)
-        scaled_y = int(rel_y / self.zoom_factor)
+        # Skaliere die Position basierend auf dem Zoom-Faktor und zentriere sie auf dem Bildschirm
+        scaled_x = int(rel_x / self.zoom_factor) + (self.screen_width - int(self.width / self.zoom_factor)) // 2
+        scaled_y = int(rel_y / self.zoom_factor) + (self.screen_height - int(self.height / self.zoom_factor)) // 2
 
         # Ausführliche Debug-Ausgabe für die Kamera-Transformation
         self.logger.debug(f"[CAMERA] TRANSFORM: world=({x}, {y}), camera=({self.x}, {self.y}), rel=({rel_x}, {rel_y}), screen=({scaled_x}, {scaled_y})")
