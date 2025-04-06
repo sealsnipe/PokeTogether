@@ -439,8 +439,10 @@ class Game:
             prediction = self.config.get_prediction()
             input_data = self.player.move(direction_x, direction_y, speed_multiplier, prediction)
 
-            # Wenn im Multiplayer-Modus und eine signifikante Änderung vorliegt, erzwinge ein Update
-            if self.multiplayer_active and (direction_x != 0 or direction_y != 0):
+            # Wenn im Multiplayer-Modus, erzwinge ein Update bei jeder Bewegung
+            if self.multiplayer_active:
+                # Immer ein Update erzwingen, unabhängig davon, ob sich der Spieler bewegt
+                # Dies ist wichtig, um die Position auch im Stillstand zu synchronisieren
                 self.force_player_data_update = True
 
         # Spieler aktualisieren
@@ -459,13 +461,26 @@ class Game:
                     temp_player.character_type = player_data.get("character_type", "Red")
                     self.interpolated_players[player_id] = temp_player
 
-                if self.config.get_interpolation() and not self.config.get_exact_positioning():
+                # Prüfe, ob exakte Positionierung aktiviert ist
+                if self.config.get_exact_positioning():
+                    # Exakte Positionierung ohne Interpolation
+                    self.logger.debug(f"Using exact positioning for player {player_id}")
+                    # Direkte Übernahme der Position ohne Interpolation
+                    self.interpolated_players[player_id].x = player_data.get("x", self.interpolated_players[player_id].x)
+                    self.interpolated_players[player_id].y = player_data.get("y", self.interpolated_players[player_id].y)
+                    self.interpolated_players[player_id].direction = player_data.get("direction", self.interpolated_players[player_id].direction)
+                    # Setze die Geschwindigkeit auf 0, um Nachschleppen zu vermeiden
+                    self.interpolated_players[player_id].velocity_x = 0
+                    self.interpolated_players[player_id].velocity_y = 0
+                    # Setze den Bewegungsstatus basierend auf den Daten
+                    self.interpolated_players[player_id].moving = player_data.get("moving", False)
+                elif self.config.get_interpolation():
                     # Interpoliere die Position des Spielers
                     self.logger.debug(f"Using interpolation for player {player_id}")
                     self.interpolated_players[player_id].interpolate(player_data)
                 else:
-                    # Exakte Positionierung ohne Interpolation
-                    self.logger.debug(f"Using exact positioning for player {player_id}")
+                    # Fallback: Einfache Positionierung ohne Interpolation
+                    self.logger.debug(f"Using simple positioning for player {player_id}")
                     self.interpolated_players[player_id].x = player_data.get("x", self.interpolated_players[player_id].x)
                     self.interpolated_players[player_id].y = player_data.get("y", self.interpolated_players[player_id].y)
                     self.interpolated_players[player_id].direction = player_data.get("direction", self.interpolated_players[player_id].direction)
@@ -751,13 +766,20 @@ class Game:
             self.logger.debug("[DATENFLUSS] NOT SENDING PLAYER DATA: Multiplayer is not active")
             return
 
-        # Prüfen, ob sich relevante Daten geändert haben
-        if not self.player.has_significant_changes() and not self.force_player_data_update:
-            self.logger.debug("[DATENFLUSS] NOT SENDING PLAYER DATA: No significant changes")
+        # Immer Spielerdaten senden, wenn force_player_data_update gesetzt ist
+        # oder wenn sich relevante Daten geändert haben
+        if not self.force_player_data_update and not self.player.has_significant_changes():
+            self.logger.debug("[DATENFLUSS] NOT SENDING PLAYER DATA: No significant changes and no force update")
             return
 
         # Spielerdaten mit der to_network_data Methode sammeln
         player_data = self.player.to_network_data()
+
+        # Zusätzliche Informationen hinzufügen, um die Synchronisierung zu verbessern
+        player_data["instance_id"] = self.config.get_instance_id()  # Eindeutige Instanz-ID
+        player_data["force_update"] = self.force_player_data_update  # Flag für erzwungenes Update
+        player_data["client_time"] = time.time()  # Aktuelle Client-Zeit
+
         self.logger.info(f"[DATENFLUSS] PLAYER DATA COLLECTED: {json.dumps(player_data)}")
 
         # Ausführlichere Log-Ausgabe für das Senden von Spielerdaten
@@ -808,6 +830,9 @@ class Game:
         is_new_player = client_id not in self.other_players
         if is_new_player:
             self.logger.info(f"[DATENFLUSS] NEW PLAYER JOINED: {player_data.get('name', 'Unknown')} (ID: {client_id})")
+            # Bei einem neuen Spieler sofort unsere eigenen Daten senden
+            self.force_player_data_update = True
+            self._send_player_data()
 
         # Prüfen, ob es sich um die eigenen Daten handelt
         own_player_id = self.player.player_id
@@ -824,6 +849,14 @@ class Game:
                 self.logger.debug(f"Applying server reconciliation for own player data")
                 self.player.apply_server_update(player_data, reconciliation=True)
             return
+
+        # Prüfen, ob ein erzwungenes Update vorliegt
+        force_update = player_data.get("force_update", False)
+        if force_update:
+            self.logger.info(f"[DATENFLUSS] RECEIVED FORCED UPDATE FROM CLIENT: {client_id}")
+            # Bei einem erzwungenen Update sofort unsere eigenen Daten senden
+            self.force_player_data_update = True
+            self._send_player_data()
 
         # Prüfen, ob die Spielerdaten vollständig sind
         if not player_data.get('x') or not player_data.get('y') or not player_data.get('player_id'):
@@ -877,7 +910,17 @@ class Game:
 
             if event_type == "force_player_data_update":
                 self.logger.info(f"[DATENFLUSS] RECEIVED FORCE_PLAYER_DATA_UPDATE EVENT")
+                # Sofortiges Update der Spielerdaten erzwingen
                 self.force_player_data_update = True
+                # Sofort Spielerdaten senden, ohne auf das nächste Update zu warten
+                self._send_player_data()
+
+            elif event_type == "new_client_connected":
+                self.logger.info(f"[DATENFLUSS] RECEIVED NEW_CLIENT_CONNECTED EVENT")
+                # Sofortiges Update der Spielerdaten erzwingen
+                self.force_player_data_update = True
+                # Sofort Spielerdaten senden, ohne auf das nächste Update zu warten
+                self._send_player_data()
 
     def _on_chat_message(self, player_name: str, message: str):
         """Callback für Chat-Nachrichten

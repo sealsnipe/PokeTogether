@@ -8,6 +8,7 @@ import json
 import os
 import logging
 import socket
+import time
 from typing import Dict, Any, Optional
 
 class Config:
@@ -33,11 +34,11 @@ class Config:
             "multiplayer": {
                 "server_host": "127.0.0.1",
                 "server_port": 8765,
-                "update_rate": 20,  # Updates per second
-                "interpolation": True,  # Bewegungen interpolieren
+                "update_rate": 30,  # Updates per second (erhöht für bessere Synchronisierung)
+                "interpolation": False,  # Bewegungen interpolieren (deaktiviert für exakte Positionierung)
                 "prediction": True,  # Client-Side-Prediction aktivieren
                 "reconciliation": True,  # Server-Reconciliation aktivieren
-                "exact_positioning": False,  # Exakte Positionierung ohne Interpolation
+                "exact_positioning": True,  # Exakte Positionierung ohne Interpolation
                 "latency_simulation": 0,  # Künstliche Latenz in Millisekunden (0 = deaktiviert)
                 "jitter_simulation": 0,  # Künstliche Jitter in Millisekunden (0 = deaktiviert)
                 "jitter_buffer_size": 3,  # Größe des Jitter-Puffers
@@ -49,7 +50,7 @@ class Config:
                 "logs_dir": "logs"
             },
             "instance": {
-                "id": "default",
+                "id": f"instance_{socket.gethostname()}_{os.getpid()}_{int(time.time())}",
                 "window_title": "PokeTogether"
             }
         }
@@ -254,6 +255,14 @@ class Config:
             float: Jitter buffer delay in seconds
         """
         return self.config["multiplayer"].get("jitter_buffer_delay", 0.05)
+
+    def get_instance_id(self) -> str:
+        """Get the instance ID
+
+        Returns:
+            str: Instance ID
+        """
+        return self.config["instance"].get("id", "default")
 
     def get_reconciliation(self) -> bool:
         """Get the reconciliation setting
