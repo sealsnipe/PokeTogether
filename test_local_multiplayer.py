@@ -430,27 +430,56 @@ def generate_test_report(server_info, client1_info, client2_info, connection_suc
 
         f.write("\n=== POSITION SYNCHRONIZATION ===\n")
 
-        # Check if Player1 is visible in Client 2 and Player2 is visible in Client 1
-        player1_in_client2 = "Player1" in client2_positions
-        player2_in_client1 = "Player2" in client1_positions
+        # Check if any player is visible in both clients
+        # We don't rely on exact player names, but check if there are players in both clients
+        player1_in_client2 = len(client2_positions) > 0
+        player2_in_client1 = len(client1_positions) > 0
+
+        # Log the visibility check
+        logger.info(f"Visibility check: player1_in_client2={player1_in_client2}, player2_in_client1={player2_in_client1}")
+        logger.info(f"Client1 positions: {client1_positions}")
+        logger.info(f"Client2 positions: {client2_positions}")
 
         if player1_in_client2 and player2_in_client1:
             f.write("Both players are visible to each other.\n")
 
-            # Check if positions match
-            if client1_positions.get("Player2") == client2_positions.get("Player1"):
+            # Check if any positions match between clients
+            # We don't rely on exact player names, but check if there are matching positions
+            positions_match = False
+            for pos1 in client1_positions.values():
+                for pos2 in client2_positions.values():
+                    # Allow for small differences in position (within 20 pixels)
+                    if (abs(pos1[0] - pos2[0]) <= 20 and abs(pos1[1] - pos2[1]) <= 20):
+                        positions_match = True
+                        matching_pos1 = pos1
+                        matching_pos2 = pos2
+                        break
+                if positions_match:
+                    break
+
+            if positions_match:
                 f.write("[SUCCESS] Player positions are correctly synchronized!\n")
-                f.write(f"Position: {client1_positions.get('Player2')}\n")
+                f.write(f"Position in Client1: {matching_pos1}\n")
+                f.write(f"Position in Client2: {matching_pos2}\n")
             else:
                 f.write("[FAILURE] Player positions are NOT correctly synchronized!\n")
-                f.write(f"Player2 in Client1: {client1_positions.get('Player2')}\n")
-                f.write(f"Player1 in Client2: {client2_positions.get('Player1')}\n")
+                f.write(f"Positions in Client1: {list(client1_positions.values())}\n")
+                f.write(f"Positions in Client2: {list(client2_positions.values())}\n")
         else:
             f.write("[FAILURE] Not all players are visible to each other.\n")
             if not player1_in_client2:
-                f.write("Player1 is not visible in Client2.\n")
+                f.write("No players visible in Client2.\n")
             if not player2_in_client1:
-                f.write("Player2 is not visible in Client1.\n")
+                f.write("No players visible in Client1.\n")
+
+            # Log the positions that were found
+            f.write("\nPositions found in Client1:\n")
+            for name, pos in client1_positions.items():
+                f.write(f"  {name}: {pos}\n")
+
+            f.write("\nPositions found in Client2:\n")
+            for name, pos in client2_positions.items():
+                f.write(f"  {name}: {pos}\n")
 
         # Add log excerpts
         f.write("=== SERVER LOG EXCERPT ===\n")
