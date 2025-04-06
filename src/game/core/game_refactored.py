@@ -592,7 +592,7 @@ class Game:
             # Erweitere den sichtbaren Bereich um 150 Pixel in jede Richtung für bessere Sichtbarkeit
             tolerance = 150
 
-            self.logger.debug(f"[VISIBILITY] CHECK: player={name}, screen_pos=({screen_x}, {screen_y}), screen_size=({screen_width}, {screen_height}), tolerance={tolerance}")
+            self.logger.info(f"[VISIBILITY] CHECK: player={name}, world_pos=({x}, {y}), screen_pos=({screen_x}, {screen_y}), screen_size=({screen_width}, {screen_height}), tolerance={tolerance}")
 
             # Sichtbarkeitsprüfung nur für Debug-Zwecke
             is_visible = (-tolerance <= screen_x <= screen_width + tolerance and

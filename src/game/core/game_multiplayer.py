@@ -53,6 +53,7 @@ class GameMultiplayer:
         self.multiplayer_manager.on_player_update = self._on_player_update
         self.multiplayer_manager.on_player_disconnected = self._on_player_disconnected
         self.multiplayer_manager.on_chat_message = self._on_chat_message
+        self.multiplayer_manager.on_positions_update = self._on_positions_update
 
         # Jitter-Puffer-Konfiguration
         self.multiplayer_manager.jitter_buffer_size = self.config.get_jitter_buffer_size()
@@ -211,6 +212,11 @@ class GameMultiplayer:
         # Ausführliche Debug-Ausgabe für die Spielersynchronisierung
         self.logger.info(f"[SPIELERSYNC] RECEIVED REMOTE PLAYER UPDATE: client_id={client_id}, x={player_data.get('x')}, y={player_data.get('y')}, direction={player_data.get('direction')}")
         self.logger.info(f"[DEBUG] RECEIVED REMOTE PLAYER POSITION: world=({player_data.get('x')}, {player_data.get('y')}), player_id={player_data.get('player_id')}, instance_id={player_data.get('instance_id')}")
+
+        # Lokale Spielerposition zum Vergleich
+        local_x = self.player.x
+        local_y = self.player.y
+        self.logger.info(f"[POSITION_SYNC] COMPARISON: remote=({player_data.get('x')}, {player_data.get('y')}), local=({local_x}, {local_y}), difference=({float(player_data.get('x', 0)) - local_x}, {float(player_data.get('y', 0)) - local_y})")
 
         # Ausführlichere Log-Ausgabe für Spieler-Updates
         self.logger.info(f"[DATENFLUSS] PLAYER UPDATE: Player {player_data.get('name', 'Unknown')}: x={player_data.get('x', '?')}, y={player_data.get('y', '?')}, direction={player_data.get('direction', '?')}")
@@ -405,3 +411,32 @@ class GameMultiplayer:
             Dict[str, Player]: Die interpolierten Spieler
         """
         return self.interpolated_players
+
+    def _on_positions_update(self, positions: Dict[str, Dict[str, Any]]) -> None:
+        """Callback für Positions-Updates
+
+        Args:
+            positions: Positionsdaten aller Spieler
+        """
+        self.logger.info(f"[SPIELERSYNC] RECEIVED POSITIONS UPDATE: {positions}")
+
+        # Lokale Spielerposition zum Vergleich
+        if hasattr(self, 'player'):
+            local_x = self.player.x
+            local_y = self.player.y
+
+            # Vergleiche die Positionen aller Spieler mit der lokalen Position
+            for client_id, pos_data in positions.items():
+                if 'x' in pos_data and 'y' in pos_data:
+                    remote_x = float(pos_data['x'])
+                    remote_y = float(pos_data['y'])
+
+                    # Berechne die Differenz zwischen der Remote-Position und der lokalen Position
+                    diff_x = remote_x - local_x
+                    diff_y = remote_y - local_y
+
+                    self.logger.info(f"[POSITION_SYNC] POSITIONS COMPARISON: client_id={client_id}, remote=({remote_x}, {remote_y}), local=({local_x}, {local_y}), difference=({diff_x}, {diff_y})")
+
+        # Callback aufrufen, wenn vorhanden
+        if self.on_positions_update:
+            self.on_positions_update(positions)
