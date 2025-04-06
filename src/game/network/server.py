@@ -183,6 +183,15 @@ class GameServer:
                 # Füge Server-Zeitstempel hinzu
                 player_data["server_timestamp"] = time.time()
 
+                # Stellen Sie sicher, dass die Koordinaten als Zahlen vorliegen
+                try:
+                    player_data["x"] = float(player_data.get("x", 0))
+                    player_data["y"] = float(player_data.get("y", 0))
+                except (ValueError, TypeError):
+                    self.logger.error(f"[SPIELERSYNC] INVALID COORDINATES IN PLAYER DATA: client_id={client_id}, x={player_data.get('x')}, y={player_data.get('y')}")
+                    player_data["x"] = 0.0
+                    player_data["y"] = 0.0
+
                 # Debug-Ausgabe für die Spielersynchronisierung
                 self.logger.info(f"[SPIELERSYNC] SERVER PROCESSING PLAYER UPDATE: client_id={client_id}, player_id={player_data.get('player_id')}, x={player_data.get('x')}, y={player_data.get('y')}")
 

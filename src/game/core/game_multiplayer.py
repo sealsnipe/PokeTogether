@@ -155,8 +155,17 @@ class GameMultiplayer:
         player_data["force_update"] = self.force_player_data_update  # Flag für erzwungenes Update
         player_data["client_time"] = time.time()  # Aktuelle Client-Zeit
 
+        # Stellen Sie sicher, dass die Koordinaten als Zahlen vorliegen
+        try:
+            player_data["x"] = float(player_data.get("x", 0))
+            player_data["y"] = float(player_data.get("y", 0))
+        except (ValueError, TypeError):
+            self.logger.error(f"[SPIELERSYNC] INVALID COORDINATES IN PLAYER DATA: player_id={self.player.player_id}, x={player_data.get('x')}, y={player_data.get('y')}")
+            player_data["x"] = float(self.player.x)
+            player_data["y"] = float(self.player.y)
+
         # Debug-Ausgabe für die Spielersynchronisierung
-        self.logger.info(f"[SPIELERSYNC] SENDING PLAYER DATA: player_id={self.player.player_id}, x={self.player.x}, y={self.player.y}, direction={self.player.direction}")
+        self.logger.info(f"[SPIELERSYNC] SENDING PLAYER DATA: player_id={self.player.player_id}, x={player_data['x']}, y={player_data['y']}, direction={self.player.direction}")
 
         self.logger.info(f"[DATENFLUSS] PLAYER DATA COLLECTED: {json.dumps(player_data)}")
 
@@ -239,6 +248,15 @@ class GameMultiplayer:
             self.logger.warning(f"[SPIELERSYNC] PLAYER_ID MISSING IN PLAYER DATA: client_id={client_id}")
             # Verwenden Sie die client_id als Fallback, wenn keine player_id vorhanden ist
             player_data["player_id"] = client_id
+
+        # Stellen Sie sicher, dass die Koordinaten als Zahlen vorliegen
+        try:
+            player_data["x"] = float(player_data.get("x", 0))
+            player_data["y"] = float(player_data.get("y", 0))
+        except (ValueError, TypeError):
+            self.logger.error(f"[SPIELERSYNC] INVALID COORDINATES IN PLAYER DATA: client_id={client_id}, x={player_data.get('x')}, y={player_data.get('y')}")
+            player_data["x"] = 0.0
+            player_data["y"] = 0.0
 
         self.other_players[client_id] = player_data
         self.logger.info(f"[DATENFLUSS] PLAYER ADDED TO OTHER_PLAYERS LIST: client_id={client_id}")

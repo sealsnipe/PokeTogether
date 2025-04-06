@@ -73,8 +73,9 @@ class Camera:
         scaled_x = int(rel_x / self.zoom_factor) + (self.screen_width - int(self.width / self.zoom_factor)) // 2
         scaled_y = int(rel_y / self.zoom_factor) + (self.screen_height - int(self.height / self.zoom_factor)) // 2
 
-        # Debug-Ausgabe für die Kamera-Transformation
-        self.logger.debug(f"[CAMERA] TRANSFORM: world=({x}, {y}), camera=({self.x}, {self.y}), rel=({rel_x}, {rel_y}), screen=({scaled_x}, {scaled_y})")
+        # Ausführliche Debug-Ausgabe für die Kamera-Transformation
+        self.logger.info(f"[CAMERA] TRANSFORM: world=({x}, {y}), camera=({self.x}, {self.y}), rel=({rel_x}, {rel_y}), screen=({scaled_x}, {scaled_y})")
+        self.logger.info(f"[CAMERA] DETAILS: zoom={self.zoom_factor}, screen_size=({self.screen_width}, {self.screen_height}), camera_size=({self.width}, {self.height})")
 
         return scaled_x, scaled_y
 

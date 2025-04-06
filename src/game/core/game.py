@@ -1181,9 +1181,16 @@ class Game:
             # Kamera-Offset anwenden
             screen_x, screen_y = self.camera.apply(x, y)
 
-            # Prüfen, ob der Spieler im sichtbaren Bereich ist
-            if (0 <= screen_x <= self.screen.get_width() and
-                0 <= screen_y <= self.screen.get_height()):
+            # Prüfen, ob der Spieler im erweiterten sichtbaren Bereich ist (mit Toleranz)
+            screen_width = self.screen.get_width()
+            screen_height = self.screen.get_height()
+            # Erweitere den sichtbaren Bereich um 50 Pixel in jede Richtung
+            tolerance = 50
+
+            self.logger.info(f"[VISIBILITY] CHECK: player={name}, screen_pos=({screen_x}, {screen_y}), screen_size=({screen_width}, {screen_height}), tolerance={tolerance}")
+
+            if (-tolerance <= screen_x <= screen_width + tolerance and
+                -tolerance <= screen_y <= screen_height + tolerance):
 
                 # Einfache Darstellung als farbiger Kreis
                 pygame.draw.circle(self.screen, (0, 0, 255), (int(screen_x), int(screen_y)), 16)

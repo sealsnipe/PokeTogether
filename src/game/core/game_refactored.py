@@ -568,9 +568,16 @@ class Game:
             # Debug-Ausgabe für das Rendering
             self.logger.info(f"[DATENFLUSS] RENDERING PLAYER {name} (ID: {player_id}): x={x}, y={y}, screen_x={screen_x}, screen_y={screen_y}")
 
-            # Prüfen, ob der Spieler im sichtbaren Bereich ist
-            if (0 <= screen_x <= self.screen.get_width() and
-                0 <= screen_y <= self.screen.get_height()):
+            # Prüfen, ob der Spieler im erweiterten sichtbaren Bereich ist (mit Toleranz)
+            screen_width = self.screen.get_width()
+            screen_height = self.screen.get_height()
+            # Erweitere den sichtbaren Bereich um 50 Pixel in jede Richtung
+            tolerance = 50
+
+            self.logger.info(f"[VISIBILITY] CHECK: player={name}, screen_pos=({screen_x}, {screen_y}), screen_size=({screen_width}, {screen_height}), tolerance={tolerance}")
+
+            if (-tolerance <= screen_x <= screen_width + tolerance and
+                -tolerance <= screen_y <= screen_height + tolerance):
 
                 # Farbe basierend auf dem Charaktertyp wählen
                 color = (0, 0, 255)  # Standard: Blau
