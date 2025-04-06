@@ -194,19 +194,46 @@ def monitor_connections(server_info, client1_info, client2_info, timeout=CONNECT
 
         # Check server logs for client connections
         try:
-            with open(server_info["stdout_log"], 'r') as f:
-                content = f.read()
+            # Try to read from both stdout and stderr logs
+            content = ""
+            try:
+                with open(server_info["stdout_log"], 'r') as f:
+                    content += f.read()
+            except Exception as e:
+                logger.warning(f"Could not read server stdout log: {e}")
+
+            try:
+                with open(server_info["stderr_log"], 'r') as f:
+                    content += f.read()
+            except Exception as e:
+                logger.warning(f"Could not read server stderr log: {e}")
+
+            # Count the number of unique client IDs in the server log
+            import re
+            client_ids = re.findall(r"client_id\": \"([0-9a-f-]+)\".*?player_id\":", content)
+            unique_client_ids = set(client_ids)
+            server_connected_clients = len(unique_client_ids)
+
+            # Alternative count based on broadcasting
+            if server_connected_clients == 0:
                 server_connected_clients = content.count("BROADCASTING TO 1 CLIENTS")
 
-                # Alternative check: look for client IDs in the server log
-                if server_connected_clients < 2 and "Received connection confirmation from client" in content:
-                    # Count unique client IDs
-                    import re
-                    client_ids = re.findall(r"Received connection confirmation from client ([0-9a-f-]+)", content)
-                    unique_client_ids = set(client_ids)
-                    if len(unique_client_ids) >= 2:
-                        logger.info(f"Server has {len(unique_client_ids)} unique client IDs connected")
-                        server_connected_clients = len(unique_client_ids)
+            # Alternative check: look for client IDs in the server log
+            if server_connected_clients < 2 and "Received connection confirmation from client" in content:
+                # Count unique client IDs
+                client_ids_alt = re.findall(r"Received connection confirmation from client ([0-9a-f-]+)", content)
+                unique_client_ids_alt = set(client_ids_alt)
+                if len(unique_client_ids_alt) >= 2:
+                    logger.info(f"Server has {len(unique_client_ids_alt)} unique client IDs connected")
+                    server_connected_clients = len(unique_client_ids_alt)
+
+            # Check for NEW CLIENT CONNECTED marker
+            if server_connected_clients < 2:
+                client_connections = re.findall(r"NEW CLIENT CONNECTED: ([0-9a-f-]+)", content)
+                unique_connections = set(client_connections)
+                if len(unique_connections) >= 2:
+                    logger.info(f"Server has {len(unique_connections)} unique client connections")
+                    server_connected_clients = len(unique_connections)
         except Exception as e:
             logger.error(f"Error reading server log: {e}")
 
