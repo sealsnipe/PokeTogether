@@ -7,8 +7,9 @@ import logging
 import logging.config
 import sys
 import os
+import time
 import argparse
-from typing import Dict, Any, Optional
+from typing import Optional
 
 # Füge den src-Ordner zum Pfad hinzu, damit die Module gefunden werden
 src_path = os.path.dirname(os.path.abspath(__file__))
@@ -68,6 +69,10 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument("--resolution", help="Bildschirmauflösung (z.B. 800x600)")
     parser.add_argument("--config", default="config.json", help="Pfad zur Konfigurationsdatei")
     parser.add_argument("--screenshots", action="store_true", help="Screenshots während des Spiels aktivieren")
+    parser.add_argument("--screenshot", action="store_true", help="Einen Screenshot erstellen und beenden")
+    parser.add_argument("--output", help="Pfad für den Screenshot")
+    parser.add_argument("--input", help="Eingabe simulieren (up, down, left, right, a, b, x, y, start, select)")
+    parser.add_argument("--duration", type=float, default=0.5, help="Dauer der simulierten Eingabe in Sekunden")
 
     # Test-Optionen
     parser.add_argument("--test", help="Automatischen Test ausführen (movement, action, menu, comprehensive)")
@@ -162,6 +167,22 @@ def main() -> int:
             logger.info("Screenshots enabled")
             game.enable_screenshots()
 
+        # Screenshot erstellen und beenden, falls gewünscht
+        if args.screenshot:
+            logger.info("Taking screenshot and exiting")
+            game.enable_screenshots()
+            game.start_new_game()
+            output_path = args.output if args.output else f"screenshot_{int(time.time())}.png"
+            game.take_screenshot(output_path)
+            return 0
+
+        # Eingabe simulieren, falls gewünscht
+        if args.input:
+            logger.info(f"Simulating input: {args.input} for {args.duration} seconds")
+            game.start_new_game()
+            game.simulate_input(args.input, args.duration)
+            return 0
+
         # Multiplayer-Optionen verarbeiten
         if args.host:
             logger.info("Starting game as host")
@@ -171,7 +192,10 @@ def main() -> int:
             host = args.join
             port = args.port if args.port else config.get_server_port()
             logger.info(f"Joining game at {host}:{port}")
-            game.join_session(host, port, config=config)
+            game.join_session(host, port)
+        elif not args.screenshot and not args.input:
+            # Normaler Spielstart, wenn keine anderen Optionen angegeben wurden
+            game.start_new_game()
 
         # Hauptspielschleife starten
         game.run()

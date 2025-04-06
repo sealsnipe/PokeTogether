@@ -687,6 +687,40 @@ class Game:
         except Exception as e:
             self.logger.error(f"Fehler beim Erstellen des Screenshots: {e}")
 
+    def simulate_input(self, input_type: str, duration: float = 0.5) -> None:
+        """Simuliert eine Eingabe für eine bestimmte Dauer
+
+        Args:
+            input_type: Art der Eingabe (up, down, left, right, a, b, x, y, start, select)
+            duration: Dauer der Eingabe in Sekunden
+        """
+        self.logger.info(f"Simuliere Eingabe: {input_type} für {duration} Sekunden")
+
+        # Prüfe, ob die Eingabe gültig ist
+        valid_inputs = ["up", "down", "left", "right", "a", "b", "x", "y", "start", "select"]
+        if input_type not in valid_inputs:
+            self.logger.error(f"Ungültige Eingabe: {input_type}")
+            return
+
+        # Simuliere die Eingabe
+        try:
+            # Taste drücken
+            self.input_manager.input_state[input_type] = True
+
+            # Warte für die angegebene Dauer
+            import time
+            time.sleep(duration)
+
+            # Taste loslassen
+            self.input_manager.input_state[input_type] = False
+
+            # Erstelle einen Screenshot nach der Eingabe
+            self.take_screenshot(f"input_{input_type}_{int(time.time())}.png")
+
+            self.logger.info(f"Eingabe {input_type} erfolgreich simuliert")
+        except Exception as e:
+            self.logger.error(f"Fehler beim Simulieren der Eingabe: {e}")
+
     def _process_automated_tests(self, _: float) -> None:
         """Verarbeitet automatisierte Tests
 
