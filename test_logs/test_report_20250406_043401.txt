@@ -1,0 +1,28 @@
+=== LOCAL MULTIPLAYER TEST REPORT ===
+Test Date: 2025-04-06 04:34:01
+Test Result: FAILURE
+
+=== SERVER INFO ===
+PID: 2904
+Exit Code: Still running
+Stdout Log: test_logs\server\server_stdout_20250406_043353.log
+Stderr Log: test_logs\server\server_stderr_20250406_043353.log
+
+=== CLIENT 1 INFO ===
+PID: 23132
+Exit Code: 1
+Stdout Log: test_logs\client1\client1_stdout_20250406_043358.log
+Stderr Log: test_logs\client1\client1_stderr_20250406_043358.log
+
+=== CLIENT 2 INFO ===
+PID: 30516
+Exit Code: Still running
+Stdout Log: test_logs\client2\client2_stdout_20250406_043401.log
+Stderr Log: test_logs\client2\client2_stderr_20250406_043401.log
+
+=== PLAYER POSITIONS ===
+Client 1 player positions:
+
+Client 2 player positions:
+
+=== POSITION SYNCHRONIZATION ===

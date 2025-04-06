@@ -1,0 +1,25 @@
+{
+    "player": {
+        "name": "Player1",
+        "character": "Red"
+    },
+    "multiplayer": {
+        "server_host": "127.0.0.1",
+        "server_port": 8765,
+        "update_rate": 30,
+        "interpolation": false,
+        "prediction": true,
+        "exact_positioning": true,
+        "jitter_buffer_size": 3,
+        "jitter_buffer_delay": 0.05
+    },
+    "paths": {
+        "save_dir": "saves",
+        "screenshots_dir": "screenshots",
+        "logs_dir": "logs"
+    },
+    "instance": {
+        "id": "player1",
+        "window_title": "PokeTogether - Player 1"
+    }
+}

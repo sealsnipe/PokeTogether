@@ -31,7 +31,7 @@ class InputHandler:
 
             # Zusätzliche Aktionen
             "run": [pygame.K_LSHIFT, pygame.K_RSHIFT],  # Rennen
-            "fast_forward": [pygame.K_f]  # Vorspulen
+            "fast_forward": [pygame.K_f, pygame.K_SPACE]  # Vorspulen mit F oder Leertaste
         }
 
         # Controller-Konfiguration
@@ -53,7 +53,6 @@ class InputHandler:
             "run": [(0, BUTTON_RIGHTSHOULDER, 1)],  # Rennen mit RB-Taste
 
             # Schultertasten
-            "shoulder_left": [(0, BUTTON_LEFTSHOULDER, 1)],  # Linke Schultertaste
             "trigger_left": [(0, AXIS_TRIGGERLEFT, AXIS_DEADZONE)],  # Linker Trigger
             "fast_forward": [(0, BUTTON_LEFTSHOULDER, 1)],  # Vorspulen mit LB-Taste
             "trigger_right": [(0, AXIS_TRIGGERRIGHT, AXIS_DEADZONE)],  # Rechter Trigger
@@ -139,20 +138,6 @@ class InputHandler:
         for key in self.input_state:
             self.input_state[key] = False
 
-    def reset(self):
-        """Setzt alle Eingaben zurück"""
-        self.logger.info("Resetting all inputs")
-        # Nur den vorherigen Zustand zurücksetzen, damit die Tasten wieder erkannt werden können
-        for key in self.prev_input_state:
-            self.prev_input_state[key] = False
-
-        # Direkte Überprüfung der A-Taste
-        if self.controllers and len(self.controllers) > 0:
-            controller = self.controllers[0]
-            if controller.get_button(BUTTON_A):
-                # A-Taste direkt als Aktion setzen
-                self.input_state["action"] = True
-
         # Tastatureingaben verarbeiten
         keys = pygame.key.get_pressed()
         for action, key_list in self.keyboard_config.items():
@@ -188,12 +173,35 @@ class InputHandler:
                                 else:
                                     # Normale Buttons (A, B, X, Y, etc.)
                                     button_state = controller.get_button(input_config[1])
-                                    # Spezielle Debug-Ausgabe für die A- und B-Taste
-                                    if input_config[1] == BUTTON_A:
-                                        self.logger.info(f"A-Taste Status: {button_state} (Action: {action})")
-                                    elif input_config[1] == BUTTON_B:
-                                        self.logger.info(f"B-Taste Status: {button_state} (Action: {action})")
+
+                                    # Direkte Zuweisung für bestimmte Tasten
                                     if button_state:
+                                        # A-Taste
+                                        if input_config[1] == BUTTON_A:
+                                            self.logger.info(f"A-Taste gedrückt! (Button {input_config[1]})")
+                                            self.input_state["action"] = True
+                                        # B-Taste
+                                        elif input_config[1] == BUTTON_B:
+                                            self.logger.info(f"B-Taste gedrückt! (Button {input_config[1]})")
+                                            self.input_state["cancel"] = True
+                                        # Start-Taste
+                                        elif input_config[1] == BUTTON_START:
+                                            self.logger.info(f"Start-Taste gedrückt! (Button {input_config[1]})")
+                                            self.input_state["menu"] = True
+                                        # LB-Taste
+                                        elif input_config[1] == BUTTON_LEFTSHOULDER:
+                                            self.logger.info(f"LB-Taste gedrückt! (Button {input_config[1]})")
+                                            self.input_state["fast_forward"] = True
+                                        # RB-Taste
+                                        elif input_config[1] == BUTTON_RIGHTSHOULDER:
+                                            self.logger.info(f"RB-Taste gedrückt! (Button {input_config[1]})")
+                                            self.input_state["run"] = True
+                                        # Normale Verarbeitung für andere Tasten
+                                        else:
+                                            self.input_state[action] = True
+                                            self.logger.info(f"Controller-Button erkannt: {action} (Button {input_config[1]})")
+                                    # Normale Verarbeitung für andere Tasten
+                                    elif button_state:
                                         self.input_state[action] = True
                                         # Debug-Logging für alle Buttons
                                         self.logger.info(f"Controller-Button erkannt: {action} (Button {input_config[1]})")
@@ -230,7 +238,38 @@ class InputHandler:
         Returns:
             bool: True, wenn die Aktion gedrückt wird
         """
-        return self.input_state.get(action, False)
+        # Direkte Prüfung für bestimmte Aktionen
+        if action == "run":
+            # Prüfen, ob ein Controller angeschlossen ist
+            if self.controllers and len(self.controllers) > 0:
+                controller = self.controllers[0]
+                try:
+                    # RB-Taste direkt prüfen
+                    from game.core.controller_constants import BUTTON_RIGHTSHOULDER
+                    if controller.get_button(BUTTON_RIGHTSHOULDER):
+                        self.logger.info("RB-Taste direkt erkannt für Rennen!")
+                        return True
+                except Exception as e:
+                    self.logger.error(f"Fehler bei der Controller-Prüfung für Rennen: {e}")
+
+        elif action == "fast_forward":
+            # Prüfen, ob ein Controller angeschlossen ist
+            if self.controllers and len(self.controllers) > 0:
+                controller = self.controllers[0]
+                try:
+                    # LB-Taste direkt prüfen
+                    from game.core.controller_constants import BUTTON_LEFTSHOULDER
+                    if controller.get_button(BUTTON_LEFTSHOULDER):
+                        self.logger.info("LB-Taste direkt erkannt für Vorspulen!")
+                        return True
+                except Exception as e:
+                    self.logger.error(f"Fehler bei der Controller-Prüfung für Vorspulen: {e}")
+
+        # Normale Prüfung für alle anderen Aktionen
+        result = self.input_state.get(action, False)
+        if result and (action == "run" or action == "fast_forward"):
+            self.logger.info(f"Aktion {action} erkannt über input_state!")
+        return result
 
     def was_pressed(self, action: str) -> bool:
         """Prüft, ob eine Aktion in diesem Frame gedrückt wurde
@@ -241,9 +280,10 @@ class InputHandler:
         Returns:
             bool: True, wenn die Aktion in diesem Frame gedrückt wurde
         """
+        # Normale Prüfung für alle Aktionen
         result = self.input_state.get(action, False) and not self.prev_input_state.get(action, False)
         if result:
-            self.logger.debug(f"Aktion erkannt: {action}")
+            self.logger.info(f"Aktion erkannt: {action} (input_state: {self.input_state.get(action)}, prev_input_state: {self.prev_input_state.get(action)})")
         return result
 
     def was_released(self, action: str) -> bool:
@@ -343,3 +383,15 @@ class InputHandler:
             "axes": axes,
             "hats": hats
         }
+
+    def reset(self):
+        """Setzt den Eingabezustand zurück"""
+        self.input_state = {}
+        self.input_pressed = {}
+        self.last_input_state = {}
+
+        # Aktualisiere den Zustand, um sicherzustellen, dass alle Tasten als nicht gedrückt erkannt werden
+        self.update()
+
+        # Warte einen kurzen Moment, um sicherzustellen, dass alle Eingaben verarbeitet wurden
+        pygame.time.wait(10)

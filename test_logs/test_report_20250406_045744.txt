@@ -1,0 +1,70 @@
+=== LOCAL MULTIPLAYER TEST REPORT ===
+Test Date: 2025-04-06 04:57:44
+Test Result: FAILURE
+
+=== SERVER INFO ===
+PID: 1216
+Exit Code: Still running
+Stdout Log: test_logs\server\server_stdout_20250406_045706.log
+Stderr Log: test_logs\server\server_stderr_20250406_045706.log
+
+=== CLIENT 1 INFO ===
+PID: 23672
+Exit Code: Still running
+Stdout Log: test_logs\client1\client1_stdout_20250406_045711.log
+Stderr Log: test_logs\client1\client1_stderr_20250406_045711.log
+
+=== CLIENT 2 INFO ===
+PID: 4440
+Exit Code: Still running
+Stdout Log: test_logs\client2\client2_stdout_20250406_045714.log
+Stderr Log: test_logs\client2\client2_stderr_20250406_045714.log
+
+=== PLAYER POSITIONS ===
+Client 1 player positions:
+
+Client 2 player positions:
+
+=== POSITION SYNCHRONIZATION ===
+[FAILURE] Not all players are visible to each other.
+Player1 is not visible in Client2.
+Player2 is not visible in Client1.
+=== SERVER LOG EXCERPT ===
+
+
+=== CLIENT 1 LOG EXCERPT ===
+ "timestamp": 1743908264.1734254, "instance_id": "instance_DESKTOP-MQITL2U_23672_1743908231", "force_update": true, "client_time": 1743908264.1734283}
+2025-04-06 04:57:44 - game.network.multiplayer_manager - INFO - [DATENFLUSS] SENDING MESSAGE TO SERVER: {"player_id": "4f2e4284-1f59-4778-8830-b9887c3cbff7", "name": "Player", "character_type": "Red", "x": 560, "y": 448, "direction": "down", "moving": false, "current_frame": 0, "input_sequence_number": 0, "timestamp": 1743908264.173664, "instance_id": "instance_DESKTOP-MQITL2U_23672_1743908231", "force_update": true, "client_time": 1743908264.1734283}
+2025-04-06 04:57:44 - game.network.client - INFO - [DATENFLUSS] CLIENT SENDING MESSAGE: {"type": "player_update", "player_id": "4f2e4284-1f59-4778-8830-b9887c3cbff7", "name": "Player", "character_type": "Red", "x": 560, "y": 448, "direction": "down", "moving": false, "current_frame": 0, "input_sequence_number": 0, "timestamp": 1743908264.173664, "instance_id": "instance_DESKTOP-MQITL2U_23672_1743908231", "force_update": true, "client_time": 1743908264.1734283}
+2025-04-06 04:57:44 - game.core.game_refactored - ERROR - Error in game loop: 'Game' object has no attribute 'other_players'
+Traceback (most recent call last):
+  File "C:\Users\Matthias\Documents\augment-projects\PokeTogether\src\game\core\game_refactored.py", line 989, in run
+    self.render_manager.render()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Matthias\Documents\augment-projects\PokeTogether\src\game\core\render_manager.py", line 57, in render
+    self.render_functions[current_state]()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Matthias\Documents\augment-projects\PokeTogether\src\game\core\game_refactored.py", line 467, in _render_playing
+    self.logger.info(f"[INFO] Rendering other players. Active: {len(self.other_players)} players")
+                                                                    ^^^^^^^^^^^^^^^^^^
+AttributeError: 'Game' object has no attribute 'other_players'
+
+
+=== CLIENT 2 LOG EXCERPT ===
+, "timestamp": 1743908264.1884208, "instance_id": "instance_DESKTOP-MQITL2U_4440_1743908234", "force_update": false, "client_time": 1743908264.188423}
+2025-04-06 04:57:44 - game.network.multiplayer_manager - INFO - [DATENFLUSS] SENDING MESSAGE TO SERVER: {"player_id": "57128e55-8026-4d5f-b0e7-ae5be57de853", "name": "Player", "character_type": "Red", "x": 560, "y": 448, "direction": "down", "moving": false, "current_frame": 0, "input_sequence_number": 0, "timestamp": 1743908264.1886487, "instance_id": "instance_DESKTOP-MQITL2U_4440_1743908234", "force_update": false, "client_time": 1743908264.188423}
+2025-04-06 04:57:44 - game.network.client - INFO - [DATENFLUSS] CLIENT SENDING MESSAGE: {"type": "player_update", "player_id": "57128e55-8026-4d5f-b0e7-ae5be57de853", "name": "Player", "character_type": "Red", "x": 560, "y": 448, "direction": "down", "moving": false, "current_frame": 0, "input_sequence_number": 0, "timestamp": 1743908264.1886487, "instance_id": "instance_DESKTOP-MQITL2U_4440_1743908234", "force_update": false, "client_time": 1743908264.188423}
+2025-04-06 04:57:44 - game.core.game_refactored - ERROR - Error in game loop: 'Game' object has no attribute 'other_players'
+Traceback (most recent call last):
+  File "C:\Users\Matthias\Documents\augment-projects\PokeTogether\src\game\core\game_refactored.py", line 989, in run
+    self.render_manager.render()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Matthias\Documents\augment-projects\PokeTogether\src\game\core\render_manager.py", line 57, in render
+    self.render_functions[current_state]()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Matthias\Documents\augment-projects\PokeTogether\src\game\core\game_refactored.py", line 467, in _render_playing
+    self.logger.info(f"[INFO] Rendering other players. Active: {len(self.other_players)} players")
+                                                                    ^^^^^^^^^^^^^^^^^^
+AttributeError: 'Game' object has no attribute 'other_players'
+
+

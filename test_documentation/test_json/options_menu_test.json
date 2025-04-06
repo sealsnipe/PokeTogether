@@ -1,0 +1,112 @@
+[
+  {"type": "wait", "duration": 2.0},
+  {"type": "key_press", "key": "down"},
+  {"type": "wait", "duration": 0.5},
+  {"type": "key_release", "key": "down"},
+  {"type": "wait", "duration": 0.5},
+  
+  {"type": "key_press", "key": "down"},
+  {"type": "wait", "duration": 0.5},
+  {"type": "key_release", "key": "down"},
+  {"type": "wait", "duration": 0.5},
+  
+  {"type": "key_press", "key": "down"},
+  {"type": "wait", "duration": 0.5},
+  {"type": "key_release", "key": "down"},
+  {"type": "wait", "duration": 0.5},
+  
+  {"type": "key_press", "key": "down"},
+  {"type": "wait", "duration": 0.5},
+  {"type": "key_release", "key": "down"},
+  {"type": "wait", "duration": 0.5},
+  
+  {"type": "key_press", "key": "action"},
+  {"type": "wait", "duration": 0.5},
+  {"type": "key_release", "key": "action"},
+  {"type": "wait", "duration": 2.0},
+  
+  {"type": "key_press", "key": "down"},
+  {"type": "wait", "duration": 0.5},
+  {"type": "key_release", "key": "down"},
+  {"type": "wait", "duration": 0.5},
+  
+  {"type": "key_press", "key": "down"},
+  {"type": "wait", "duration": 0.5},
+  {"type": "key_release", "key": "down"},
+  {"type": "wait", "duration": 0.5},
+  
+  {"type": "key_press", "key": "down"},
+  {"type": "wait", "duration": 0.5},
+  {"type": "key_release", "key": "down"},
+  {"type": "wait", "duration": 0.5},
+  
+  {"type": "key_press", "key": "down"},
+  {"type": "wait", "duration": 0.5},
+  {"type": "key_release", "key": "down"},
+  {"type": "wait", "duration": 0.5},
+  
+  {"type": "key_press", "key": "up"},
+  {"type": "wait", "duration": 0.5},
+  {"type": "key_release", "key": "up"},
+  {"type": "wait", "duration": 0.5},
+  
+  {"type": "key_press", "key": "up"},
+  {"type": "wait", "duration": 0.5},
+  {"type": "key_release", "key": "up"},
+  {"type": "wait", "duration": 0.5},
+  
+  {"type": "key_press", "key": "up"},
+  {"type": "wait", "duration": 0.5},
+  {"type": "key_release", "key": "up"},
+  {"type": "wait", "duration": 0.5},
+  
+  {"type": "key_press", "key": "up"},
+  {"type": "wait", "duration": 0.5},
+  {"type": "key_release", "key": "up"},
+  {"type": "wait", "duration": 0.5},
+  
+  {"type": "key_press", "key": "action"},
+  {"type": "wait", "duration": 0.5},
+  {"type": "key_release", "key": "action"},
+  {"type": "wait", "duration": 2.0},
+  
+  {"type": "key_press", "key": "down"},
+  {"type": "wait", "duration": 0.5},
+  {"type": "key_release", "key": "down"},
+  {"type": "wait", "duration": 0.5},
+  
+  {"type": "key_press", "key": "action"},
+  {"type": "wait", "duration": 0.5},
+  {"type": "key_release", "key": "action"},
+  {"type": "wait", "duration": 2.0},
+  
+  {"type": "key_press", "key": "action"},
+  {"type": "wait", "duration": 0.5},
+  {"type": "key_release", "key": "action"},
+  {"type": "wait", "duration": 2.0},
+  
+  {"type": "key_press", "key": "down"},
+  {"type": "wait", "duration": 0.5},
+  {"type": "key_release", "key": "down"},
+  {"type": "wait", "duration": 0.5},
+  
+  {"type": "key_press", "key": "down"},
+  {"type": "wait", "duration": 0.5},
+  {"type": "key_release", "key": "down"},
+  {"type": "wait", "duration": 0.5},
+  
+  {"type": "key_press", "key": "down"},
+  {"type": "wait", "duration": 0.5},
+  {"type": "key_release", "key": "down"},
+  {"type": "wait", "duration": 0.5},
+  
+  {"type": "key_press", "key": "action"},
+  {"type": "wait", "duration": 0.5},
+  {"type": "key_release", "key": "action"},
+  {"type": "wait", "duration": 2.0},
+  
+  {"type": "key_press", "key": "cancel"},
+  {"type": "wait", "duration": 0.5},
+  {"type": "key_release", "key": "cancel"},
+  {"type": "wait", "duration": 2.0}
+]

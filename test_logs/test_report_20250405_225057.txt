@@ -1,0 +1,72 @@
+=== LOCAL MULTIPLAYER TEST REPORT ===
+Test Date: 2025-04-05 22:50:57
+Test Result: SUCCESS
+
+=== SERVER INFO ===
+PID: 31760
+Exit Code: Still running
+Stdout Log: test_logs\server\server_stdout_20250405_225031.log
+Stderr Log: test_logs\server\server_stderr_20250405_225031.log
+
+=== CLIENT 1 INFO ===
+PID: 24400
+Exit Code: Still running
+Stdout Log: test_logs\client1\client1_stdout_20250405_225036.log
+Stderr Log: test_logs\client1\client1_stderr_20250405_225036.log
+
+=== CLIENT 2 INFO ===
+PID: 7288
+Exit Code: Still running
+Stdout Log: test_logs\client2\client2_stdout_20250405_225039.log
+Stderr Log: test_logs\client2\client2_stderr_20250405_225039.log
+
+=== SERVER LOG EXCERPT ===
+-04-05 22:50:55 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "6acf427c-f59f-4873-ad00-1e1baf609249", "player_data": {}}
+2025-04-05 22:50:55 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "6acf427c-f59f-4873-ad00-1e1baf609249", "player_data": {}}
+2025-04-05 22:50:55 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "6acf427c-f59f-4873-ad00-1e1baf609249", "player_data": {}}
+2025-04-05 22:50:56 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "6acf427c-f59f-4873-ad00-1e1baf609249", "player_data": {}}
+2025-04-05 22:50:56 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "6acf427c-f59f-4873-ad00-1e1baf609249", "player_data": {}}
+2025-04-05 22:50:56 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "6acf427c-f59f-4873-ad00-1e1baf609249", "player_data": {}}
+2025-04-05 22:50:56 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "6acf427c-f59f-4873-ad00-1e1baf609249", "player_data": {}}
+2025-04-05 22:50:56 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "6acf427c-f59f-4873-ad00-1e1baf609249", "player_data": {}}
+2025-04-05 22:50:56 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "6acf427c-f59f-4873-ad00-1e1baf609249", "player_data": {}}
+2025-04-05 22:50:56 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "6acf427c-f59f-4873-ad00-1e1baf609249", "player_data": {}}
+2025-04-05 22:50:56 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "6acf427c-f59f-4873-ad00-1e1baf609249", "player_data": {}}
+2025-04-05 22:50:56 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "6acf427c-f59f-4873-ad00-1e1baf609249", "player_data": {}}
+
+
+=== CLIENT 1 LOG EXCERPT ===
+-04-05 22:50:55 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "6acf427c-f59f-4873-ad00-1e1baf609249", "player_data": {}}
+2025-04-05 22:50:55 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "6acf427c-f59f-4873-ad00-1e1baf609249", "player_data": {}}
+2025-04-05 22:50:55 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "6acf427c-f59f-4873-ad00-1e1baf609249", "player_data": {}}
+2025-04-05 22:50:56 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "6acf427c-f59f-4873-ad00-1e1baf609249", "player_data": {}}
+2025-04-05 22:50:56 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "6acf427c-f59f-4873-ad00-1e1baf609249", "player_data": {}}
+2025-04-05 22:50:56 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "6acf427c-f59f-4873-ad00-1e1baf609249", "player_data": {}}
+2025-04-05 22:50:56 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "6acf427c-f59f-4873-ad00-1e1baf609249", "player_data": {}}
+2025-04-05 22:50:56 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "6acf427c-f59f-4873-ad00-1e1baf609249", "player_data": {}}
+2025-04-05 22:50:56 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "6acf427c-f59f-4873-ad00-1e1baf609249", "player_data": {}}
+2025-04-05 22:50:56 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "6acf427c-f59f-4873-ad00-1e1baf609249", "player_data": {}}
+2025-04-05 22:50:56 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "6acf427c-f59f-4873-ad00-1e1baf609249", "player_data": {}}
+2025-04-05 22:50:56 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "6acf427c-f59f-4873-ad00-1e1baf609249", "player_data": {}}
+
+
+=== CLIENT 2 LOG EXCERPT ===
+update: x=560.0, y=463.0, direction=down
+2025-04-05 22:50:55 - game.core.game_refactored - INFO - [INFO] Sending position update: x=560.0, y=472.0, direction=down
+2025-04-05 22:50:55 - game.core.game_refactored - INFO - [INFO] Sending position update: x=560.0, y=481.0, direction=down
+2025-04-05 22:50:55 - game.core.game_refactored - INFO - [INFO] Sending position update: x=566.0, y=490.0, direction=right
+2025-04-05 22:50:55 - game.core.game_refactored - INFO - [INFO] Sending position update: x=557.0, y=493.0, direction=left
+2025-04-05 22:50:55 - game.core.game_refactored - INFO - [INFO] Sending position update: x=566.0, y=493.0, direction=right
+2025-04-05 22:50:55 - game.core.game_refactored - INFO - [INFO] Sending position update: x=578.0, y=493.0, direction=right
+2025-04-05 22:50:55 - game.core.game_refactored - INFO - [INFO] Sending position update: x=587.0, y=493.0, direction=right
+2025-04-05 22:50:56 - game.core.game_refactored - INFO - [INFO] Sending position update: x=596.0, y=493.0, direction=right
+2025-04-05 22:50:56 - game.core.game_refactored - INFO - [INFO] Sending position update: x=608.0, y=493.0, direction=right
+2025-04-05 22:50:56 - game.core.game_refactored - INFO - [INFO] Sending position update: x=617.0, y=502.0, direction=right
+2025-04-05 22:50:56 - game.core.game_refactored - INFO - [INFO] Sending position update: x=623.0, y=511.0, direction=down
+2025-04-05 22:50:56 - game.core.game_refactored - INFO - [INFO] Sending position update: x=623.0, y=520.0, direction=down
+2025-04-05 22:50:56 - game.core.game_refactored - INFO - [INFO] Sending position update: x=614.0, y=529.0, direction=left
+2025-04-05 22:50:56 - game.core.game_refactored - INFO - [INFO] Sending position update: x=605.0, y=532.0, direction=left
+2025-04-05 22:50:56 - game.core.game_refactored - INFO - [INFO] Sending position update: x=596.0, y=532.0, direction=left
+2025-04-05 22:50:56 - game.core.game_refactored - INFO - [INFO] Sending position update: x=587.0, y=532.0, direction=left
+
+

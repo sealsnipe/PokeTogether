@@ -1,0 +1,96 @@
+=== LOCAL MULTIPLAYER TEST REPORT ===
+Test Date: 2025-04-06 14:08:43
+Test Result: FAILURE
+
+=== SERVER INFO ===
+PID: 30480
+Exit Code: Still running
+Stdout Log: test_logs\server\server_stdout_20250406_140804.log
+Stderr Log: test_logs\server\server_stderr_20250406_140804.log
+
+=== CLIENT 1 INFO ===
+PID: 4484
+Exit Code: Still running
+Stdout Log: test_logs\client1\client1_stdout_20250406_140810.log
+Stderr Log: test_logs\client1\client1_stderr_20250406_140810.log
+
+=== CLIENT 2 INFO ===
+PID: 29924
+Exit Code: Still running
+Stdout Log: test_logs\client2\client2_stdout_20250406_140813.log
+Stderr Log: test_logs\client2\client2_stderr_20250406_140813.log
+
+=== PLAYER POSITIONS ===
+Client 1 player positions:
+
+Client 2 player positions:
+
+=== POSITION SYNCHRONIZATION ===
+[FAILURE] Not all players are visible to each other.
+No players visible in Client2.
+No players visible in Client1.
+
+Positions found in Client1:
+
+Positions found in Client2:
+=== SERVER LOG EXCERPT ===
+
+
+=== CLIENT 1 LOG EXCERPT ===
+025-04-06 14:08:35 - game.core.game_refactored - INFO - === STARTING MULTIPLAYER SESSION AS HOST ===
+2025-04-06 14:08:35 - game.core.game_multiplayer - INFO - Initializing multiplayer functionality
+2025-04-06 14:08:35 - game.core.game_refactored - ERROR - Error in game loop: 'GameMultiplayer' object has no attribute '_on_welcome'
+Traceback (most recent call last):
+  File "C:\Users\Matthias\Documents\augment-projects\PokeTogether\src\game\core\game_refactored.py", line 1076, in run
+    self.update(dt)
+    ~~~~~~~~~~~^^^^
+  File "C:\Users\Matthias\Documents\augment-projects\PokeTogether\src\game\core\game_refactored.py", line 337, in update
+    self._update_main_menu(dt)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^
+  File "C:\Users\Matthias\Documents\augment-projects\PokeTogether\src\game\core\game_refactored.py", line 445, in _update_main_menu
+    self.main_menu.update()
+    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Matthias\Documents\augment-projects\PokeTogether\src\game\ui\main_menu_refactored.py", line 84, in update
+    self._host_game()
+    ~~~~~~~~~~~~~~~^^
+  File "C:\Users\Matthias\Documents\augment-projects\PokeTogether\src\game\ui\main_menu_refactored.py", line 130, in _host_game
+    self.game.start_new_game(as_host=True)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "C:\Users\Matthias\Documents\augment-projects\PokeTogether\src\game\core\game_refactored.py", line 888, in start_new_game
+    self.start_hosting()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Matthias\Documents\augment-projects\PokeTogether\src\game\core\game_refactored.py", line 965, in start_hosting
+    self.game_multiplayer.initialize(self.player)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\Matthias\Documents\augment-projects\PokeTogether\src\game\core\game_multiplayer.py", line 53, in initialize
+    self.multiplayer_manager.on_welcome = self._on_welcome
+                                          ^^^^^^^^^^^^^^^^
+AttributeError: 'GameMultiplayer' object has no attribute '_on_welcome'
+
+
+=== CLIENT 2 LOG EXCERPT ===
+options_menu_refactored - INFO - Initializing options menu (refactored)
+2025-04-06 14:08:13 - game.ui.ingame_menu_refactored - INFO - Initializing in-game menu (refactored)
+2025-04-06 14:08:13 - game.ui.chat_ui - INFO - Initializing chat UI
+2025-04-06 14:08:13 - game.core.game_refactored - INFO - [DATENFLUSS] REGISTERING MULTIPLAYER CALLBACKS
+2025-04-06 14:08:13 - game.core.game_refactored - INFO - [DATENFLUSS] MULTIPLAYER CALLBACKS REGISTERED SUCCESSFULLY
+2025-04-06 14:08:13 - game.ui.main_menu_refactored - INFO - Showing main menu
+2025-04-06 14:08:13 - __main__ - INFO - Joining game at localhost:8765
+2025-04-06 14:08:13 - game.core.game_refactored - INFO - === JOINING MULTIPLAYER SESSION AT localhost:8765 ===
+2025-04-06 14:08:13 - game.core.game_multiplayer - INFO - Initializing multiplayer functionality
+2025-04-06 14:08:13 - game.core.game_refactored - ERROR - === ERROR CONNECTING TO MULTIPLAYER SESSION: 'GameMultiplayer' object has no attribute '_on_welcome' ===
+2025-04-06 14:08:13 - game.core.game_refactored - ERROR - Traceback (most recent call last):
+  File "C:\Users\Matthias\Documents\augment-projects\PokeTogether\src\game\core\game_refactored.py", line 1006, in join_session
+    self.game_multiplayer.initialize(self.player)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\Matthias\Documents\augment-projects\PokeTogether\src\game\core\game_multiplayer.py", line 53, in initialize
+    self.multiplayer_manager.on_welcome = self._on_welcome
+                                          ^^^^^^^^^^^^^^^^
+AttributeError: 'GameMultiplayer' object has no attribute '_on_welcome'
+
+2025-04-06 14:08:13 - game.core.game_refactored - INFO - Starting game loop
+2025-04-06 14:08:13 - game.core.game_refactored - INFO - FPS limit set to 30
+2025-04-06 14:08:13 - game.core.game_refactored - INFO - Network update rate: 30 updates/s
+2025-04-06 14:08:13 - game.core.game_refactored - INFO - Network optimizations: interpolation=False, prediction=True, reconciliation=True
+
+

@@ -1,0 +1,67 @@
+=== LOCAL MULTIPLAYER TEST REPORT ===
+Test Date: 2025-04-05 19:03:41
+Test Result: SUCCESS
+
+=== SERVER INFO ===
+PID: 31056
+Exit Code: Still running
+Stdout Log: test_logs\server\server_stdout_20250405_190323.log
+Stderr Log: test_logs\server\server_stderr_20250405_190323.log
+
+=== CLIENT 1 INFO ===
+PID: 29312
+Exit Code: Still running
+Stdout Log: test_logs\client1\client1_stdout_20250405_190326.log
+Stderr Log: test_logs\client1\client1_stderr_20250405_190326.log
+
+=== CLIENT 2 INFO ===
+PID: 15452
+Exit Code: Still running
+Stdout Log: test_logs\client2\client2_stdout_20250405_190328.log
+Stderr Log: test_logs\client2\client2_stderr_20250405_190328.log
+
+=== SERVER LOG EXCERPT ===
+-04-05 19:03:41 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "e031328f-bd06-4c37-a124-00d2134adf64", "player_data": {}}
+2025-04-05 19:03:41 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "d2fcf530-d279-4d83-8482-a46c5e85d583", "player_data": {}}
+2025-04-05 19:03:41 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "e031328f-bd06-4c37-a124-00d2134adf64", "player_data": {}}
+2025-04-05 19:03:41 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "d2fcf530-d279-4d83-8482-a46c5e85d583", "player_data": {}}
+2025-04-05 19:03:41 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "d2fcf530-d279-4d83-8482-a46c5e85d583", "player_data": {}}
+2025-04-05 19:03:41 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "e031328f-bd06-4c37-a124-00d2134adf64", "player_data": {}}
+2025-04-05 19:03:41 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "d2fcf530-d279-4d83-8482-a46c5e85d583", "player_data": {}}
+2025-04-05 19:03:41 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "e031328f-bd06-4c37-a124-00d2134adf64", "player_data": {}}
+2025-04-05 19:03:41 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "d2fcf530-d279-4d83-8482-a46c5e85d583", "player_data": {}}
+2025-04-05 19:03:41 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "e031328f-bd06-4c37-a124-00d2134adf64", "player_data": {}}
+2025-04-05 19:03:41 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "d2fcf530-d279-4d83-8482-a46c5e85d583", "player_data": {}}
+2025-04-05 19:03:41 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "e031328f-bd06-4c37-a124-00d2134adf64", "player_data": {}}
+
+
+=== CLIENT 1 LOG EXCERPT ===
+-04-05 19:03:40 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "d2fcf530-d279-4d83-8482-a46c5e85d583", "player_data": {}}
+2025-04-05 19:03:40 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "d2fcf530-d279-4d83-8482-a46c5e85d583", "player_data": {}}
+2025-04-05 19:03:41 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "d2fcf530-d279-4d83-8482-a46c5e85d583", "player_data": {}}
+2025-04-05 19:03:41 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "d2fcf530-d279-4d83-8482-a46c5e85d583", "player_data": {}}
+2025-04-05 19:03:41 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "d2fcf530-d279-4d83-8482-a46c5e85d583", "player_data": {}}
+2025-04-05 19:03:41 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "d2fcf530-d279-4d83-8482-a46c5e85d583", "player_data": {}}
+2025-04-05 19:03:41 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "d2fcf530-d279-4d83-8482-a46c5e85d583", "player_data": {}}
+2025-04-05 19:03:41 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "d2fcf530-d279-4d83-8482-a46c5e85d583", "player_data": {}}
+2025-04-05 19:03:41 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "d2fcf530-d279-4d83-8482-a46c5e85d583", "player_data": {}}
+2025-04-05 19:03:41 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "d2fcf530-d279-4d83-8482-a46c5e85d583", "player_data": {}}
+2025-04-05 19:03:41 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "d2fcf530-d279-4d83-8482-a46c5e85d583", "player_data": {}}
+2025-04-05 19:03:41 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "d2fcf530-d279-4d83-8482-a46c5e85d583", "player_data": {}}
+
+
+=== CLIENT 2 LOG EXCERPT ===
+-04-05 19:03:40 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "e031328f-bd06-4c37-a124-00d2134adf64", "player_data": {}}
+2025-04-05 19:03:40 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "e031328f-bd06-4c37-a124-00d2134adf64", "player_data": {}}
+2025-04-05 19:03:40 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "e031328f-bd06-4c37-a124-00d2134adf64", "player_data": {}}
+2025-04-05 19:03:41 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "e031328f-bd06-4c37-a124-00d2134adf64", "player_data": {}}
+2025-04-05 19:03:41 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "e031328f-bd06-4c37-a124-00d2134adf64", "player_data": {}}
+2025-04-05 19:03:41 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "e031328f-bd06-4c37-a124-00d2134adf64", "player_data": {}}
+2025-04-05 19:03:41 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "e031328f-bd06-4c37-a124-00d2134adf64", "player_data": {}}
+2025-04-05 19:03:41 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "e031328f-bd06-4c37-a124-00d2134adf64", "player_data": {}}
+2025-04-05 19:03:41 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "e031328f-bd06-4c37-a124-00d2134adf64", "player_data": {}}
+2025-04-05 19:03:41 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "e031328f-bd06-4c37-a124-00d2134adf64", "player_data": {}}
+2025-04-05 19:03:41 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "e031328f-bd06-4c37-a124-00d2134adf64", "player_data": {}}
+2025-04-05 19:03:41 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "e031328f-bd06-4c37-a124-00d2134adf64", "player_data": {}}
+
+

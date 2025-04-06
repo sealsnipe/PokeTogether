@@ -1,0 +1,79 @@
+=== LOCAL MULTIPLAYER TEST REPORT ===
+Test Date: 2025-04-05 23:02:07
+Test Result: SUCCESS
+
+=== SERVER INFO ===
+PID: 16704
+Exit Code: Still running
+Stdout Log: test_logs\server\server_stdout_20250405_230141.log
+Stderr Log: test_logs\server\server_stderr_20250405_230141.log
+
+=== CLIENT 1 INFO ===
+PID: 23524
+Exit Code: Still running
+Stdout Log: test_logs\client1\client1_stdout_20250405_230146.log
+Stderr Log: test_logs\client1\client1_stderr_20250405_230146.log
+
+=== CLIENT 2 INFO ===
+PID: 7152
+Exit Code: 0
+Stdout Log: test_logs\client2\client2_stdout_20250405_230149.log
+Stderr Log: test_logs\client2\client2_stderr_20250405_230149.log
+
+=== SERVER LOG EXCERPT ===
+type": "player_update", "client_id": "6592329a-3d87-4445-8b05-11332c1d368b", "player_data": {"play...
+2025-04-05 23:01:59 - game.network.server - INFO - Received player update from client 6592329a-3d87-4445-8b05-11332c1d368b: {'player_id': '954b88fa-610e-4bb8-a1b8-42f565d011cc', 'name': 'Player1', 'character_type': 'Red', 'x': 464.0, 'y': 583.0, 'direction': 'right', 'moving': True, 'current_frame': 2, 'input_sequence_number': 64, 'timestamp': 1743886919.578215}
+2025-04-05 23:01:59 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "6592329a-3d87-4445-8b05-11332c1d368b", "player_data": {"play...
+2025-04-05 23:01:59 - game.network.server - INFO - Received player update from client 6592329a-3d87-4445-8b05-11332c1d368b: {'player_id': '954b88fa-610e-4bb8-a1b8-42f565d011cc', 'name': 'Player1', 'character_type': 'Red', 'x': 476.0, 'y': 583.0, 'direction': 'right', 'moving': True, 'current_frame': 3, 'input_sequence_number': 68, 'timestamp': 1743886919.7102547}
+2025-04-05 23:01:59 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "6592329a-3d87-4445-8b05-11332c1d368b", "player_data": {"play...
+2025-04-05 23:01:59 - game.network.server - INFO - Received player update from client 6592329a-3d87-4445-8b05-11332c1d368b: {'player_id': '954b88fa-610e-4bb8-a1b8-42f565d011cc', 'name': 'Player1', 'character_type': 'Red', 'x': 479.0, 'y': 583.0, 'direction': 'right', 'moving': True, 'current_frame': 3, 'input_sequence_number': 69, 'timestamp': 1743886919.8104868}
+2025-04-05 23:01:59 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "6592329a-3d87-4445-8b05-11332c1d368b", "player_data": {"play...
+2025-04-05 23:02:06 - game.network.server - INFO - Client disconnected: 3b52f6f2-50c8-49f7-9445-ef24964778ba
+2025-04-05 23:02:06 - game.network.client - INFO - Received message: {"type": "player_disconnected", "client_id": "3b52f6f2-50c8-49f7-9445-ef24964778ba", "player_name": ...
+
+
+=== CLIENT 1 LOG EXCERPT ===
+ame_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 23:02:06 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 23:02:06 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 23:02:06 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 23:02:06 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 23:02:06 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 23:02:06 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 23:02:06 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 23:02:06 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 23:02:06 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 23:02:06 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 23:02:06 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 23:02:06 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 23:02:06 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 23:02:07 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 23:02:07 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 23:02:07 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 23:02:07 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 23:02:07 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+
+
+=== CLIENT 2 LOG EXCERPT ===
+ering other players. Active: 0 players
+2025-04-05 23:02:03 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 23:02:03 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 23:02:03 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 23:02:03 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 23:02:03 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 23:02:04 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 23:02:04 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 23:02:04 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 23:02:04 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 23:02:04 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 23:02:04 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 23:02:04 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 23:02:04 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 23:02:04 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 23:02:04 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 23:02:04 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 23:02:04 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 23:02:06 - game.core.game_refactored - INFO - Quitting game
+2025-04-05 23:02:06 - game.core.game_refactored - INFO - Quitting game
+
+

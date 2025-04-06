@@ -1,0 +1,23 @@
+=== PLAYER VISUALIZATION TEST REPORT ===
+Test Date: 2025-04-05 19:31:28
+Test Result: FAILURE
+
+=== SCREENSHOTS ===
+Screenshot 1: test_visualization\screenshots\client1_initial.png
+Screenshot 2: test_visualization\screenshots\client2_initial.png
+Screenshot 3: test_visualization\screenshots\client1_after_move_1.png
+Screenshot 4: test_visualization\screenshots\client2_after_move_1.png
+Screenshot 5: test_visualization\screenshots\client1_after_move_2.png
+Screenshot 6: test_visualization\screenshots\client2_after_move_2.png
+Screenshot 7: test_visualization\screenshots\client1_after_move_3.png
+Screenshot 8: test_visualization\screenshots\client2_after_move_3.png
+Screenshot 9: test_visualization\screenshots\client1_after_move_4.png
+Screenshot 10: test_visualization\screenshots\client2_after_move_4.png
+Screenshot 11: test_visualization\screenshots\client1_after_move_5.png
+Screenshot 12: test_visualization\screenshots\client2_after_move_5.png
+Screenshot 13: test_visualization\screenshots\client1_after_move_6.png
+Screenshot 14: test_visualization\screenshots\client2_after_move_6.png
+
+=== MOVEMENT DETECTION ===
+No player movement was detected in the screenshots.
+This indicates that players cannot see each other in the game.

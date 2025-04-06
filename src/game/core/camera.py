@@ -54,24 +54,52 @@ class Camera:
         self.x = max(0, min(self.x, self.map_width - self.width))
         self.y = max(0, min(self.y, self.map_height - self.height))
 
-    def apply(self, x: int, y: int) -> Tuple[int, int]:
+    def apply(self, x: Any, y: Any) -> Tuple[int, int]:
         """Apply the camera offset to a position
 
         Args:
-            x: X position
-            y: Y position
+            x: X position (can be int, float, or string)
+            y: Y position (can be int, float, or string)
 
         Returns:
             Tuple[int, int]: Position with camera offset applied
         """
-        # Berechne die Position relativ zur Kamera
-        rel_x = x - self.x
-        rel_y = y - self.y
+        # Stelle sicher, dass die Koordinaten als Zahlen vorliegen
+        try:
+            # Explizite Konvertierung zu float für konsistente Berechnungen
+            x = float(x)
+            y = float(y)
+        except (ValueError, TypeError):
+            self.logger.error(f"[CAMERA] INVALID COORDINATES: x={x}, y={y}")
+            x = 0.0
+            y = 0.0
 
-        # Skaliere die Position basierend auf dem Zoom-Faktor
-        # und zentriere sie auf dem Bildschirm
-        scaled_x = int(rel_x / self.zoom_factor) + (self.screen_width - int(self.width / self.zoom_factor)) // 2
-        scaled_y = int(rel_y / self.zoom_factor) + (self.screen_height - int(self.height / self.zoom_factor)) // 2
+        # Berechne die Position relativ zur Kamera
+        # Verwende explizite float-Berechnung für höhere Präzision
+        rel_x = float(x - self.x)
+        rel_y = float(y - self.y)
+
+        # Berechne die Bildschirmmitte und den Zoom-Faktor
+        # Verwende konsistente Rundung für alle Berechnungen
+        zoom_factor = float(self.zoom_factor)  # Explizite Konvertierung zu float
+
+        # Berechne die Größe der Kamera auf dem Bildschirm
+        camera_screen_width = int(self.width / zoom_factor)
+        camera_screen_height = int(self.height / zoom_factor)
+
+        # Berechne den Offset zur Zentrierung der Kamera
+        center_offset_x = (self.screen_width - camera_screen_width) // 2
+        center_offset_y = (self.screen_height - camera_screen_height) // 2
+
+        # Skaliere die Position basierend auf dem Zoom-Faktor und zentriere sie
+        # Verwende konsistente Rundung (math.floor) für alle Clients
+        import math
+        scaled_x = math.floor(rel_x / zoom_factor) + center_offset_x
+        scaled_y = math.floor(rel_y / zoom_factor) + center_offset_y
+
+        # Ausführliche Debug-Ausgabe für die Kamera-Transformation
+        self.logger.info(f"[CAMERA] TRANSFORM: world=({x:.2f}, {y:.2f}), camera=({self.x:.2f}, {self.y:.2f}), rel=({rel_x:.2f}, {rel_y:.2f}), screen=({scaled_x}, {scaled_y})")
+        self.logger.info(f"[CAMERA] DETAILS: zoom={zoom_factor:.4f}, screen_size=({self.screen_width}, {self.screen_height}), camera_size=({self.width}, {self.height}), center_offset=({center_offset_x}, {center_offset_y})")
 
         return scaled_x, scaled_y
 
@@ -81,4 +109,6 @@ class Camera:
         Returns:
             Tuple[int, int]: Camera offset (x, y)
         """
+        # Log the camera offset for debugging
+        self.logger.info(f"[CAMERA] GET_OFFSET: ({self.x}, {self.y})")
         return self.x, self.y

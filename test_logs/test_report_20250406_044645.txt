@@ -1,0 +1,61 @@
+=== LOCAL MULTIPLAYER TEST REPORT ===
+Test Date: 2025-04-06 04:46:45
+Test Result: FAILURE
+
+=== SERVER INFO ===
+PID: 19596
+Exit Code: 0
+Stdout Log: test_logs\server\server_stdout_20250406_044637.log
+Stderr Log: test_logs\server\server_stderr_20250406_044637.log
+
+=== CLIENT 1 INFO ===
+PID: 2308
+Exit Code: Still running
+Stdout Log: test_logs\client1\client1_stdout_20250406_044642.log
+Stderr Log: test_logs\client1\client1_stderr_20250406_044642.log
+
+=== CLIENT 2 INFO ===
+PID: 12436
+Exit Code: Still running
+Stdout Log: test_logs\client2\client2_stdout_20250406_044645.log
+Stderr Log: test_logs\client2\client2_stderr_20250406_044645.log
+
+=== PLAYER POSITIONS ===
+Client 1 player positions:
+
+Client 2 player positions:
+
+=== POSITION SYNCHRONIZATION ===
+[FAILURE] Not all players are visible to each other.
+Player1 is not visible in Client2.
+Player2 is not visible in Client1.
+=== SERVER LOG EXCERPT ===
+
+
+=== CLIENT 1 LOG EXCERPT ===
+Together\src\game\core\game_multiplayer.py", line 110, in update
+    self._send_player_data()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Matthias\Documents\augment-projects\PokeTogether\src\game\core\game_multiplayer.py", line 165, in _send_player_data
+    self.multiplayer_manager.send_player_data(player_data)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MultiplayerManager' object has no attribute 'send_player_data'. Did you mean: 'send_player_update'?
+2025-04-06 04:46:45 - game.core.game_multiplayer - INFO - [DATENFLUSS] PLAYER DATA COLLECTED: {"player_id": "76b09d6c-e778-444c-a78f-65e13461b760", "name": "Player", "character_type": "Red", "x": 560, "y": 448, "direction": "down", "moving": false, "current_frame": 0, "input_sequence_number": 0, "timestamp": 1743907605.4741545, "instance_id": "instance_DESKTOP-MQITL2U_2308_1743907602", "force_update": false, "client_time": 1743907605.4741561}
+2025-04-06 04:46:45 - game.core.game_multiplayer - INFO - [DATENFLUSS] SENDING PLAYER UPDATE: player_id=76b09d6c-e778-444c-a78f-65e13461b760, x=560, y=448, direction=down
+2025-04-06 04:46:45 - game.core.game_refactored - ERROR - Error in game loop: 'MultiplayerManager' object has no attribute 'send_player_data'
+Traceback (most recent call last):
+  File "C:\Users\Matthias\Documents\augment-projects\PokeTogether\src\game\core\game_refactored.py", line 976, in run
+    self.game_multiplayer.update(dt)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^
+  File "C:\Users\Matthias\Documents\augment-projects\PokeTogether\src\game\core\game_multiplayer.py", line 110, in update
+    self._send_player_data()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Matthias\Documents\augment-projects\PokeTogether\src\game\core\game_multiplayer.py", line 165, in _send_player_data
+    self.multiplayer_manager.send_player_data(player_data)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MultiplayerManager' object has no attribute 'send_player_data'. Did you mean: 'send_player_update'?
+
+
+=== CLIENT 2 LOG EXCERPT ===
+
+

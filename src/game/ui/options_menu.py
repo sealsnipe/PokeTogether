@@ -109,11 +109,11 @@ class OptionsMenu:
             self.current_option = (self.current_option - 1) % len(self.menus[self.current_menu])
         elif self.input_handler.was_pressed("down"):
             self.current_option = (self.current_option + 1) % len(self.menus[self.current_menu])
-        elif self.input_handler.was_pressed("action"):
+        elif self.input_handler.was_pressed("action") or self._check_controller_action():
             # Execute the action for the current option
             self.logger.info(f"Executing action for option: {self.menus[self.current_menu][self.current_option]['text']}")
             self.menus[self.current_menu][self.current_option]["action"]()
-        elif self.input_handler.was_pressed("cancel"):
+        elif self.input_handler.was_pressed("cancel") or self._check_controller_cancel():
             # Go back to the previous menu or exit
             self.logger.info("Cancel pressed, going back")
             if self.current_menu == "main":
@@ -315,3 +315,45 @@ class OptionsMenu:
         controller_id = self.settings.get("controls", "controller_id")
         controller_id = (controller_id + 1) % 4  # Assume max 4 controllers
         self.settings.set("controls", "controller_id", controller_id)
+
+    def _check_controller_action(self):
+        """Prüft, ob die A-Taste auf dem Controller gedrückt wurde"""
+        # Prüfen, ob ein Controller angeschlossen ist
+        if self.input_handler.controllers and len(self.input_handler.controllers) > 0:
+            controller = self.input_handler.controllers[0]
+            try:
+                # A-Taste direkt prüfen
+                from game.core.controller_constants import BUTTON_A
+                if controller.get_button(BUTTON_A):
+                    # Prüfen, ob die Taste im letzten Frame nicht gedrückt war
+                    # Dies verhindert, dass die Aktion mehrmals ausgeführt wird
+                    if not hasattr(self, "_last_a_button_state") or not self._last_a_button_state:
+                        self._last_a_button_state = True
+                        return True
+                    self._last_a_button_state = True
+                else:
+                    self._last_a_button_state = False
+            except Exception as e:
+                self.logger.error(f"Fehler bei der Controller-Prüfung: {e}")
+        return False
+
+    def _check_controller_cancel(self):
+        """Prüft, ob die B-Taste auf dem Controller gedrückt wurde"""
+        # Prüfen, ob ein Controller angeschlossen ist
+        if self.input_handler.controllers and len(self.input_handler.controllers) > 0:
+            controller = self.input_handler.controllers[0]
+            try:
+                # B-Taste direkt prüfen
+                from game.core.controller_constants import BUTTON_B
+                if controller.get_button(BUTTON_B):
+                    # Prüfen, ob die Taste im letzten Frame nicht gedrückt war
+                    # Dies verhindert, dass die Aktion mehrmals ausgeführt wird
+                    if not hasattr(self, "_last_b_button_state") or not self._last_b_button_state:
+                        self._last_b_button_state = True
+                        return True
+                    self._last_b_button_state = True
+                else:
+                    self._last_b_button_state = False
+            except Exception as e:
+                self.logger.error(f"Fehler bei der Controller-Prüfung: {e}")
+        return False

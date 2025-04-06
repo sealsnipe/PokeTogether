@@ -1,0 +1,99 @@
+=== LOCAL MULTIPLAYER TEST REPORT ===
+Test Date: 2025-04-05 19:58:05
+Test Result: SUCCESS
+
+=== SERVER INFO ===
+PID: 21588
+Exit Code: Still running
+Stdout Log: test_logs\server\server_stdout_20250405_195739.log
+Stderr Log: test_logs\server\server_stderr_20250405_195739.log
+
+=== CLIENT 1 INFO ===
+PID: 31672
+Exit Code: Still running
+Stdout Log: test_logs\client1\client1_stdout_20250405_195744.log
+Stderr Log: test_logs\client1\client1_stderr_20250405_195744.log
+
+=== CLIENT 2 INFO ===
+PID: 14560
+Exit Code: Still running
+Stdout Log: test_logs\client2\client2_stdout_20250405_195747.log
+Stderr Log: test_logs\client2\client2_stderr_20250405_195747.log
+
+=== SERVER LOG EXCERPT ===
+ll last):
+  File "C:\Users\Matthias\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\websockets\server.py", line 545, in parse
+    request = yield from Request.parse(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.reader.read_line,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Matthias\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\websockets\http11.py", line 140, in parse
+    raise EOFError("connection closed while reading HTTP request line") from exc
+EOFError: connection closed while reading HTTP request line
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Matthias\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\websockets\asyncio\server.py", line 356, in conn_handler
+    await connection.handshake(
+    ...<3 lines>...
+    )
+  File "C:\Users\Matthias\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\websockets\asyncio\server.py", line 207, in handshake
+    raise self.protocol.handshake_exc
+websockets.exceptions.InvalidMessage: did not receive a valid HTTP request
+2025-04-05 19:57:50 - websockets.server - INFO - connection open
+2025-04-05 19:57:50 - game.network.server - INFO - === NEW CLIENT CONNECTED: aeaa006a-e8b9-4894-8326-e254cdd01034 ===
+NEW CLIENT CONNECTED: aeaa006a-e8b9-4894-8326-e254cdd01034
+2025-04-05 19:57:50 - game.network.server - INFO - Received connection confirmation from client aeaa006a-e8b9-4894-8326-e254cdd01034
+2025-04-05 19:57:50 - game.network.server - INFO - Client info: {'hostname': 'DESKTOP-MQITL2U', 'ip': '192.168.0.60'}
+2025-04-05 19:57:50 - game.network.server - INFO - Sent connection acknowledgement to client aeaa006a-e8b9-4894-8326-e254cdd01034
+
+
+=== CLIENT 1 LOG EXCERPT ===
+OUT ===
+2025-04-05 19:57:46 - game.network.client - INFO - Connection status after thread start: False
+2025-04-05 19:57:46 - game.network.multiplayer_manager - INFO - Connection attempt result: True
+2025-04-05 19:57:46 - game.network.multiplayer_manager - INFO - Client connected status: False
+2025-04-05 19:57:46 - game.core.game_refactored - INFO - === CONNECTION ATTEMPT INITIATED ===
+2025-04-05 19:57:46 - game.core.game_state_manager - INFO - Changing game state from GameState.MAIN_MENU to GameState.PLAYING
+2025-04-05 19:57:46 - game.core.game_refactored - INFO - Entering PLAYING state
+2025-04-05 19:57:46 - game.network.multiplayer_manager - WARNING - Cannot send player update: not connected to server
+2025-04-05 19:57:46 - game.core.game_refactored - INFO - Starting game loop
+2025-04-05 19:57:46 - game.core.game_refactored - INFO - FPS limit set to 30
+2025-04-05 19:57:46 - game.core.game_refactored - INFO - Network update interval: 0.100s (10 updates/s)
+2025-04-05 19:57:46 - game.core.game_refactored - INFO - Network optimizations: interpolation=True, prediction=True, reconciliation=True
+2025-04-05 19:57:47 - game.network.client - INFO - === SUCCESSFULLY CONNECTED TO SERVER AT ws://localhost:8765 ===
+SUCCESSFULLY CONNECTED TO MULTIPLAYER SESSION
+2025-04-05 19:57:47 - game.network.client - INFO - Received message: {"type": "welcome", "client_id": "6b5aaa36-4850-4e83-81e9-0d0772934a0e", "players": {}}
+2025-04-05 19:57:47 - game.network.client - INFO - Received welcome message. Client ID: 6b5aaa36-4850-4e83-81e9-0d0772934a0e
+2025-04-05 19:57:47 - game.network.client - INFO - Current players: 0
+2025-04-05 19:57:47 - game.network.client - INFO - Received message: {"type": "connection_acknowledged", "server_time": 1743875867.6974418, "message": "Connection confir...
+2025-04-05 19:57:47 - game.network.client - INFO - Connection acknowledged by server: Connection confirmed and acknowledged
+2025-04-05 19:57:47 - game.network.client - INFO - Estimated latency (RTT): 0.20 ms
+
+
+=== CLIENT 2 LOG EXCERPT ===
+OUT ===
+2025-04-05 19:57:49 - game.network.client - INFO - Connection status after thread start: False
+2025-04-05 19:57:49 - game.network.multiplayer_manager - INFO - Connection attempt result: True
+2025-04-05 19:57:49 - game.network.multiplayer_manager - INFO - Client connected status: False
+2025-04-05 19:57:49 - game.core.game_refactored - INFO - === CONNECTION ATTEMPT INITIATED ===
+2025-04-05 19:57:49 - game.core.game_state_manager - INFO - Changing game state from GameState.MAIN_MENU to GameState.PLAYING
+2025-04-05 19:57:49 - game.core.game_refactored - INFO - Entering PLAYING state
+2025-04-05 19:57:49 - game.network.multiplayer_manager - WARNING - Cannot send player update: not connected to server
+2025-04-05 19:57:49 - game.core.game_refactored - INFO - Starting game loop
+2025-04-05 19:57:49 - game.core.game_refactored - INFO - FPS limit set to 30
+2025-04-05 19:57:49 - game.core.game_refactored - INFO - Network update interval: 0.100s (10 updates/s)
+2025-04-05 19:57:49 - game.core.game_refactored - INFO - Network optimizations: interpolation=True, prediction=True, reconciliation=True
+2025-04-05 19:57:50 - game.network.client - INFO - === SUCCESSFULLY CONNECTED TO SERVER AT ws://localhost:8765 ===
+SUCCESSFULLY CONNECTED TO MULTIPLAYER SESSION
+2025-04-05 19:57:50 - game.network.client - INFO - Received message: {"type": "welcome", "client_id": "aeaa006a-e8b9-4894-8326-e254cdd01034", "players": {}}
+2025-04-05 19:57:50 - game.network.client - INFO - Received welcome message. Client ID: aeaa006a-e8b9-4894-8326-e254cdd01034
+2025-04-05 19:57:50 - game.network.client - INFO - Current players: 0
+2025-04-05 19:57:50 - game.network.client - INFO - Received message: {"type": "connection_acknowledged", "server_time": 1743875870.6798, "message": "Connection confirmed...
+2025-04-05 19:57:50 - game.network.client - INFO - Connection acknowledged by server: Connection confirmed and acknowledged
+2025-04-05 19:57:50 - game.network.client - INFO - Estimated latency (RTT): 0.21 ms
+
+

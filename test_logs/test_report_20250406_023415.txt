@@ -1,0 +1,58 @@
+=== LOCAL MULTIPLAYER TEST REPORT ===
+Test Date: 2025-04-06 02:34:15
+Test Result: SUCCESS
+
+=== SERVER INFO ===
+PID: 30116
+Exit Code: Still running
+Stdout Log: test_logs\server\server_stdout_20250406_023349.log
+Stderr Log: test_logs\server\server_stderr_20250406_023349.log
+
+=== CLIENT 1 INFO ===
+PID: 27132
+Exit Code: Still running
+Stdout Log: test_logs\client1\client1_stdout_20250406_023354.log
+Stderr Log: test_logs\client1\client1_stderr_20250406_023354.log
+
+=== CLIENT 2 INFO ===
+PID: 6264
+Exit Code: Still running
+Stdout Log: test_logs\client2\client2_stdout_20250406_023357.log
+Stderr Log: test_logs\client2\client2_stderr_20250406_023357.log
+
+=== SERVER LOG EXCERPT ===
+NG BROADCAST TO CLIENT: b6652f65-6673-484b-8c79-c644fecbc601
+2025-04-06 02:34:14 - game.network.server - INFO - [DATENFLUSS] BROADCAST SENT TO CLIENT: b6652f65-6673-484b-8c79-c644fecbc601
+2025-04-06 02:34:14 - game.network.client - INFO - [DATENFLUSS] RECEIVED MESSAGE FROM SERVER: {"type": "player_update", "client_id": "42bd4c0b-87ed-42f0-94d6-3ad1df9a72a0", "player_id": "993517a...
+2025-04-06 02:34:14 - game.network.server - INFO - [DATENFLUSS] SENDING BROADCAST TO CLIENT: ea3c9482-6a8e-4899-aaf5-29797dca27d4
+2025-04-06 02:34:14 - game.network.client - INFO - [DATENFLUSS] PROCESSING MESSAGE: type=player_update, data={"type": "player_update", "client_id": "42bd4c0b-87ed-42f0-94d6-3ad1df9a72a0", "player_id": "993517a...
+2025-04-06 02:34:14 - game.network.client - INFO - [DATENFLUSS] CALLING HANDLER FOR MESSAGE TYPE: player_update
+2025-04-06 02:34:14 - game.network.server - INFO - [DATENFLUSS] BROADCAST SENT TO CLIENT: ea3c9482-6a8e-4899-aaf5-29797dca27d4
+2025-04-06 02:34:14 - game.network.multiplayer_manager - INFO - [DATENFLUSS] MULTIPLAYER_MANAGER RECEIVED MESSAGE: {"type": "player_update", "client_id": "42bd4c0b-87ed-42f0-94d6-3ad1df9a72a0", "player_id": "993517a5-cd5d-4924-89b3-dc31ebaacc36", "name": "Player2", "character_type": "Blue", "x": 494.0, "y": 175.0, "direction": "up", "moving": true, "current_frame": 1, "input_sequence_number": 272, "timestamp": 1743899654.9062052}
+2025-04-06 02:34:14 - game.network.server - INFO - [DATENFLUSS] BROADCAST COMPLETED: 2 CLIENTS RECEIVED THE MESSAGE
+2025-04-06 02:34:14 - game.network.multiplayer_manager - INFO - [DATENFLUSS] MULTIPLAYER_MANAGER EXTRACTED PLAYER DATA: {"player_id": "993517a5-cd5d-4924-89b3-dc31ebaacc36", "name": "Player2", "character_type": "Blue", "x": 494.0, "y": 175.0, "direction": "up", "moving": true, "current_frame": 1, "input_sequence_number": 272, "timestamp": 1743899654.9062052}
+2025-04-06 02:34:14 - game.network.multiplayer_manager - WARNING - [DATENFLUSS] ON_PLAYER_UPDATE CALLBACK NOT REGISTERED
+
+
+=== CLIENT 1 LOG EXCERPT ===
+: "Blue", "x": 494.233515464957, "y": 198.54855907532644, "direction": "up", "moving": true, "current_frame": 1, "input_sequence_number": 272, "timestamp": 1743899654.9062052}}
+2025-04-06 02:34:15 - game.core.game_refactored - INFO - [DATENFLUSS] RENDERING PLAYER: 42bd4c0b-87ed-42f0-94d6-3ad1df9a72a0, data={"player_id": "993517a5-cd5d-4924-89b3-dc31ebaacc36", "name": "Player2", "character_type": "Blue", "x": 494.233515464957, "y": 198.54855907532644, "direction": "up", "moving": true, "current_frame": 1, "input_sequence_number": 272, "timestamp": 1743899654.9062052}
+2025-04-06 02:34:15 - game.core.game_refactored - INFO - [DATENFLUSS] RENDERING PLAYER Player2 (ID: 42bd4c0b-87ed-42f0-94d6-3ad1df9a72a0): x=494.233515464957, y=198.54855907532644, screen_x=420, screen_y=44
+2025-04-06 02:34:15 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 1 players
+2025-04-06 02:34:15 - game.core.game_refactored - INFO - [DATENFLUSS] RENDERING OTHER PLAYERS. Count: 1
+2025-04-06 02:34:15 - game.core.game_refactored - INFO - [DATENFLUSS] OTHER_PLAYERS CONTENT: {"42bd4c0b-87ed-42f0-94d6-3ad1df9a72a0": {"player_id": "993517a5-cd5d-4924-89b3-dc31ebaacc36", "name": "Player2", "character_type": "Blue", "x": 494.24409097908085, "y": 199.61503284888587, "direction": "up", "moving": true, "current_frame": 1, "input_sequence_number": 272, "timestamp": 1743899654.9062052}}
+2025-04-06 02:34:15 - game.core.game_refactored - INFO - [DATENFLUSS] RENDERING PLAYER: 42bd4c0b-87ed-42f0-94d6-3ad1df9a72a0, data={"player_id": "993517a5-cd5d-4924-89b3-dc31ebaacc36", "name": "Player2", "character_type": "Blue", "x": 494.24409097908085, "y": 199.61503284888587, "direction": "up", "moving": true, "current_frame": 1, "input_sequence_number": 272, "timestamp": 1743899654.9062052}
+2025-04-06 02:34:15 - game.core.game_refactored - INFO - [DATENFLUSS] RENDERING PLAYER Player2 (ID: 42bd4c0b-87ed-42f0-94d6-3ad1df9a72a0): x=494.24409097908085, y=199.61503284888587, screen_x=420, screen_y=45
+
+
+=== CLIENT 2 LOG EXCERPT ===
+: "Red", "x": 541.4279654073847, "y": 513.9116340637279, "direction": "left", "moving": true, "current_frame": 1, "input_sequence_number": 104, "timestamp": 1743899647.9083548}}
+2025-04-06 02:34:15 - game.core.game_refactored - INFO - [DATENFLUSS] RENDERING PLAYER: ea3c9482-6a8e-4899-aaf5-29797dca27d4, data={"player_id": "c2ed10f1-c013-4ff8-bef3-5921d82bf871", "name": "Player1", "character_type": "Red", "x": 541.4279654073847, "y": 513.9116340637279, "direction": "left", "moving": true, "current_frame": 1, "input_sequence_number": 104, "timestamp": 1743899647.9083548}
+2025-04-06 02:34:15 - game.core.game_refactored - INFO - [DATENFLUSS] RENDERING PLAYER Player1 (ID: ea3c9482-6a8e-4899-aaf5-29797dca27d4): x=541.4279654073847, y=513.9116340637279, screen_x=527, screen_y=513
+2025-04-06 02:34:15 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 1 players
+2025-04-06 02:34:15 - game.core.game_refactored - INFO - [DATENFLUSS] RENDERING OTHER PLAYERS. Count: 1
+2025-04-06 02:34:15 - game.core.game_refactored - INFO - [DATENFLUSS] OTHER_PLAYERS CONTENT: {"ea3c9482-6a8e-4899-aaf5-29797dca27d4": {"player_id": "c2ed10f1-c013-4ff8-bef3-5921d82bf871", "name": "Player1", "character_type": "Red", "x": 541.4140765726139, "y": 513.9115364423067, "direction": "left", "moving": true, "current_frame": 1, "input_sequence_number": 104, "timestamp": 1743899647.9083548}}
+2025-04-06 02:34:15 - game.core.game_refactored - INFO - [DATENFLUSS] RENDERING PLAYER: ea3c9482-6a8e-4899-aaf5-29797dca27d4, data={"player_id": "c2ed10f1-c013-4ff8-bef3-5921d82bf871", "name": "Player1", "character_type": "Red", "x": 541.4140765726139, "y": 513.9115364423067, "direction": "left", "moving": true, "current_frame": 1, "input_sequence_number": 104, "timestamp": 1743899647.9083548}
+2025-04-06 02:34:15 - game.core.game_refactored - INFO - [DATENFLUSS] RENDERING PLAYER Player1 (ID: ea3c9482-6a8e-4899-aaf5-29797dca27d4): x=541.4140765726139, y=513.9115364423067, screen_x=527, screen_y=513
+
+

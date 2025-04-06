@@ -1,0 +1,30 @@
+Testbericht für Spielerposition-Synchronisierung (20250406_050809)
+================================================================================
+
+Screenshots
+----------------------------------------
+client1_before: test_screenshots/client1_before_20250406_050809.png
+client2_before: test_screenshots/client2_before_20250406_050809.png
+client1_after: test_screenshots/client1_after_20250406_050809.png
+client2_after: test_screenshots/client2_after_20250406_050809.png
+client1_after2: test_screenshots/client1_after2_20250406_050809.png
+client2_after2: test_screenshots/client2_after2_20250406_050809.png
+
+Client 1 Positionen
+----------------------------------------
+Eigener Spieler: Unknown an Position (?, ?)
+Andere Spieler:
+
+Client 2 Positionen
+----------------------------------------
+Eigener Spieler: Unknown an Position (?, ?)
+Andere Spieler:
+
+Auswertung
+----------------------------------------
+✗ Client 1 (Unknown) ist nicht in Client 2 sichtbar
+✗ Client 2 (Unknown) ist nicht in Client 1 sichtbar
+
+Zusammenfassung
+----------------------------------------
+✗ Test fehlgeschlagen: Nicht alle Spieler sind für den jeweils anderen Spieler sichtbar

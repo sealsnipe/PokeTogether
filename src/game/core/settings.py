@@ -56,6 +56,23 @@ class Settings:
                 "keyboard_enabled": True,
                 "controller_enabled": True,
                 "controller_id": 0
+            },
+            "debug": {
+                "show_fps": True,
+                "show_player_info": True,
+                "show_collision_boxes": False,
+                "show_network_stats": True,
+                "show_visibility_area": True,  # Zeigt den Sichtbarkeitsbereich für Debugging
+                "force_player_visibility": True,  # Erzwingt die Sichtbarkeit aller Spieler
+                "log_level": "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+            },
+            "multiplayer": {
+                "update_rate": 30,  # Updates pro Sekunde (erhöht von 10 auf 30 für flüssigere Bewegungen)
+                "interpolation": True,  # Bewegungen interpolieren
+                "prediction": True,  # Client-Side-Prediction aktivieren
+                "reconciliation": True,  # Server-Reconciliation aktivieren
+                "position_smoothing": True,  # Glättung der Positionsupdates
+                "smoothing_factor": 0.3  # Glättungsfaktor (0.0 = keine Glättung, 1.0 = maximale Glättung)
             }
         }
 

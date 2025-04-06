@@ -2,8 +2,8 @@
     "video": {
         "fullscreen": false,
         "resolution": [
-            800,
-            600
+            640,
+            480
         ],
         "available_resolutions": [
             [

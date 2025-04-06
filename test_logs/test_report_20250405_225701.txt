@@ -1,0 +1,77 @@
+=== LOCAL MULTIPLAYER TEST REPORT ===
+Test Date: 2025-04-05 22:57:01
+Test Result: SUCCESS
+
+=== SERVER INFO ===
+PID: 13704
+Exit Code: Still running
+Stdout Log: test_logs\server\server_stdout_20250405_225635.log
+Stderr Log: test_logs\server\server_stderr_20250405_225635.log
+
+=== CLIENT 1 INFO ===
+PID: 32580
+Exit Code: Still running
+Stdout Log: test_logs\client1\client1_stdout_20250405_225640.log
+Stderr Log: test_logs\client1\client1_stderr_20250405_225640.log
+
+=== CLIENT 2 INFO ===
+PID: 25568
+Exit Code: Still running
+Stdout Log: test_logs\client2\client2_stdout_20250405_225643.log
+Stderr Log: test_logs\client2\client2_stderr_20250405_225643.log
+
+=== SERVER LOG EXCERPT ===
+-04-05 22:57:01 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "816fee1a-4508-4f75-86e7-2ae62bc97893", "player_data": {}}
+2025-04-05 22:57:01 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "869dbf3c-819c-4b94-b745-980e7359f428", "player_data": {}}
+2025-04-05 22:57:01 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "816fee1a-4508-4f75-86e7-2ae62bc97893", "player_data": {}}
+2025-04-05 22:57:01 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "869dbf3c-819c-4b94-b745-980e7359f428", "player_data": {}}
+2025-04-05 22:57:01 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "816fee1a-4508-4f75-86e7-2ae62bc97893", "player_data": {}}
+2025-04-05 22:57:01 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "869dbf3c-819c-4b94-b745-980e7359f428", "player_data": {}}
+2025-04-05 22:57:01 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "816fee1a-4508-4f75-86e7-2ae62bc97893", "player_data": {}}
+2025-04-05 22:57:01 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "869dbf3c-819c-4b94-b745-980e7359f428", "player_data": {}}
+2025-04-05 22:57:01 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "816fee1a-4508-4f75-86e7-2ae62bc97893", "player_data": {}}
+2025-04-05 22:57:01 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "869dbf3c-819c-4b94-b745-980e7359f428", "player_data": {}}
+2025-04-05 22:57:01 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "816fee1a-4508-4f75-86e7-2ae62bc97893", "player_data": {}}
+2025-04-05 22:57:01 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "869dbf3c-819c-4b94-b745-980e7359f428", "player_data": {}}
+
+
+=== CLIENT 1 LOG EXCERPT ===
+bf3c-819c-4b94-b745-980e7359f428", "player_data": {}}
+2025-04-05 22:57:01 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 22:57:01 - game.core.game_refactored - INFO - [INFO] Sending position update: x=2318.0, y=2206.0, direction=right
+2025-04-05 22:57:01 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 22:57:01 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 22:57:01 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "869dbf3c-819c-4b94-b745-980e7359f428", "player_data": {}}
+2025-04-05 22:57:01 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 22:57:01 - game.core.game_refactored - INFO - [INFO] Sending position update: x=2327.0, y=2215.0, direction=right
+2025-04-05 22:57:01 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 22:57:01 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 22:57:01 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "869dbf3c-819c-4b94-b745-980e7359f428", "player_data": {}}
+2025-04-05 22:57:01 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 22:57:01 - game.core.game_refactored - INFO - [INFO] Sending position update: x=2336.0, y=2224.0, direction=right
+2025-04-05 22:57:01 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 22:57:01 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 22:57:01 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "869dbf3c-819c-4b94-b745-980e7359f428", "player_data": {}}
+2025-04-05 22:57:01 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+
+
+=== CLIENT 2 LOG EXCERPT ===
+ - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 22:57:01 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 22:57:01 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "816fee1a-4508-4f75-86e7-2ae62bc97893", "player_data": {}}
+2025-04-05 22:57:01 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 22:57:01 - game.core.game_refactored - INFO - [INFO] Sending position update: x=560.0, y=1945.0, direction=down
+2025-04-05 22:57:01 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 22:57:01 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 22:57:01 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "816fee1a-4508-4f75-86e7-2ae62bc97893", "player_data": {}}
+2025-04-05 22:57:01 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 22:57:01 - game.core.game_refactored - INFO - [INFO] Sending position update: x=560.0, y=1954.0, direction=down
+2025-04-05 22:57:01 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 22:57:01 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 22:57:01 - game.network.client - INFO - Received message: {"type": "player_update", "client_id": "816fee1a-4508-4f75-86e7-2ae62bc97893", "player_data": {}}
+2025-04-05 22:57:01 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 22:57:01 - game.core.game_refactored - INFO - [INFO] Sending position update: x=560.0, y=1963.0, direction=down
+2025-04-05 22:57:01 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-05 22:57:01 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+
+

@@ -1,0 +1,60 @@
+=== LOCAL MULTIPLAYER TEST REPORT ===
+Test Date: 2025-04-06 12:51:44
+Test Result: SUCCESS
+
+=== SERVER INFO ===
+PID: 26516
+Exit Code: Still running
+Stdout Log: test_logs\server\server_stdout_20250406_125117.log
+Stderr Log: test_logs\server\server_stderr_20250406_125117.log
+
+=== CLIENT 1 INFO ===
+PID: 15572
+Exit Code: Still running
+Stdout Log: test_logs\client1\client1_stdout_20250406_125123.log
+Stderr Log: test_logs\client1\client1_stderr_20250406_125123.log
+
+=== CLIENT 2 INFO ===
+PID: 32140
+Exit Code: Still running
+Stdout Log: test_logs\client2\client2_stdout_20250406_125126.log
+Stderr Log: test_logs\client2\client2_stderr_20250406_125126.log
+
+=== PLAYER POSITIONS ===
+Client 1 player positions:
+  Player: (374, 448)
+
+Client 2 player positions:
+  Player: (560, 448)
+
+=== POSITION SYNCHRONIZATION ===
+[FAILURE] Not all players are visible to each other.
+Player1 is not visible in Client2.
+Player2 is not visible in Client1.
+=== SERVER LOG EXCERPT ===
+
+
+=== CLIENT 1 LOG EXCERPT ===
+: 448.0, "direction": "right", "moving": true, "current_frame": 0, "input_sequence_number": 70, "timestamp": 1743936704.221511, "instance_id": "instance_DESKTOP-MQITL2U_32140_1743936686", "force_update": true, "client_time": 1743936704.2213373, "server_timestamp": 1743936704.222399}
+2025-04-06 12:51:44 - game.core.camera - INFO - [CAMERA] TRANSFORM: world=(374.0, 448.0), camera=(80, 88), rel=(294.0, 360.0), screen=(245, 300)
+2025-04-06 12:51:44 - game.core.camera - INFO - [CAMERA] DETAILS: zoom=1.2, screen_size=(800, 600), camera_size=(960, 720)
+2025-04-06 12:51:44 - game.core.game_refactored - INFO - [DATENFLUSS] RENDERING PLAYER Player (ID: 04cc0a22-36e6-4293-81b6-7ca5c86544c3): x=374.0, y=448.0, screen_x=245, screen_y=300
+2025-04-06 12:51:44 - game.core.game_refactored - INFO - [VISIBILITY] CHECK: player=Player, screen_pos=(245, 300), screen_size=(800, 600), tolerance=50
+2025-04-06 12:51:44 - game.network.client - INFO - [DATENFLUSS] RECEIVED MESSAGE FROM SERVER: {"type": "player_update", "client_id": "04cc0a22-36e6-4293-81b6-7ca5c86544c3", "player_id": "ee00e6c...
+2025-04-06 12:51:44 - game.network.client - INFO - [DATENFLUSS] PROCESSING MESSAGE: type=player_update, data={"type": "player_update", "client_id": "04cc0a22-36e6-4293-81b6-7ca5c86544c3", "player_id": "ee00e6c...
+2025-04-06 12:51:44 - game.network.client - INFO - [DATENFLUSS] CALLING HANDLER FOR MESSAGE TYPE: player_update
+2025-04-06 12:51:44 - game.network.multiplayer_manager - INFO - [DATENFLUSS] MULTIPLAYER_MANAGER RECEIVED MESSAGE: {"type": "player_update", "client_id": "04cc0a22-36e6-4293-81b6-7ca5c86544c3", "player_id": "ee00e6ce-749e-4fde-9986-1b87871dbb3c", "name": "Player", "character_type": "Red", "x": 374.0, "y": 448.0, "direction": "right", "moving": true, "current_frame": 0, "input_sequence_number": 70, "timestamp": 1743936704.3176682, "instance_id": "instance_DESKTOP-MQITL2U_32140_1743936686", "force_update": true, "client_time": 1743936704.317444, "server_timestamp": 1743936704.3191042}
+
+
+=== CLIENT 2 LOG EXCERPT ===
+704.3176682, "instance_id": "instance_DESKTOP-MQITL2U_32140_1743936686", "force_update": true, "client_time": 1743936704.317444}
+2025-04-06 12:51:44 - game.core.game_refactored - INFO - [INFO] Rendering other players. Active: 0 players
+2025-04-06 12:51:44 - game.core.game_refactored - INFO - [DATENFLUSS] RENDERING OTHER PLAYERS. Count: 1
+2025-04-06 12:51:44 - game.core.game_refactored - INFO - [DATENFLUSS] OTHER_PLAYERS CONTENT: {"769d135e-b184-4142-a4d6-49b7c742a2e0": {"player_id": "da7df9db-973c-4199-9527-99934a56d838", "name": "Player", "character_type": "Red", "x": 560.0, "y": 448.0, "direction": "down", "moving": false, "current_frame": 0, "input_sequence_number": 0, "timestamp": 1743936704.219264, "instance_id": "instance_DESKTOP-MQITL2U_15572_1743936683", "force_update": true, "client_time": 1743936704.219094, "server_timestamp": 1743936704.2203124}}
+2025-04-06 12:51:44 - game.core.game_refactored - INFO - [DATENFLUSS] RENDERING PLAYER: 769d135e-b184-4142-a4d6-49b7c742a2e0, data={"player_id": "da7df9db-973c-4199-9527-99934a56d838", "name": "Player", "character_type": "Red", "x": 560.0, "y": 448.0, "direction": "down", "moving": false, "current_frame": 0, "input_sequence_number": 0, "timestamp": 1743936704.219264, "instance_id": "instance_DESKTOP-MQITL2U_15572_1743936683", "force_update": true, "client_time": 1743936704.219094, "server_timestamp": 1743936704.2203124}
+2025-04-06 12:51:44 - game.core.camera - INFO - [CAMERA] TRANSFORM: world=(560.0, 448.0), camera=(0, 88.0), rel=(560.0, 360.0), screen=(466, 300)
+2025-04-06 12:51:44 - game.core.camera - INFO - [CAMERA] DETAILS: zoom=1.2, screen_size=(800, 600), camera_size=(960, 720)
+2025-04-06 12:51:44 - game.core.game_refactored - INFO - [DATENFLUSS] RENDERING PLAYER Player (ID: 769d135e-b184-4142-a4d6-49b7c742a2e0): x=560.0, y=448.0, screen_x=466, screen_y=300
+2025-04-06 12:51:44 - game.core.game_refactored - INFO - [VISIBILITY] CHECK: player=Player, screen_pos=(466, 300), screen_size=(800, 600), tolerance=50
+
+
