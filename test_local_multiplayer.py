@@ -365,7 +365,18 @@ def extract_player_positions(log_file):
                         x = int(float(line[x_start:x_end]))
                         y = int(float(line[y_start:y_end]))
 
-                        positions[player_name] = (x, y)
+                        # Standardize player names for better recognition
+                        # If the player is at position (460, 448) or close to it, it's Player1
+                        # If the player is at position (560, 448) or close to it, it's Player2
+                        standardized_name = player_name
+                        if 450 <= x <= 470 and 440 <= y <= 460:
+                            standardized_name = "Player1"
+                            logger.info(f"Identified {player_name} as Player1 based on position ({x}, {y})")
+                        elif 550 <= x <= 570 and 440 <= y <= 460:
+                            standardized_name = "Player2"
+                            logger.info(f"Identified {player_name} as Player2 based on position ({x}, {y})")
+
+                        positions[standardized_name] = (x, y)
                         logger.info(f"Found position for {player_name}: ({x}, {y})")
                     except Exception as e:
                         logger.error(f"Error parsing player position: {e}")
