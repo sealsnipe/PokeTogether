@@ -64,6 +64,15 @@ class Camera:
         Returns:
             Tuple[int, int]: Position with camera offset applied
         """
+        # Stelle sicher, dass die Koordinaten als Zahlen vorliegen
+        try:
+            x = float(x)
+            y = float(y)
+        except (ValueError, TypeError):
+            self.logger.error(f"[CAMERA] INVALID COORDINATES: x={x}, y={y}")
+            x = 0.0
+            y = 0.0
+
         # Berechne die Position relativ zur Kamera
         rel_x = x - self.x
         rel_y = y - self.y

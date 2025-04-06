@@ -164,8 +164,9 @@ class GameMultiplayer:
             player_data["x"] = float(self.player.x)
             player_data["y"] = float(self.player.y)
 
-        # Debug-Ausgabe für die Spielersynchronisierung
-        self.logger.info(f"[SPIELERSYNC] SENDING PLAYER DATA: player_id={self.player.player_id}, x={player_data['x']}, y={player_data['y']}, direction={self.player.direction}")
+        # Ausführliche Debug-Ausgabe für die Spielersynchronisierung
+        self.logger.info(f"[SPIELERSYNC] SENDING LOCAL PLAYER DATA: player_id={self.player.player_id}, x={player_data['x']}, y={player_data['y']}, direction={self.player.direction}")
+        self.logger.info(f"[DEBUG] LOCAL PLAYER POSITION: world=({player_data['x']}, {player_data['y']}), instance_id={player_data['instance_id']}")
 
         self.logger.info(f"[DATENFLUSS] PLAYER DATA COLLECTED: {json.dumps(player_data)}")
 
@@ -204,8 +205,9 @@ class GameMultiplayer:
             self.logger.warning(f"[DATENFLUSS] EMPTY PLAYER DATA RECEIVED FOR CLIENT: {client_id}")
             return
 
-        # Debug-Ausgabe für die Spielersynchronisierung
-        self.logger.info(f"[SPIELERSYNC] RECEIVED PLAYER UPDATE: client_id={client_id}, x={player_data.get('x')}, y={player_data.get('y')}, direction={player_data.get('direction')}")
+        # Ausführliche Debug-Ausgabe für die Spielersynchronisierung
+        self.logger.info(f"[SPIELERSYNC] RECEIVED REMOTE PLAYER UPDATE: client_id={client_id}, x={player_data.get('x')}, y={player_data.get('y')}, direction={player_data.get('direction')}")
+        self.logger.info(f"[DEBUG] RECEIVED REMOTE PLAYER POSITION: world=({player_data.get('x')}, {player_data.get('y')}), player_id={player_data.get('player_id')}, instance_id={player_data.get('instance_id')}")
 
         # Ausführlichere Log-Ausgabe für Spieler-Updates
         self.logger.info(f"[DATENFLUSS] PLAYER UPDATE: Player {player_data.get('name', 'Unknown')}: x={player_data.get('x', '?')}, y={player_data.get('y', '?')}, direction={player_data.get('direction', '?')}")

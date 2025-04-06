@@ -8,6 +8,7 @@ import sys
 import logging
 import os
 import time
+import json
 from game.core.input_handler import InputHandler
 from game.core.input_command_reader import InputCommandReader
 from game.entities.player import Player
@@ -1172,10 +1173,15 @@ class Game:
     def _render_other_players(self):
         """Rendert andere Spieler im Multiplayer-Modus"""
         if not self.multiplayer_active or not self.other_players:
+            self.logger.debug(f"[RENDER] NOT RENDERING OTHER PLAYERS: multiplayer_active={self.multiplayer_active}, other_players_count={len(self.other_players)}")
             return
 
         # Temporärer Font für Spielernamen
         font = pygame.font.SysFont(None, 18)
+
+        # Debug-Ausgabe für die Anzahl der anderen Spieler
+        self.logger.info(f"[RENDER] RENDERING OTHER PLAYERS. Count: {len(self.other_players)}")
+        self.logger.info(f"[RENDER] OTHER_PLAYERS CONTENT: {json.dumps(self.other_players)}")
 
         # Alle anderen Spieler rendern
         for client_id, player_data in self.other_players.items():
@@ -1185,6 +1191,10 @@ class Game:
             name = player_data.get("name", "Unknown")
             direction = player_data.get("direction", "down")
             player_id = player_data.get("player_id", "Unknown")
+            instance_id = player_data.get("instance_id", "Unknown")
+
+            # Debug-Ausgabe für den zu rendernden Spieler
+            self.logger.info(f"[RENDER] RENDERING PLAYER: {client_id}, data={json.dumps(player_data)}")
 
             # Bestimme die Farbe basierend auf der player_id
             # Spieler 1 (460, 448) ist rot, Spieler 2 (560, 448) ist blau
@@ -1193,10 +1203,13 @@ class Game:
             # Identifiziere den Spieler anhand seiner Startposition
             if 450 <= x <= 470 and 440 <= y <= 460:  # Spieler 1 Bereich
                 player_color = (255, 0, 0)  # Rot für Spieler 1
-                self.logger.info(f"[SPIELERSYNC] Identified player as Player 1: {player_id}")
+                self.logger.info(f"[SPIELERSYNC] Identified player as Player 1: {player_id}, instance_id={instance_id}")
             elif 550 <= x <= 570 and 440 <= y <= 460:  # Spieler 2 Bereich
                 player_color = (0, 0, 255)  # Blau für Spieler 2
-                self.logger.info(f"[SPIELERSYNC] Identified player as Player 2: {player_id}")
+                self.logger.info(f"[SPIELERSYNC] Identified player as Player 2: {player_id}, instance_id={instance_id}")
+
+            # Ausführliche Debug-Ausgabe für die Weltkoordinaten
+            self.logger.info(f"[DEBUG] REMOTE PLAYER WORLD POSITION: player={name}, world=({x}, {y}), player_id={player_id}, instance_id={instance_id}")
 
             # Kamera-Offset anwenden
             screen_x, screen_y = self.camera.apply(x, y)
@@ -1204,20 +1217,23 @@ class Game:
             # Prüfen, ob der Spieler im erweiterten sichtbaren Bereich ist (mit Toleranz)
             screen_width = self.screen.get_width()
             screen_height = self.screen.get_height()
-            # Erweitere den sichtbaren Bereich um 50 Pixel in jede Richtung
-            tolerance = 50
+            # Erweitere den sichtbaren Bereich um 100 Pixel in jede Richtung (größere Toleranz)
+            tolerance = 100
 
             self.logger.info(f"[VISIBILITY] CHECK: player={name}, screen_pos=({screen_x}, {screen_y}), screen_size=({screen_width}, {screen_height}), tolerance={tolerance}")
 
-            if (-tolerance <= screen_x <= screen_width + tolerance and
-                -tolerance <= screen_y <= screen_height + tolerance):
+            # Immer rendern, unabhängig von der Sichtbarkeitsprüfung
+            # Einfache Darstellung als farbiger Kreis mit der bestimmten Farbe
+            pygame.draw.circle(self.screen, player_color, (int(screen_x), int(screen_y)), 16)
 
-                # Einfache Darstellung als farbiger Kreis mit der bestimmten Farbe
-                pygame.draw.circle(self.screen, player_color, (int(screen_x), int(screen_y)), 16)
+            # Debug-Ausgabe für die Spielerposition
+            self.logger.info(f"[DATENFLUSS] RENDERING PLAYER {name} (ID: {client_id}, player_id: {player_id}): x={x}, y={y}, screen_x={screen_x}, screen_y={screen_y}")
 
-                # Debug-Ausgabe für die Spielerposition
-                self.logger.info(f"[DATENFLUSS] RENDERING PLAYER {name} (ID: {client_id}, player_id: {player_id}): x={x}, y={y}, screen_x={screen_x}, screen_y={screen_y}")
+            # Spielername anzeigen
+            name_text = font.render(name, True, (255, 255, 255))
+            self.screen.blit(name_text, (int(screen_x) - name_text.get_width() // 2, int(screen_y) - 30))
 
-                # Spielername anzeigen
-                name_text = font.render(name, True, (255, 255, 255))
-                self.screen.blit(name_text, (int(screen_x) - name_text.get_width() // 2, int(screen_y) - 30))
+            # Nur zur Information: Prüfen, ob der Spieler im sichtbaren Bereich ist
+            is_visible = (-tolerance <= screen_x <= screen_width + tolerance and
+                          -tolerance <= screen_y <= screen_height + tolerance)
+            self.logger.info(f"[VISIBILITY] RESULT: player={name}, is_visible={is_visible}")
