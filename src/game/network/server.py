@@ -17,7 +17,7 @@ from websockets.server import WebSocketServerProtocol
 class GameServer:
     """Game server for hosting multiplayer sessions"""
 
-    def __init__(self, host: str = "0.0.0.0", port: int = 8765):
+    def __init__(self, host: str = "localhost", port: int = 8765):
         """Initialize the game server
 
         Args:
@@ -282,6 +282,7 @@ if __name__ == "__main__":
         loop.run_forever()
     except KeyboardInterrupt:
         print("Server stopping...")
-        asyncio.run(server.stop())
+        loop.run_until_complete(server.stop())
+        loop.close()
     except Exception as e:
         print(f"Error: {e}")

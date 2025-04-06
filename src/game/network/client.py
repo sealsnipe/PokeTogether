@@ -210,6 +210,15 @@ class GameClient:
         connection_test_result = self._test_server_connection(host, port)
         self.logger.debug(f"Server connection test result: {connection_test_result}")
 
+        # Wenn der Server nicht erreichbar ist, versuche es mit localhost
+        if not connection_test_result and host != "localhost" and host != "127.0.0.1":
+            self.logger.info(f"Server not reachable at {host}:{port}, trying localhost...")
+            host = "localhost"
+            uri = f"ws://{host}:{port}"
+            self.logger.info(f"New WebSocket client URI: {uri}")
+            connection_test_result = self._test_server_connection(host, port)
+            self.logger.debug(f"Server connection test result with localhost: {connection_test_result}")
+
         try:
             self.running = True
 
@@ -218,10 +227,26 @@ class GameClient:
                 self.logger.info(f"=== ATTEMPTING TO CONNECT TO {uri} WITH 10 SECOND TIMEOUT ===")
                 # Versuche, eine Verbindung mit erhöhtem Timeout herzustellen
                 self.logger.debug(f"[DATENFLUSS] WebSocket connection attempt to {uri}")
-                websocket = await asyncio.wait_for(
-                    websockets.connect(uri),
-                    timeout=10.0  # 10 Sekunden Timeout
-                )
+
+                try:
+                    websocket = await asyncio.wait_for(
+                        websockets.connect(uri),
+                        timeout=10.0  # 10 Sekunden Timeout
+                    )
+                except Exception as e:
+                    # Wenn die Verbindung fehlschlägt und der Host nicht localhost ist, versuche localhost
+                    if host != "localhost" and host != "127.0.0.1":
+                        self.logger.info(f"Connection to {uri} failed: {e}, trying localhost...")
+                        host = "localhost"
+                        uri = f"ws://{host}:{port}"
+                        self.logger.info(f"New WebSocket client URI: {uri}")
+                        websocket = await asyncio.wait_for(
+                            websockets.connect(uri),
+                            timeout=10.0  # 10 Sekunden Timeout
+                        )
+                    else:
+                        # Wenn es localhost ist und trotzdem fehlschlägt, wirf den Fehler weiter
+                        raise
 
                 self.websocket = websocket
                 self.connected = True
@@ -306,9 +331,23 @@ class GameClient:
                 self._print_local_ip_addresses()
                 return True
             else:
-                self.logger.error(f"Server is NOT reachable at {host}:{port}, error code: {result}")
+                self.logger.warning(f"Server is NOT reachable at {host}:{port}, error code: {result}")
+
+                # Wenn der Host nicht localhost ist, versuche auch localhost
+                if host != "localhost" and host != "127.0.0.1":
+                    self.logger.info("Trying localhost as fallback...")
+                    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    s.settimeout(2.0)
+                    result = s.connect_ex(("localhost", port))
+                    s.close()
+
+                    if result == 0:
+                        self.logger.info(f"Server is reachable at localhost:{port}")
+                        return True
+
                 # Versuche auch, die lokale IP zu ermitteln
                 self._print_local_ip_addresses()
+                self.logger.error(f"Server is NOT reachable at any address on port {port}")
                 return False
         except Exception as e:
             self.logger.error(f"Error testing server connection: {e}")
