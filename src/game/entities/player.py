@@ -47,6 +47,11 @@ class Player:
         self.pokemon_team = []
         self.items = {}
 
+        # Interaktionen
+        self.emote = None  # Aktueller Emote (None, "wave", "smile", "thumbsup")
+        self.emote_timer = 0  # Timer für die Anzeige des Emotes
+        self.emote_duration = 2.0  # Dauer der Emote-Anzeige in Sekunden
+
         # Netzwerk-Synchronisierung
         self.last_sent_position = (x, y)
         self.last_sent_direction = self.direction
@@ -185,6 +190,12 @@ class Player:
                     self.current_frame = (self.current_frame + 1) % 4
                     if self.current_frame == 1:  # Wenn wir bei Frame 1 ankommen, zurück zu Frame 0
                         self.current_frame = 0
+
+        # Update emote timer
+        if self.emote_timer > 0:
+            self.emote_timer -= dt
+            if self.emote_timer <= 0:
+                self.emote = None
 
         # Aktualisiere den Zeitpunkt der letzten Aktualisierung
         self.last_update_time = time.time()
@@ -346,6 +357,10 @@ class Player:
             # Draw the name
             screen.blit(name_text, name_rect)
 
+        # Render emote if active
+        if self.emote and self.emote_timer > 0:
+            self._render_emote(screen, x, y)
+
     def add_pokemon(self, pokemon):
         """Add a Pokemon to the player's team
 
@@ -416,7 +431,9 @@ class Player:
             "moving": self.moving,
             "current_frame": self.current_frame,
             "input_sequence_number": self.input_sequence_number,
-            "timestamp": time.time()
+            "timestamp": time.time(),
+            "emote": self.emote,
+            "emote_timer": self.emote_timer if self.emote else 0
         }
 
     def has_significant_changes(self) -> bool:
@@ -435,6 +452,57 @@ class Player:
         """Update the last sent data after sending player data over the network"""
         self.last_sent_position = (self.x, self.y)
         self.last_sent_direction = self.direction
+
+    def _render_emote(self, screen: pygame.Surface, x: float, y: float) -> None:
+        """Render the player's emote
+
+        Args:
+            screen: Pygame surface to render on
+            x: X position on screen
+            y: Y position on screen
+        """
+        # Emote-Position über dem Spieler
+        emote_x = x + 16  # Mitte des Spielers
+        emote_y = y - 30  # Über dem Spieler
+
+        # Emote-Darstellung basierend auf dem Typ
+        emote_text = ""
+        emote_color = (255, 255, 255)  # Weiß als Standard
+
+        if self.emote == "wave":
+            emote_text = "✋"  # Winkende Hand
+            emote_color = (255, 255, 0)  # Gelb
+        elif self.emote == "smile":
+            emote_text = "☺"  # Smiley
+            emote_color = (255, 255, 0)  # Gelb
+        elif self.emote == "thumbsup":
+            emote_text = "ὄD"  # Daumen hoch
+            emote_color = (255, 255, 0)  # Gelb
+
+        if emote_text:
+            # Emote-Hintergrund (Sprechblase)
+            bubble_radius = 15
+            pygame.draw.circle(screen, (255, 255, 255), (int(emote_x), int(emote_y)), bubble_radius)
+            pygame.draw.circle(screen, (0, 0, 0), (int(emote_x), int(emote_y)), bubble_radius, 2)
+
+            # Emote-Text
+            font = pygame.font.SysFont(None, 24)
+            text = font.render(emote_text, True, emote_color)
+            text_rect = text.get_rect(center=(emote_x, emote_y))
+            screen.blit(text, text_rect)
+
+    def set_emote(self, emote_type: str) -> None:
+        """Set the player's emote
+
+        Args:
+            emote_type: Type of emote ("wave", "smile", "thumbsup")
+        """
+        if emote_type in ["wave", "smile", "thumbsup"]:
+            self.emote = emote_type
+            self.emote_timer = self.emote_duration
+            self.logger.info(f"Player {self.name} is showing emote: {emote_type}")
+        else:
+            self.logger.warning(f"Unknown emote type: {emote_type}")
 
     def apply_server_update(self, server_data: Dict[str, Any], reconciliation: bool = True) -> None:
         """Apply server update to the player

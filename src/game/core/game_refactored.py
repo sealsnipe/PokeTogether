@@ -405,6 +405,17 @@ class Game:
         elif self.input_manager.is_pressed(InputAction.RIGHT):
             direction_x = 1
 
+        # Emote-Steuerung
+        if self.input_manager.was_pressed(InputAction.EMOTE_1):
+            self.player.set_emote("wave")
+            self.logger.info("Player is waving")
+        elif self.input_manager.was_pressed(InputAction.EMOTE_2):
+            self.player.set_emote("smile")
+            self.logger.info("Player is smiling")
+        elif self.input_manager.was_pressed(InputAction.EMOTE_3):
+            self.player.set_emote("thumbsup")
+            self.logger.info("Player is giving thumbs up")
+
         # Spieler bewegen mit Client-Side Prediction
         if direction_x != 0 or direction_y != 0:
             # Verwende Client-Side Prediction, wenn aktiviert

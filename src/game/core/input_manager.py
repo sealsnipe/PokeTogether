@@ -28,6 +28,11 @@ class InputAction(Enum):
     FAST_FORWARD = auto()
     CHAT = auto()  # Chat öffnen/schließen
 
+    # Emotes
+    EMOTE_1 = auto()  # Winken
+    EMOTE_2 = auto()  # Lächeln
+    EMOTE_3 = auto()  # Daumen hoch
+
     # Schultertasten
     SHOULDER_LEFT = auto()
     SHOULDER_RIGHT = auto()
@@ -70,6 +75,11 @@ class InputManager:
             InputAction.RUN: [pygame.K_LSHIFT, pygame.K_RSHIFT],
             InputAction.FAST_FORWARD: [pygame.K_f],
             InputAction.CHAT: [pygame.K_t, pygame.K_y],
+
+            # Emotes
+            InputAction.EMOTE_1: [pygame.K_1],  # Winken
+            InputAction.EMOTE_2: [pygame.K_2],  # Lächeln
+            InputAction.EMOTE_3: [pygame.K_3],  # Daumen hoch
         }
 
         # Controller-Konfiguration
@@ -89,6 +99,11 @@ class InputManager:
             InputAction.RUN: [(0, BUTTON_RIGHTSHOULDER, 1)],
             InputAction.FAST_FORWARD: [(0, BUTTON_LEFTSHOULDER, 1)],
             InputAction.CHAT: [(0, BUTTON_BACK, 1)],  # Back/Select-Button für Chat
+
+            # Emotes (D-Pad)
+            InputAction.EMOTE_1: [(0, BUTTON_DPAD_UP, 1)],    # Winken
+            InputAction.EMOTE_2: [(0, BUTTON_DPAD_RIGHT, 1)], # Lächeln
+            InputAction.EMOTE_3: [(0, BUTTON_DPAD_DOWN, 1)],  # Daumen hoch
 
             # Schultertasten
             InputAction.SHOULDER_LEFT: [(0, BUTTON_LEFTSHOULDER, 1)],
