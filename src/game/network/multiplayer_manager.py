@@ -430,9 +430,21 @@ class MultiplayerManager:
         player_name = data.get("player_name", "Unknown")
         message = data.get("message", "")
 
+        self.logger.info(f"[DATENFLUSS] RECEIVED CHAT MESSAGE: {player_name}: {message}")
+
         # Call the callback if registered
         if self.on_chat_message:
-            self.on_chat_message(client_id, player_name, message)
+            self.logger.info(f"[DATENFLUSS] CALLING ON_CHAT_MESSAGE CALLBACK: {player_name}: {message}")
+            try:
+                self.logger.info(f"[DATENFLUSS] CALLBACK TYPE: {type(self.on_chat_message).__name__}")
+                self.on_chat_message(player_name, message)
+                self.logger.info(f"[DATENFLUSS] ON_CHAT_MESSAGE CALLBACK CALLED SUCCESSFULLY")
+            except Exception as e:
+                self.logger.error(f"[DATENFLUSS] ERROR CALLING ON_CHAT_MESSAGE CALLBACK: {e}")
+                import traceback
+                self.logger.error(f"[DATENFLUSS] TRACEBACK: {traceback.format_exc()}")
+        else:
+            self.logger.warning(f"[DATENFLUSS] ON_CHAT_MESSAGE CALLBACK NOT REGISTERED")
 
     def send_player_update(self, player_data):
         """Send player data to the server

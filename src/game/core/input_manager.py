@@ -17,7 +17,7 @@ class InputAction(Enum):
     DOWN = auto()
     LEFT = auto()
     RIGHT = auto()
-    
+
     # Aktionen
     ACTION = auto()
     CANCEL = auto()
@@ -26,17 +26,18 @@ class InputAction(Enum):
     TERTIARY = auto()
     RUN = auto()
     FAST_FORWARD = auto()
-    
+    CHAT = auto()  # Chat öffnen/schließen
+
     # Schultertasten
     SHOULDER_LEFT = auto()
     SHOULDER_RIGHT = auto()
     TRIGGER_LEFT = auto()
     TRIGGER_RIGHT = auto()
-    
+
     # Stick-Buttons
     STICK_LEFT = auto()
     STICK_RIGHT = auto()
-    
+
     # Kamera (rechter Stick)
     CAMERA_UP = auto()
     CAMERA_DOWN = auto()
@@ -51,7 +52,7 @@ class InputManager:
         """Initialisiert den InputManager"""
         self.logger = logging.getLogger(__name__)
         self.logger.info("Initializing InputManager")
-        
+
         # Tastatur-Konfiguration
         self.keyboard_config: Dict[InputAction, List[int]] = {
             # Bewegung
@@ -59,7 +60,7 @@ class InputManager:
             InputAction.DOWN: [pygame.K_DOWN, pygame.K_s],
             InputAction.LEFT: [pygame.K_LEFT, pygame.K_a],
             InputAction.RIGHT: [pygame.K_RIGHT, pygame.K_d],
-            
+
             # Aktionen
             InputAction.ACTION: [pygame.K_RETURN, pygame.K_z, pygame.K_SPACE],
             InputAction.CANCEL: [pygame.K_ESCAPE, pygame.K_x, pygame.K_BACKSPACE],
@@ -68,8 +69,9 @@ class InputManager:
             InputAction.TERTIARY: [pygame.K_LCTRL, pygame.K_RCTRL],
             InputAction.RUN: [pygame.K_LSHIFT, pygame.K_RSHIFT],
             InputAction.FAST_FORWARD: [pygame.K_f],
+            InputAction.CHAT: [pygame.K_t, pygame.K_y],
         }
-        
+
         # Controller-Konfiguration
         self.controller_config: Dict[InputAction, List[Tuple[int, int, float]]] = {
             # Bewegung (linker Stick)
@@ -77,7 +79,7 @@ class InputManager:
             InputAction.DOWN: [(0, AXIS_LEFTY, 0.5)],
             InputAction.LEFT: [(0, AXIS_LEFTX, -0.5)],
             InputAction.RIGHT: [(0, AXIS_LEFTX, 0.5)],
-            
+
             # Aktionen
             InputAction.ACTION: [(0, BUTTON_A, 1)],
             InputAction.CANCEL: [(0, BUTTON_B, 1)],
@@ -86,41 +88,42 @@ class InputManager:
             InputAction.TERTIARY: [(0, BUTTON_Y, 1)],
             InputAction.RUN: [(0, BUTTON_RIGHTSHOULDER, 1)],
             InputAction.FAST_FORWARD: [(0, BUTTON_LEFTSHOULDER, 1)],
-            
+            InputAction.CHAT: [(0, BUTTON_BACK, 1)],  # Back/Select-Button für Chat
+
             # Schultertasten
             InputAction.SHOULDER_LEFT: [(0, BUTTON_LEFTSHOULDER, 1)],
             InputAction.SHOULDER_RIGHT: [(0, BUTTON_RIGHTSHOULDER, 1)],
             InputAction.TRIGGER_LEFT: [(0, AXIS_TRIGGERLEFT, 0.5)],
             InputAction.TRIGGER_RIGHT: [(0, AXIS_TRIGGERRIGHT, 0.5)],
-            
+
             # Stick-Buttons
             InputAction.STICK_LEFT: [(0, BUTTON_LEFTSTICK, 1)],
             InputAction.STICK_RIGHT: [(0, BUTTON_RIGHTSTICK, 1)],
-            
+
             # Kamera (rechter Stick)
             InputAction.CAMERA_UP: [(0, AXIS_RIGHTY, -0.5)],
             InputAction.CAMERA_DOWN: [(0, AXIS_RIGHTY, 0.5)],
             InputAction.CAMERA_LEFT: [(0, AXIS_RIGHTX, -0.5)],
             InputAction.CAMERA_RIGHT: [(0, AXIS_RIGHTX, 0.5)],
         }
-        
+
         # Aktueller Zustand der Eingaben
         self.input_state: Dict[InputAction, bool] = {action: False for action in InputAction}
-        
+
         # Vorheriger Zustand der Eingaben (für was_pressed und was_released)
         self.prev_input_state: Dict[InputAction, bool] = {action: False for action in InputAction}
-        
+
         # Controller-Initialisierung
         self.controllers = []
         self.init_controllers()
-        
+
         # Callbacks für Eingabeaktionen
         self.action_callbacks: Dict[InputAction, List[Callable]] = {action: [] for action in InputAction}
 
     def init_controllers(self) -> None:
         """Initialisiert die Controller"""
         pygame.joystick.init()
-        
+
         # Alle angeschlossenen Controller initialisieren
         self.controllers = []
         for i in range(pygame.joystick.get_count()):
@@ -136,11 +139,11 @@ class InputManager:
         """Aktualisiert den Zustand der Eingaben"""
         # Vorherigen Zustand speichern
         self.prev_input_state = {k: v for k, v in self.input_state.items()}
-        
+
         # Zustand zurücksetzen
         for action in InputAction:
             self.input_state[action] = False
-        
+
         # Tastatureingaben verarbeiten
         keys = pygame.key.get_pressed()
         for action, key_list in self.keyboard_config.items():
@@ -148,7 +151,7 @@ class InputManager:
                 if keys[key]:
                     self.input_state[action] = True
                     break
-        
+
         # Controller-Eingaben verarbeiten
         for controller_idx, controller in enumerate(self.controllers):
             # Achsen und Buttons verarbeiten
@@ -174,7 +177,7 @@ class InputManager:
                             except pygame.error:
                                 # Ungültiger Knopf, ignorieren
                                 pass
-        
+
         # Callbacks für gedrückte Aktionen aufrufen
         for action in InputAction:
             if self.was_pressed(action):

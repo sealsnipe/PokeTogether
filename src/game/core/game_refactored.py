@@ -23,6 +23,7 @@ from game.core.config import Config
 from game.ui.main_menu_refactored import MainMenuRefactored
 from game.ui.options_menu_refactored import OptionsMenuRefactored
 from game.ui.ingame_menu_refactored import IngameMenuRefactored
+from game.ui.chat_ui import ChatUI
 from game.network.multiplayer_manager import MultiplayerManager
 
 
@@ -75,6 +76,8 @@ class Game:
         self.interpolated_players = {}  # Für Interpolation
         self.multiplayer_active = False
         self.force_player_data_update = True  # Beim ersten Mal immer senden
+        self.chat_history = []  # Chat-Verlauf
+        self.chat_ui = None  # Wird später initialisiert
 
         # Screenshots
         self.screenshots_enabled = False
@@ -159,6 +162,10 @@ class Game:
         # Ingame-Menü
         self.ingame_menu = IngameMenuRefactored(self)
 
+        # Chat-UI
+        self.chat_ui = ChatUI(self.screen)
+        self.chat_ui.on_send_message = self._send_chat_message
+
     def _register_render_functions(self) -> None:
         """Registriert die Render-Funktionen für die verschiedenen Spielzustände"""
         self.render_manager.register_render_function(GameState.MAIN_MENU, self._render_main_menu)
@@ -173,6 +180,9 @@ class Game:
         """Registriert die Input-Callbacks"""
         # Menü-Steuerung
         self.input_manager.register_action_callback(InputAction.MENU, self._toggle_menu)
+
+        # Chat-Steuerung
+        self.input_manager.register_action_callback(InputAction.CHAT, self._toggle_chat)
 
         # Eingabedialog-Steuerung
         self.input_manager.register_action_callback(InputAction.ACTION, self._confirm_dialog)
@@ -237,6 +247,46 @@ class Game:
         if self.state_manager.current_state == GameState.INPUT_DIALOG:
             self.state_manager.cancel_input_dialog()
 
+    def _toggle_chat(self) -> None:
+        """Öffnet oder schließt den Chat"""
+        self.logger.info("Toggling chat")
+        if self.state_manager.current_state == GameState.PLAYING and self.multiplayer_active:
+            self.chat_ui.toggle()
+
+    def _send_chat_message(self, message: str) -> None:
+        """Sendet eine Chat-Nachricht
+
+        Args:
+            message: Die zu sendende Nachricht
+        """
+        self.logger.info(f"Sending chat message: {message}")
+        if self.multiplayer_active and message.strip():
+            # Lokale Nachricht hinzufügen
+            player_name = self.player.name
+            self.chat_ui.add_message(player_name, message)
+
+            # Nachricht an andere Spieler senden
+            self.multiplayer_manager.client.send_chat_message(message)
+
+    def _on_chat_message(self, player_name: str, message: str) -> None:
+        """Callback für empfangene Chat-Nachrichten
+
+        Args:
+            player_name: Name des Spielers, der die Nachricht gesendet hat
+            message: Die empfangene Nachricht
+        """
+        self.logger.info(f"[DATENFLUSS] GAME RECEIVED CHAT MESSAGE: {player_name}: {message}")
+
+        # Nachricht zum Chat-Verlauf hinzufügen
+        if self.chat_ui:
+            self.chat_ui.add_message(player_name, message)
+
+            # Chat-UI anzeigen, wenn sie nicht sichtbar ist
+            if not self.chat_ui.visible:
+                self.chat_ui.show()
+        else:
+            self.logger.error(f"[DATENFLUSS] CHAT UI NOT INITIALIZED")
+
     def _on_enter_playing(self) -> None:
         """Wird aufgerufen, wenn der Spielzustand zu PLAYING wechselt"""
         self.logger.info("Entering PLAYING state")
@@ -276,6 +326,12 @@ class Game:
                         self.logger.info(f"Character added: {event.unicode}, text now: {self.state_manager.input_dialog_text}")
                     # Verhindern, dass andere Teile des Spiels die Tastatureingaben verarbeiten
                     continue
+                # Chat-Steuerung
+                elif self.state_manager.current_state == GameState.PLAYING and self.multiplayer_active and self.chat_ui and self.chat_ui.active:
+                    # Chat-Eingaben an die Chat-UI weiterleiten
+                    if self.chat_ui.handle_key_event(event):
+                        # Verhindern, dass andere Teile des Spiels die Tastatureingaben verarbeiten
+                        continue
 
     def update(self, dt: float) -> None:
         """Update game state
@@ -295,6 +351,10 @@ class Game:
 
         # Input-Manager aktualisieren
         self.input_manager.update()
+
+        # Chat-UI aktualisieren, wenn Multiplayer aktiv ist
+        if self.multiplayer_active and self.chat_ui:
+            self.chat_ui.update(dt)
 
         # Zustandsspezifische Updates
         if self.state_manager.current_state == GameState.PLAYING:
@@ -316,6 +376,32 @@ class Game:
         if self.input_manager.was_pressed(InputAction.MENU):
             self.state_manager.change_state(GameState.INGAME_MENU)
             return
+
+        # Prüfen, ob der Chat geöffnet/geschlossen werden soll
+        if self.input_manager.was_pressed(InputAction.CHAT) and self.multiplayer_active:
+            self.chat_ui.toggle()
+            return
+
+        # Controller-Eingaben für den Chat verarbeiten
+        if self.multiplayer_active and self.chat_ui and self.chat_ui.active:
+            # A-Button zum Bestätigen
+            if self.input_manager.was_pressed(InputAction.ACTION):
+                self.chat_ui.handle_controller_input("a")
+                return
+
+            # B-Button zum Abbrechen
+            if self.input_manager.was_pressed(InputAction.CANCEL):
+                self.chat_ui.handle_controller_input("b")
+                return
+
+            # Hoch/Runter zum Scrollen
+            if self.input_manager.was_pressed(InputAction.UP):
+                self.chat_ui.handle_controller_input("up")
+                return
+
+            if self.input_manager.was_pressed(InputAction.DOWN):
+                self.chat_ui.handle_controller_input("down")
+                return
 
         # Direkte Prüfung der RB-Taste für Rennen
         run_pressed = False
@@ -430,6 +516,10 @@ class Game:
         font = pygame.font.SysFont(None, 24)
         pos_text = font.render(f"Position: ({self.player.x}, {self.player.y})", True, (255, 255, 255))
         self.screen.blit(pos_text, (10, 10))
+
+        # Chat-UI rendern, wenn Multiplayer aktiv ist
+        if self.multiplayer_active and self.chat_ui:
+            self.chat_ui.render()
 
         dir_text = font.render(f"Richtung: {self.player.direction}", True, (255, 255, 255))
         self.screen.blit(dir_text, (10, 40))
