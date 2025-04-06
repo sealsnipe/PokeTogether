@@ -32,11 +32,14 @@ class GameMultiplayer:
         self.interpolated_players = {}
         self.force_player_data_update = False
         self.last_network_update_time = 0
+        self.client_id = None  # Wird vom Server zugewiesen
+        self.server_assigned_position = None  # Vom Server zugewiesene Position
 
         # Callbacks
         self.on_player_update = None
         self.on_player_disconnected = None
         self.on_chat_message = None
+        self.on_positions_update = None  # Neuer Callback für Positionsupdates
 
     def initialize(self, player: Player) -> None:
         """Initialisiert die Multiplayer-Funktionalität
@@ -47,9 +50,11 @@ class GameMultiplayer:
         self.logger.info("Initializing multiplayer functionality")
 
         # Callbacks registrieren
+        self.multiplayer_manager.on_welcome = self._on_welcome
         self.multiplayer_manager.on_player_update = self._on_player_update
         self.multiplayer_manager.on_player_disconnected = self._on_player_disconnected
         self.multiplayer_manager.on_chat_message = self._on_chat_message
+        self.multiplayer_manager.on_positions_update = self._on_positions_update  # Neuer Handler für Positionsupdates
 
         # Jitter-Puffer-Konfiguration
         self.multiplayer_manager.jitter_buffer_size = self.config.get_jitter_buffer_size()

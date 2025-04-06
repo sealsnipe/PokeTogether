@@ -30,6 +30,8 @@ class MultiplayerManager:
         self.on_player_update = None
         self.on_player_disconnected = None
         self.on_chat_message = None
+        self.on_welcome = None
+        self.on_positions_update = None
 
         # Jitter-Pufferung
         self.jitter_buffer = {}  # Dict von client_id -> Liste von Nachrichten

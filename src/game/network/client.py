@@ -40,6 +40,11 @@ class GameClient:
         self.register_handler("chat_message", self._handle_chat_message)
         self.register_handler("connection_acknowledged", self._handle_connection_acknowledged)
         self.register_handler("new_client_connected", self._handle_new_client_connected)
+        self.register_handler("positions_update", self._handle_positions_update)
+
+        # Callbacks
+        self.on_welcome = None
+        self.on_positions_update = None
 
         self.logger.debug("Game client initialized with:")
         self.logger.debug(f"- connected: {self.connected}")
@@ -53,6 +58,27 @@ class GameClient:
             handler: Function to call when message is received
         """
         self.message_handlers[message_type] = handler
+
+    async def _handle_positions_update(self, data: Dict[str, Any]):
+        """Handle positions update message from the server
+
+        Args:
+            data: Positions update message data
+        """
+        positions = data.get("positions", {})
+
+        self.logger.info(f"[SPIELERSYNC] RECEIVED POSITIONS UPDATE: {json.dumps(positions)}")
+
+        # Callback aufrufen, wenn registriert
+        if hasattr(self, 'on_positions_update') and self.on_positions_update:
+            self.logger.info(f"[DATENFLUSS] CALLING ON_POSITIONS_UPDATE CALLBACK")
+            try:
+                self.on_positions_update(positions)
+                self.logger.info(f"[DATENFLUSS] ON_POSITIONS_UPDATE CALLBACK CALLED SUCCESSFULLY")
+            except Exception as e:
+                self.logger.error(f"[DATENFLUSS] ERROR CALLING ON_POSITIONS_UPDATE CALLBACK: {e}")
+                import traceback
+                self.logger.error(f"[DATENFLUSS] TRACEBACK: {traceback.format_exc()}")
 
     def set_network_simulation(self, latency: int = 0, jitter: int = 0) -> None:
         """Set network simulation parameters
@@ -486,9 +512,11 @@ class GameClient:
         """
         self.client_id = data.get("client_id")
         self.players = data.get("players", {})
+        position = data.get("position", None)
 
         self.logger.info(f"Received welcome message. Client ID: {self.client_id}")
         self.logger.info(f"Current players: {len(self.players)}")
+        self.logger.info(f"Server assigned position: {position}")
 
         # Signal to force an immediate player data update
         # This will be picked up by the game loop to send player data
@@ -496,6 +524,17 @@ class GameClient:
         self.logger.info(f"[DATENFLUSS] SIGNALING FORCE_PLAYER_DATA_UPDATE AFTER WELCOME MESSAGE")
         # We'll use a custom event to signal this
         self.events.append({"type": "force_player_data_update"})
+
+        # Callback aufrufen, wenn registriert
+        if hasattr(self, 'on_welcome') and self.on_welcome:
+            self.logger.info(f"[DATENFLUSS] CALLING ON_WELCOME CALLBACK")
+            try:
+                self.on_welcome(self.client_id, self.players, position)
+                self.logger.info(f"[DATENFLUSS] ON_WELCOME CALLBACK CALLED SUCCESSFULLY")
+            except Exception as e:
+                self.logger.error(f"[DATENFLUSS] ERROR CALLING ON_WELCOME CALLBACK: {e}")
+                import traceback
+                self.logger.error(f"[DATENFLUSS] TRACEBACK: {traceback.format_exc()}")
 
     async def _handle_player_update(self, data: Dict[str, Any]):
         """Handle player update message from the server

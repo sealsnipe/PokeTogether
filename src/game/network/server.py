@@ -30,13 +30,22 @@ class GameServer:
         self.port = port
         self.clients: Dict[str, WebSocketServerProtocol] = {}
         self.players: Dict[str, Dict[str, Any]] = {}
+        self.player_positions: Dict[str, Dict[str, float]] = {}  # Zentrale Positionsverwaltung
         self.server = None
         self.running = False
+
+        # Feste Startpositionen für Spieler
+        self.spawn_positions = [
+            {"x": 460.0, "y": 448.0},  # Spieler 1
+            {"x": 560.0, "y": 448.0},  # Spieler 2
+            # Weitere Positionen können hier hinzugefügt werden
+        ]
 
         self.logger.debug("Game server initialized with:")
         self.logger.debug(f"- host: {self.host}")
         self.logger.debug(f"- port: {self.port}")
         self.logger.debug(f"- running: {self.running}")
+        self.logger.debug(f"- spawn_positions: {self.spawn_positions}")
 
     async def start(self):
         """Start the game server"""
@@ -107,12 +116,16 @@ class GameServer:
         print(f"[CONNECTION_STATUS] CLIENT {client_id} CONNECTED TO SERVER")
         print(f"BROADCASTING TO {len(self.clients)} CLIENTS")
 
+        # Weise dem Spieler eine Position zu
+        await self._assign_player_position(client_id)
+
         try:
             # Send welcome message with client ID
             await websocket.send(json.dumps({
                 "type": "welcome",
                 "client_id": client_id,
-                "players": self.players
+                "players": self.players,
+                "position": self.player_positions.get(client_id, {})
             }))
 
             # Notify all other clients about the new client
@@ -144,6 +157,36 @@ class GameServer:
                     "client_id": client_id,
                     "player_name": player_data.get("name", "Unknown")
                 }, exclude={client_id})
+
+    async def _assign_player_position(self, client_id: str):
+        """Weist einem Spieler eine Position zu
+
+        Args:
+            client_id: Client-ID des Spielers
+        """
+        # Bestimme die Spawn-Position basierend auf der Anzahl der verbundenen Spieler
+        spawn_index = len(self.player_positions) % len(self.spawn_positions)
+        spawn_position = self.spawn_positions[spawn_index]
+
+        # Weise dem Spieler die Position zu
+        self.player_positions[client_id] = {
+            "x": spawn_position["x"],
+            "y": spawn_position["y"]
+        }
+
+        self.logger.info(f"[SPIELERSYNC] ASSIGNED POSITION TO PLAYER: client_id={client_id}, position=({spawn_position['x']}, {spawn_position['y']})")
+
+        # Sende die aktualisierten Positionen an alle Clients
+        await self._broadcast_positions()
+
+    async def _broadcast_positions(self):
+        """Sendet die aktuellen Positionen aller Spieler an alle Clients"""
+        message = {
+            "type": "positions_update",
+            "positions": self.player_positions
+        }
+        self.logger.info(f"[SPIELERSYNC] BROADCASTING POSITIONS: {json.dumps(message)}")
+        await self.broadcast(message)
 
     async def process_message(self, client_id: str, message: str):
         """Process a message from a client
@@ -194,6 +237,15 @@ class GameServer:
 
                 # Debug-Ausgabe für die Spielersynchronisierung
                 self.logger.info(f"[SPIELERSYNC] SERVER PROCESSING PLAYER UPDATE: client_id={client_id}, player_id={player_data.get('player_id')}, x={player_data.get('x')}, y={player_data.get('y')}")
+
+                # Aktualisiere die Position des Spielers in der zentralen Positionsverwaltung
+                self.player_positions[client_id] = {
+                    "x": player_data["x"],
+                    "y": player_data["y"]
+                }
+
+                # Sende die aktualisierten Positionen an alle Clients
+                await self._broadcast_positions()
 
                 broadcast_data = {
                     "type": "player_update",
