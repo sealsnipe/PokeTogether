@@ -77,7 +77,7 @@ class GameMultiplayer:
             port: Port des Servers
         """
         self.logger.info(f"Connecting to multiplayer server at {host}:{port}")
-        self.multiplayer_manager.connect_to_server(host, port)
+        self.multiplayer_manager.connect_to_session(host, port)
         self.multiplayer_active = True
 
     def disconnect(self) -> None:
@@ -117,23 +117,23 @@ class GameMultiplayer:
         """Verarbeitet Client-Events"""
         if not self.multiplayer_active or not self.multiplayer_manager or not self.multiplayer_manager.client:
             return
-            
+
         # Events vom Client abrufen
         events = self.multiplayer_manager.client.get_events()
-        
+
         if events:
             self.logger.info(f"[DATENFLUSS] PROCESSING {len(events)} CLIENT EVENTS")
-            
+
         for event in events:
             event_type = event.get("type")
-            
+
             if event_type == "force_player_data_update":
                 self.logger.info(f"[DATENFLUSS] RECEIVED FORCE_PLAYER_DATA_UPDATE EVENT")
                 # Sofortiges Update der Spielerdaten erzwingen
                 self.force_player_data_update = True
                 # Sofort Spielerdaten senden, ohne auf das nächste Update zu warten
                 self._send_player_data()
-                
+
             elif event_type == "new_client_connected":
                 self.logger.info(f"[DATENFLUSS] RECEIVED NEW_CLIENT_CONNECTED EVENT")
                 # Sofortiges Update der Spielerdaten erzwingen
@@ -149,12 +149,12 @@ class GameMultiplayer:
 
         # Spielerdaten mit der to_network_data Methode sammeln
         player_data = self.player.to_network_data()
-        
+
         # Zusätzliche Informationen hinzufügen, um die Synchronisierung zu verbessern
         player_data["instance_id"] = self.config.get_instance_id()  # Eindeutige Instanz-ID
         player_data["force_update"] = self.force_player_data_update  # Flag für erzwungenes Update
         player_data["client_time"] = time.time()  # Aktuelle Client-Zeit
-        
+
         self.logger.info(f"[DATENFLUSS] PLAYER DATA COLLECTED: {json.dumps(player_data)}")
 
         # Ausführlichere Log-Ausgabe für das Senden von Spielerdaten
@@ -162,7 +162,7 @@ class GameMultiplayer:
         self.logger.debug(f"[DATENFLUSS] FULL PLAYER DATA: {json.dumps(player_data)}")
 
         # Spielerdaten an den Server senden
-        self.multiplayer_manager.send_player_data(player_data)
+        self.multiplayer_manager.send_player_update(player_data)
 
     def send_chat_message(self, message: str) -> None:
         """Sendet eine Chat-Nachricht an alle Spieler
@@ -210,7 +210,7 @@ class GameMultiplayer:
             # Bei einem erzwungenen Update sofort unsere eigenen Daten senden
             self.force_player_data_update = True
             self._send_player_data()
-            
+
         # Prüfen, ob die Spielerdaten vollständig sind
         if not player_data.get('x') or not player_data.get('y') or not player_data.get('player_id'):
             self.logger.warning(f"[DATENFLUSS] INCOMPLETE PLAYER DATA: {json.dumps(player_data)}")
@@ -311,7 +311,7 @@ class GameMultiplayer:
                 temp_player.name = player_data.get("name", "Player")
                 temp_player.character_type = player_data.get("character_type", "Red")
                 self.interpolated_players[player_id] = temp_player
-            
+
             # Prüfe, ob exakte Positionierung aktiviert ist
             if self.config.get_exact_positioning():
                 # Exakte Positionierung ohne Interpolation

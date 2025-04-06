@@ -3,6 +3,8 @@
 Server-Modul - Implementiert den Host-Modus für Multiplayer
 """
 
+# Wenn diese Datei direkt ausgeführt wird, startet der Server
+
 import asyncio
 import json
 import logging
@@ -257,3 +259,29 @@ class GameServer:
                     self.logger.error(f"[DATENFLUSS] TRACEBACK: {traceback.format_exc()}")
 
         self.logger.info(f"[DATENFLUSS] BROADCAST COMPLETED: {broadcast_count} CLIENTS RECEIVED THE MESSAGE")
+
+
+if __name__ == "__main__":
+    # Konfiguriere Logging
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
+
+    # Erstelle und starte den Server
+    server = GameServer()
+
+    try:
+        # Starte den Server und halte ihn am Laufen
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(server.start())
+
+        # Warte auf Benutzerabbruch
+        print("Server running. Press Ctrl+C to stop.")
+        loop.run_forever()
+    except KeyboardInterrupt:
+        print("Server stopping...")
+        asyncio.run(server.stop())
+    except Exception as e:
+        print(f"Error: {e}")

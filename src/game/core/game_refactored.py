@@ -72,7 +72,9 @@ class Game:
 
         # Multiplayer
         self.game_multiplayer = GameMultiplayer(self.config)
+        self.multiplayer_active = False
         self.chat_history = []  # Chat-Verlauf
+        self.other_players = {}  # Andere Spieler (wird nur für Kompatibilität benötigt)
         self.chat_ui = None  # Wird später initialisiert
 
         # Screenshots
@@ -877,7 +879,7 @@ class Game:
         Returns:
             bool: True if the connection attempt was initiated successfully, False otherwise
         """
-        if self.multiplayer_active:
+        if hasattr(self, 'multiplayer_active') and self.multiplayer_active:
             self.logger.warning("=== MULTIPLAYER ALREADY ACTIVE ===")
             return False
 
