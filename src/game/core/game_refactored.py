@@ -975,10 +975,17 @@ class Game:
     def join_multiplayer_game(self) -> None:
         """Tritt einem Multiplayer-Spiel bei"""
         self.logger.info("=== JOINING A MULTIPLAYER GAME ===")
-        self.logger.info("[INFO] Verbinde automatisch mit lokaler Session (Spieler 2)")
+        self.logger.info("[INFO] Verbinde automatisch mit lokaler Session (Spieler 2 - Blue)")
+
+        # Spieler-Typ auf Blue setzen
+        self.player.character_type = "Blue"
 
         # Automatisch mit localhost verbinden (keine Dialog-Anzeige mehr)
         self.join_session("localhost", 8765)
+
+        # Spieler 2 startet bei Position (560, 448)
+        self.player.x = 560
+        self.player.y = 448
         self.logger.info("[INFO] Spieler 2 startet bei Position (560, 448)")
 
     def _show_join_dialog(self) -> None:

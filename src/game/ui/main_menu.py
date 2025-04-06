@@ -142,7 +142,7 @@ class MainMenu:
     def _host_game(self):
         """Host a multiplayer game"""
         self.logger.info("=== HOST GAME SELECTED ===")
-        self.logger.info("[INFO] Starte Spiel als Host (Spieler 1)")
+        self.logger.info("[INFO] Starte Spiel als Host (Spieler 1 - Red)")
         if self.on_host_game:
             self.on_host_game()
         self.logger.info("[INFO] Spieler 1 startet bei Position (460, 448)")
@@ -150,7 +150,7 @@ class MainMenu:
     def _join_game(self):
         """Join a multiplayer game"""
         self.logger.info("=== JOIN GAME SELECTED ===")
-        self.logger.info("[INFO] Verbinde automatisch mit lokaler Session (Spieler 2)")
+        self.logger.info("[INFO] Verbinde automatisch mit lokaler Session (Spieler 2 - Blue)")
         if self.on_join_game:
             self.on_join_game()
         self.logger.info("[INFO] Spieler 2 startet bei Position (560, 448)")
