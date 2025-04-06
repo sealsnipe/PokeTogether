@@ -37,7 +37,7 @@ TEST_DURATION = 15  # seconds to run the test after connections
 
 # Success markers in logs
 SERVER_SUCCESS_MARKER = "Received connection confirmation from client"
-CLIENT_SUCCESS_MARKER = "SUCCESSFULLY CONNECTED TO MULTIPLAYER SESSION"
+CLIENT_SUCCESS_MARKER = "[CONNECTION_STATUS] CONNECTED TO SERVER: True"
 
 def parse_arguments():
     """Parse command line arguments"""
