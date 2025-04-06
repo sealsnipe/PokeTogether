@@ -37,7 +37,7 @@ TEST_DURATION = 15  # seconds to run the test after connections
 
 # Success markers in logs
 SERVER_SUCCESS_MARKER = "Received connection confirmation from client"
-CLIENT_SUCCESS_MARKER = "Connection acknowledged by server"
+CLIENT_SUCCESS_MARKER = "SUCCESSFULLY CONNECTED TO MULTIPLAYER SESSION"
 
 def parse_arguments():
     """Parse command line arguments"""
@@ -155,7 +155,7 @@ def check_for_connection_success(log_file, success_marker):
                 return True
 
             # Additional check for client connection success
-            if "SUCCESSFULLY CONNECTED TO SERVER" in content or "SUCCESSFULLY CONNECTED TO MULTIPLAYER SESSION" in content or "Connection acknowledged by server" in content:
+            if "[CONNECTION_STATUS] CONNECTED TO SERVER: True" in content or "[CONNECTION_STATUS] CONNECTION ACKNOWLEDGED BY SERVER" in content:
                 logger.info(f"Found alternative connection success marker in {log_file}")
                 return True
 
