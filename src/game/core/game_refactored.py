@@ -687,6 +687,71 @@ class Game:
         except Exception as e:
             self.logger.error(f"Fehler beim Erstellen des Screenshots: {e}")
 
+    def take_screenshot(self, output_path: str = None) -> str:
+        """Erstellt einen Screenshot des Spiels und speichert ihn unter dem angegebenen Pfad
+
+        Args:
+            output_path: Pfad, unter dem der Screenshot gespeichert werden soll (optional)
+
+        Returns:
+            str: Pfad zum erstellten Screenshot
+        """
+        try:
+            # Wenn kein Ausgabepfad angegeben wurde, verwende den Standardpfad
+            if not output_path:
+                screenshot_dir = self.config.get_screenshots_dir()
+                os.makedirs(screenshot_dir, exist_ok=True)
+
+                # Bestimme, ob dies eine Host- oder Client-Instanz ist
+                instance_type = "single"
+                if self.multiplayer_active:
+                    if self.game_multiplayer.multiplayer_manager.is_host:
+                        instance_type = "host"
+                    else:
+                        instance_type = "client"
+
+                # Erstelle einen eindeutigen Dateinamen mit Instanztyp
+                timestamp = time.strftime("%Y%m%d_%H%M%S")
+                output_path = f"{screenshot_dir}/test_{timestamp}_{instance_type}_screenshot.png"
+            else:
+                # Stelle sicher, dass das Verzeichnis existiert
+                screenshot_dir = os.path.dirname(output_path)
+                if screenshot_dir:
+                    os.makedirs(screenshot_dir, exist_ok=True)
+
+            # Kopie des Bildschirms erstellen, um Informationen hinzuzufügen
+            screen_copy = self.screen.copy()
+
+            # Informationen hinzufügen
+            info_text = []
+            info_text.append(f"Time: {time.strftime('%Y%m%d_%H%M%S')}")
+            info_text.append(f"Player: {self.player.name} at ({self.player.x}, {self.player.y})")
+            info_text.append(f"Direction: {self.player.direction}")
+
+            if self.multiplayer_active:
+                other_players = self.game_multiplayer.get_other_players()
+                if other_players:
+                    info_text.append(f"Other players: {len(other_players)}")
+                    for _, player_data in other_players.items():
+                        info_text.append(f"  - {player_data.get('name', 'Unknown')} at ({player_data.get('x', '?')}, {player_data.get('y', '?')})")
+
+            # Text rendern und auf den Screenshot zeichnen
+            font = pygame.font.SysFont(None, 24)
+            y_offset = 10
+            for text in info_text:
+                text_surface = font.render(text, True, (255, 255, 255), (0, 0, 0))
+                screen_copy.blit(text_surface, (10, y_offset))
+                y_offset += 25
+
+            # Screenshot mit Informationen speichern
+            pygame.image.save(screen_copy, output_path)
+            self.logger.info(f"Screenshot erstellt: {output_path}")
+
+            return output_path
+        except Exception as e:
+            self.logger.error(f"Fehler beim Erstellen des Screenshots: {e}")
+            return None
+
     def simulate_input(self, input_type: str, duration: float = 0.5) -> None:
         """Simuliert eine Eingabe für eine bestimmte Dauer
 
@@ -715,7 +780,7 @@ class Game:
             self.input_manager.input_state[input_type] = False
 
             # Erstelle einen Screenshot nach der Eingabe
-            self.take_screenshot(f"input_{input_type}_{int(time.time())}.png")
+            self.take_screenshot(f"screenshots/input_{input_type}_{int(time.time())}.png")
 
             self.logger.info(f"Eingabe {input_type} erfolgreich simuliert")
         except Exception as e:
