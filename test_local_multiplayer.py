@@ -12,6 +12,7 @@ This script tests the local multiplayer functionality by:
 import os
 import sys
 import subprocess
+from subprocess import CREATE_NEW_CONSOLE
 import time
 # re-Modul wird nicht mehr benötigt
 import argparse
@@ -75,7 +76,8 @@ def start_server(port, log_dir):
         [sys.executable, "src/game/network/server.py"],
         stdout=stdout_file,
         stderr=stderr_file,
-        text=True
+        text=True,
+        creationflags=CREATE_NEW_CONSOLE  # Eigenes Konsolenfenster für den Server
     )
 
     logger.info(f"Server process started with PID {server_process.pid}")
@@ -116,7 +118,8 @@ def start_client(config_file, client_name, host, port, log_dir, enable_screensho
         cmd,
         stdout=stdout_file,
         stderr=stderr_file,
-        text=True
+        text=True,
+        creationflags=CREATE_NEW_CONSOLE  # Eigenes Konsolenfenster für den Client
     )
 
     logger.info(f"{client_name} process started with PID {client_process.pid}")
@@ -332,8 +335,9 @@ def extract_player_positions(log_file):
                         y_start = line.find("y=") + 2
                         y_end = line.find(",", y_start)
 
-                        x = int(line[x_start:x_end])
-                        y = int(line[y_start:y_end])
+                        # Convert to float first, then to int to handle values like "446.0"
+                        x = int(float(line[x_start:x_end]))
+                        y = int(float(line[y_start:y_end]))
 
                         positions[player_name] = (x, y)
                         logger.info(f"Found position for {player_name}: ({x}, {y})")
