@@ -1184,6 +1184,19 @@ class Game:
             y = player_data.get("y", 0)
             name = player_data.get("name", "Unknown")
             direction = player_data.get("direction", "down")
+            player_id = player_data.get("player_id", "Unknown")
+
+            # Bestimme die Farbe basierend auf der player_id
+            # Spieler 1 (460, 448) ist rot, Spieler 2 (560, 448) ist blau
+            player_color = (0, 0, 255)  # Standard: Blau
+
+            # Identifiziere den Spieler anhand seiner Startposition
+            if 450 <= x <= 470 and 440 <= y <= 460:  # Spieler 1 Bereich
+                player_color = (255, 0, 0)  # Rot für Spieler 1
+                self.logger.info(f"[SPIELERSYNC] Identified player as Player 1: {player_id}")
+            elif 550 <= x <= 570 and 440 <= y <= 460:  # Spieler 2 Bereich
+                player_color = (0, 0, 255)  # Blau für Spieler 2
+                self.logger.info(f"[SPIELERSYNC] Identified player as Player 2: {player_id}")
 
             # Kamera-Offset anwenden
             screen_x, screen_y = self.camera.apply(x, y)
@@ -1199,11 +1212,11 @@ class Game:
             if (-tolerance <= screen_x <= screen_width + tolerance and
                 -tolerance <= screen_y <= screen_height + tolerance):
 
-                # Einfache Darstellung als farbiger Kreis
-                pygame.draw.circle(self.screen, (0, 0, 255), (int(screen_x), int(screen_y)), 16)
+                # Einfache Darstellung als farbiger Kreis mit der bestimmten Farbe
+                pygame.draw.circle(self.screen, player_color, (int(screen_x), int(screen_y)), 16)
 
                 # Debug-Ausgabe für die Spielerposition
-                self.logger.info(f"[DATENFLUSS] RENDERING PLAYER {name} (ID: {client_id}): x={x}, y={y}, screen_x={screen_x}, screen_y={screen_y}")
+                self.logger.info(f"[DATENFLUSS] RENDERING PLAYER {name} (ID: {client_id}, player_id: {player_id}): x={x}, y={y}, screen_x={screen_x}, screen_y={screen_y}")
 
                 # Spielername anzeigen
                 name_text = font.render(name, True, (255, 255, 255))
