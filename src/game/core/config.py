@@ -33,12 +33,15 @@ class Config:
             "multiplayer": {
                 "server_host": "127.0.0.1",
                 "server_port": 8765,
-                "update_rate": 10,  # Updates per second
+                "update_rate": 20,  # Updates per second
                 "interpolation": True,  # Bewegungen interpolieren
                 "prediction": True,  # Client-Side-Prediction aktivieren
                 "reconciliation": True,  # Server-Reconciliation aktivieren
+                "exact_positioning": False,  # Exakte Positionierung ohne Interpolation
                 "latency_simulation": 0,  # Künstliche Latenz in Millisekunden (0 = deaktiviert)
-                "jitter_simulation": 0  # Künstliche Jitter in Millisekunden (0 = deaktiviert)
+                "jitter_simulation": 0,  # Künstliche Jitter in Millisekunden (0 = deaktiviert)
+                "jitter_buffer_size": 3,  # Größe des Jitter-Puffers
+                "jitter_buffer_delay": 0.05  # Verzögerung des Jitter-Puffers in Sekunden
             },
             "paths": {
                 "save_dir": "saves",
@@ -227,6 +230,14 @@ class Config:
             bool: True if client-side prediction is enabled, False otherwise
         """
         return self.config["multiplayer"].get("prediction", True)
+
+    def get_exact_positioning(self) -> bool:
+        """Get the exact positioning setting
+
+        Returns:
+            bool: True if exact positioning is enabled, False otherwise
+        """
+        return self.config["multiplayer"].get("exact_positioning", False)
 
     def get_jitter_buffer_size(self) -> int:
         """Get the jitter buffer size

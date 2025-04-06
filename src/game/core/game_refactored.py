@@ -446,10 +446,10 @@ class Game:
         # Spieler aktualisieren
         self.player.update(dt)
 
-        # Andere Spieler aktualisieren (Interpolation)
-        if self.multiplayer_active and self.config.get_interpolation():
+        # Andere Spieler aktualisieren (Interpolation oder exakte Positionierung)
+        if self.multiplayer_active:
             for player_id, player_data in self.other_players.items():
-                # Erstelle einen temporären Spieler für die Interpolation
+                # Erstelle einen temporären Spieler für die Interpolation oder exakte Positionierung
                 if player_id not in self.interpolated_players:
                     temp_player = Player()
                     temp_player.x = player_data.get("x", 0)
@@ -459,10 +459,18 @@ class Game:
                     temp_player.character_type = player_data.get("character_type", "Red")
                     self.interpolated_players[player_id] = temp_player
 
-                # Interpoliere die Position des Spielers
-                self.interpolated_players[player_id].interpolate(player_data)
+                if self.config.get_interpolation() and not self.config.get_exact_positioning():
+                    # Interpoliere die Position des Spielers
+                    self.logger.debug(f"Using interpolation for player {player_id}")
+                    self.interpolated_players[player_id].interpolate(player_data)
+                else:
+                    # Exakte Positionierung ohne Interpolation
+                    self.logger.debug(f"Using exact positioning for player {player_id}")
+                    self.interpolated_players[player_id].x = player_data.get("x", self.interpolated_players[player_id].x)
+                    self.interpolated_players[player_id].y = player_data.get("y", self.interpolated_players[player_id].y)
+                    self.interpolated_players[player_id].direction = player_data.get("direction", self.interpolated_players[player_id].direction)
 
-                # Aktualisiere die Spielerdaten mit den interpolierten Werten
+                # Aktualisiere die Spielerdaten mit den interpolierten oder exakten Werten
                 self.other_players[player_id]["x"] = self.interpolated_players[player_id].x
                 self.other_players[player_id]["y"] = self.interpolated_players[player_id].y
 
@@ -853,21 +861,23 @@ class Game:
         if client_id in self.other_players:
             del self.other_players[client_id]
 
-    def _on_chat_message(self, client_id: str, player_name: str, message: str):
-        """Callback für Chat-Nachrichten
+    def _process_client_events(self) -> None:
+        """Verarbeitet Client-Events"""
+        if not self.multiplayer_active or not self.multiplayer_manager or not self.multiplayer_manager.client:
+            return
 
-        Args:
-            client_id: Client-ID des Spielers
-            player_name: Name des Spielers
-            message: Chat-Nachricht
-        """
-        self.logger.info(f"Chat message from {player_name}: {message}")
+        # Events vom Client abrufen
+        events = self.multiplayer_manager.client.get_events()
 
-        # TODO: Chat-Nachricht anzeigen
+        if events:
+            self.logger.info(f"[DATENFLUSS] PROCESSING {len(events)} CLIENT EVENTS")
 
-        # Interpolierten Spieler entfernen, wenn vorhanden
-        if client_id in self.interpolated_players:
-            del self.interpolated_players[client_id]
+        for event in events:
+            event_type = event.get("type")
+
+            if event_type == "force_player_data_update":
+                self.logger.info(f"[DATENFLUSS] RECEIVED FORCE_PLAYER_DATA_UPDATE EVENT")
+                self.force_player_data_update = True
 
     def _on_chat_message(self, player_name: str, message: str):
         """Callback für Chat-Nachrichten
@@ -1099,11 +1109,15 @@ class Game:
 
                     # Multiplayer: Spielerdaten senden, wenn aktiv und Update-Intervall erreicht
                     if self.multiplayer_active:
+                        # Client-Events verarbeiten
+                        self._process_client_events()
+
                         last_network_update += dt
-                        if last_network_update >= network_update_interval:
-                            self.logger.debug(f"[DATENFLUSS] NETWORK UPDATE INTERVAL REACHED: {last_network_update:.3f}s >= {network_update_interval:.3f}s")
+                        if last_network_update >= network_update_interval or self.force_player_data_update:
+                            self.logger.debug(f"[DATENFLUSS] NETWORK UPDATE INTERVAL REACHED: {last_network_update:.3f}s >= {network_update_interval:.3f}s or force_update={self.force_player_data_update}")
                             self._send_player_data()
                             last_network_update = 0
+                            self.force_player_data_update = False
                         else:
                             self.logger.debug(f"[DATENFLUSS] NETWORK UPDATE INTERVAL NOT REACHED: {last_network_update:.3f}s < {network_update_interval:.3f}s")
 

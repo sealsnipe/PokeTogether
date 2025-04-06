@@ -162,8 +162,12 @@ class Player:
         other_x = other_player_data.get("x", self.x)
         other_y = other_player_data.get("y", self.y)
         other_direction = other_player_data.get("direction", self.direction)
-        other_timestamp = other_player_data.get("timestamp", time.time())
+        # Verwende Server-Zeitstempel, wenn verfügbar, sonst Client-Zeitstempel, sonst aktuelle Zeit
+        other_timestamp = other_player_data.get("server_timestamp",
+                                             other_player_data.get("timestamp", time.time()))
         other_moving = other_player_data.get("moving", False)
+
+        self.logger.debug(f"Using timestamp: server_timestamp={other_player_data.get('server_timestamp')}, timestamp={other_player_data.get('timestamp')}, final={other_timestamp}")
 
         # Berechne die Zeit seit dem letzten Update
         current_time = time.time()

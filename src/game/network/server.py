@@ -112,6 +112,12 @@ class GameServer:
                 "players": self.players
             }))
 
+            # Notify all other clients about the new client
+            await self.broadcast({
+                "type": "new_client_connected",
+                "client_id": client_id
+            }, exclude=client_id)
+
             # Handle messages from this client
             async for message in websocket:
                 await self.process_message(client_id, message)
@@ -171,6 +177,9 @@ class GameServer:
 
                 # Broadcast player update to all other clients
                 # Füge client_id zu den Spielerdaten hinzu und setze den Typ
+                # Füge Server-Zeitstempel hinzu
+                player_data["server_timestamp"] = time.time()
+
                 broadcast_data = {
                     "type": "player_update",
                     "client_id": client_id,
@@ -216,23 +225,27 @@ class GameServer:
         except Exception as e:
             self.logger.error(f"Error processing message from client {client_id}: {e}")
 
-    async def broadcast(self, data: Dict[str, Any], exclude: Optional[Set[str]] = None):
+    async def broadcast(self, data: Dict[str, Any], exclude: Optional[str] = None):
         """Broadcast data to all connected clients
 
         Args:
             data: Data to broadcast
-            exclude: Set of client IDs to exclude from broadcast
+            exclude: Client ID to exclude from broadcast, or None to broadcast to all clients
         """
-        if exclude is None:
-            exclude = set()
+        exclude_set = set()
+        if exclude is not None:
+            if isinstance(exclude, str):
+                exclude_set.add(exclude)
+            elif isinstance(exclude, (list, set)):
+                exclude_set.update(exclude)
 
         message = json.dumps(data)
         self.logger.info(f"[DATENFLUSS] BROADCASTING MESSAGE TO CLIENTS: {message[:100]}..." if len(message) > 100 else f"[DATENFLUSS] BROADCASTING MESSAGE TO CLIENTS: {message}")
-        self.logger.info(f"[DATENFLUSS] BROADCASTING TO {len(self.clients) - len(exclude)} CLIENTS (EXCLUDING {len(exclude)} CLIENTS)")
+        self.logger.info(f"[DATENFLUSS] BROADCASTING TO {len(self.clients) - len(exclude_set)} CLIENTS (EXCLUDING {len(exclude_set)} CLIENTS)")
 
         broadcast_count = 0
         for client_id, websocket in self.clients.items():
-            if client_id not in exclude:
+            if client_id not in exclude_set:
                 try:
                     self.logger.info(f"[DATENFLUSS] SENDING BROADCAST TO CLIENT: {client_id}")
                     await websocket.send(message)

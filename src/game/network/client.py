@@ -27,6 +27,7 @@ class GameClient:
         self.message_handlers = {}
         self.event_loop = None
         self.client_thread = None
+        self.events = []  # Liste für Client-Events
 
         # Netzwerk-Simulation
         self.latency_simulation = 0  # Latenz in Millisekunden
@@ -38,6 +39,7 @@ class GameClient:
         self.register_handler("player_disconnected", self._handle_player_disconnected)
         self.register_handler("chat_message", self._handle_chat_message)
         self.register_handler("connection_acknowledged", self._handle_connection_acknowledged)
+        self.register_handler("new_client_connected", self._handle_new_client_connected)
 
         self.logger.debug("Game client initialized with:")
         self.logger.debug(f"- connected: {self.connected}")
@@ -449,6 +451,13 @@ class GameClient:
         self.logger.info(f"Received welcome message. Client ID: {self.client_id}")
         self.logger.info(f"Current players: {len(self.players)}")
 
+        # Signal to force an immediate player data update
+        # This will be picked up by the game loop to send player data
+        # even if the player hasn't moved
+        self.logger.info(f"[DATENFLUSS] SIGNALING FORCE_PLAYER_DATA_UPDATE AFTER WELCOME MESSAGE")
+        # We'll use a custom event to signal this
+        self.events.append({"type": "force_player_data_update"})
+
     async def _handle_player_update(self, data: Dict[str, Any]):
         """Handle player update message from the server
 
@@ -593,3 +602,37 @@ class GameClient:
             self.logger.debug(f"Message sent: {message_json[:100]}..." if len(message_json) > 100 else f"Message sent: {message_json}")
         except Exception as e:
             self.logger.error(f"Error sending message: {e}")
+
+    def get_players(self):
+        """Get all players in the session
+
+        Returns:
+            Dict[str, Dict[str, Any]]: Dictionary of player data by client ID
+        """
+        return self.players
+
+    def get_events(self):
+        """Get and clear all pending events
+
+        Returns:
+            List[Dict[str, Any]]: List of events
+        """
+        events = self.events.copy()
+        self.events.clear()
+        return events
+
+    async def _handle_new_client_connected(self, data: Dict[str, Any]):
+        """Handle new client connected message from the server
+
+        Args:
+            data: New client connected message data
+        """
+        client_id = data.get("client_id")
+        self.logger.info(f"New client connected: {client_id}")
+
+        # Signal to force an immediate player data update
+        # This will be picked up by the game loop to send player data
+        # even if the player hasn't moved
+        self.logger.info(f"[DATENFLUSS] SIGNALING FORCE_PLAYER_DATA_UPDATE AFTER NEW CLIENT CONNECTED")
+        # We'll use a custom event to signal this
+        self.events.append({"type": "force_player_data_update"})
