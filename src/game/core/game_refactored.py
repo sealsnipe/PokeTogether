@@ -906,8 +906,11 @@ class Game:
     def join_multiplayer_game(self) -> None:
         """Tritt einem Multiplayer-Spiel bei"""
         self.logger.info("=== JOINING A MULTIPLAYER GAME ===")
-        # Dialog zur Eingabe der IP-Adresse anzeigen
-        self._show_join_dialog()
+        self.logger.info("[INFO] Verbinde automatisch mit lokaler Session (Spieler 2)")
+
+        # Automatisch mit localhost verbinden (keine Dialog-Anzeige mehr)
+        self.join_session("localhost", 8765)
+        self.logger.info("[INFO] Spieler 2 startet bei Position (560, 448)")
 
     def _show_join_dialog(self) -> None:
         """Zeigt einen Dialog zum Beitreten einer Multiplayer-Session"""

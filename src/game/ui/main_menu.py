@@ -29,13 +29,15 @@ class MainMenu:
 
         # Menu options
         self.options = [
-            {"text": "New Game", "action": self._new_game},
             {"text": "Host Game", "action": self._host_game},
             {"text": "Join Game", "action": self._join_game},
             {"text": "Continue", "action": self._continue_game},
             {"text": "Options", "action": self._show_options},
             {"text": "Exit", "action": self._exit_game}
         ]
+
+        # Log-Ausgabe für die Menüoptionen
+        self.logger.info("[INFO] Hauptmenü initialisiert – Optionen: Host Game, Join Game, Continue, Options, Exit")
 
         # Fonts
         self.title_font = pygame.font.SysFont(None, 72)
@@ -123,11 +125,7 @@ class MainMenu:
         self.on_show_options = on_show_options
         self.on_exit_game = on_exit_game
 
-    def _new_game(self):
-        """Start a new game"""
-        self.logger.info("=== NEW GAME SELECTED ===")
-        if self.on_new_game:
-            self.on_new_game()
+    # Die Methode _new_game wurde entfernt, da sie nicht mehr benötigt wird
 
     def _continue_game(self):
         """Continue a saved game"""
@@ -144,14 +142,18 @@ class MainMenu:
     def _host_game(self):
         """Host a multiplayer game"""
         self.logger.info("=== HOST GAME SELECTED ===")
+        self.logger.info("[INFO] Starte Spiel als Host (Spieler 1)")
         if self.on_host_game:
             self.on_host_game()
+        self.logger.info("[INFO] Spieler 1 startet bei Position (460, 448)")
 
     def _join_game(self):
         """Join a multiplayer game"""
         self.logger.info("=== JOIN GAME SELECTED ===")
+        self.logger.info("[INFO] Verbinde automatisch mit lokaler Session (Spieler 2)")
         if self.on_join_game:
             self.on_join_game()
+        self.logger.info("[INFO] Spieler 2 startet bei Position (560, 448)")
 
     def _exit_game(self):
         """Exit the game"""

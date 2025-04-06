@@ -31,13 +31,15 @@ class MainMenuRefactored:
 
         # Menu options
         self.options = [
-            "New Game",
             "Host Game",
             "Join Game",
             "Continue",
             "Options",
             "Exit"
         ]
+
+        # Log-Ausgabe für die Menüoptionen
+        self.logger.info("[INFO] Hauptmenü initialisiert – Optionen: Host Game, Join Game, Continue, Options, Exit")
 
         # Fonts
         self.title_font = pygame.font.SysFont(None, 72)
@@ -78,9 +80,7 @@ class MainMenuRefactored:
             self.logger.info(f"{selected} selected")
 
             # Execute the corresponding action
-            if selected == "New Game":
-                self._new_game()
-            elif selected == "Host Game":
+            if selected == "Host Game":
                 self._host_game()
             elif selected == "Join Game":
                 self._join_game()
@@ -118,23 +118,25 @@ class MainMenuRefactored:
             option_rect = option_text.get_rect(center=(screen.get_width() // 2, 200 + i * 50))
             screen.blit(option_text, option_rect)
 
-    def _new_game(self) -> None:
-        """Start a new game"""
-        self.logger.info("=== NEW GAME SELECTED ===")
-        self.game.start_new_game()
-        self.hide()
+    # Die Methode _new_game wurde entfernt, da sie nicht mehr benötigt wird
 
     def _host_game(self) -> None:
         """Host a multiplayer game"""
         self.logger.info("=== HOST GAME SELECTED ===")
+        self.logger.info("[INFO] Starte Spiel als Host (Spieler 1)")
+        # Starte das Spiel als Host (Spieler 1)
         self.game.start_new_game(as_host=True)
         self.hide()
 
     def _join_game(self) -> None:
         """Join a multiplayer game"""
         self.logger.info("=== JOIN GAME SELECTED ===")
-        self.game.join_multiplayer_game()
+        self.logger.info("[INFO] Verbinde automatisch mit lokaler Session (Spieler 2)")
+        # Verstecke das Hauptmenü
         self.hide()
+        # Verbinde automatisch mit der lokalen Session (localhost)
+        self.game.join_session("localhost", 8765)
+        self.logger.info("[INFO] Spieler 2 startet bei Position (560, 448)")
 
     def _continue_game(self) -> None:
         """Continue a saved game"""
