@@ -1188,6 +1188,9 @@ class Game:
                 # Einfache Darstellung als farbiger Kreis
                 pygame.draw.circle(self.screen, (0, 0, 255), (int(screen_x), int(screen_y)), 16)
 
+                # Debug-Ausgabe für die Spielerposition
+                self.logger.info(f"[DATENFLUSS] RENDERING PLAYER {name} (ID: {client_id}): x={x}, y={y}, screen_x={screen_x}, screen_y={screen_y}")
+
                 # Spielername anzeigen
                 name_text = font.render(name, True, (255, 255, 255))
                 self.screen.blit(name_text, (int(screen_x) - name_text.get_width() // 2, int(screen_y) - 30))
