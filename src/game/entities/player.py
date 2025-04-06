@@ -316,6 +316,9 @@ class Player:
         Returns:
             Dict[str, Any]: Serialized player data
         """
+        # Erstelle ein Logging-Eintrag für die Netzwerkdaten
+        self.logger.info(f"[SPIELERSYNC] SERIALIZING PLAYER DATA: player_id={self.player_id}, x={self.x}, y={self.y}, direction={self.direction}")
+
         return {
             "player_id": self.player_id,
             "name": self.name,

@@ -155,6 +155,9 @@ class GameMultiplayer:
         player_data["force_update"] = self.force_player_data_update  # Flag für erzwungenes Update
         player_data["client_time"] = time.time()  # Aktuelle Client-Zeit
 
+        # Debug-Ausgabe für die Spielersynchronisierung
+        self.logger.info(f"[SPIELERSYNC] SENDING PLAYER DATA: player_id={self.player.player_id}, x={self.player.x}, y={self.player.y}, direction={self.player.direction}")
+
         self.logger.info(f"[DATENFLUSS] PLAYER DATA COLLECTED: {json.dumps(player_data)}")
 
         # Ausführlichere Log-Ausgabe für das Senden von Spielerdaten
@@ -192,6 +195,9 @@ class GameMultiplayer:
             self.logger.warning(f"[DATENFLUSS] EMPTY PLAYER DATA RECEIVED FOR CLIENT: {client_id}")
             return
 
+        # Debug-Ausgabe für die Spielersynchronisierung
+        self.logger.info(f"[SPIELERSYNC] RECEIVED PLAYER UPDATE: client_id={client_id}, x={player_data.get('x')}, y={player_data.get('y')}, direction={player_data.get('direction')}")
+
         # Ausführlichere Log-Ausgabe für Spieler-Updates
         self.logger.info(f"[DATENFLUSS] PLAYER UPDATE: Player {player_data.get('name', 'Unknown')}: x={player_data.get('x', '?')}, y={player_data.get('y', '?')}, direction={player_data.get('direction', '?')}")
 
@@ -227,14 +233,22 @@ class GameMultiplayer:
 
         # Spieler zur Liste hinzufügen oder aktualisieren
         self.logger.info(f"[DATENFLUSS] ADDING PLAYER TO OTHER_PLAYERS LIST: client_id={client_id}, player_data={json.dumps(player_data)}")
+
+        # Stellen Sie sicher, dass die player_id in den Spielerdaten enthalten ist
+        if "player_id" not in player_data:
+            self.logger.warning(f"[SPIELERSYNC] PLAYER_ID MISSING IN PLAYER DATA: client_id={client_id}")
+            # Verwenden Sie die client_id als Fallback, wenn keine player_id vorhanden ist
+            player_data["player_id"] = client_id
+
         self.other_players[client_id] = player_data
         self.logger.info(f"[DATENFLUSS] PLAYER ADDED TO OTHER_PLAYERS LIST: client_id={client_id}")
+        self.logger.info(f"[SPIELERSYNC] PLAYER ADDED: client_id={client_id}, player_id={player_data.get('player_id')}, x={player_data.get('x')}, y={player_data.get('y')}")
 
         # Prüfen, ob die Liste korrekt aktualisiert wurde
         self.logger.info(f"[DATENFLUSS] UPDATED OTHER_PLAYERS LIST. Current count: {len(self.other_players)}")
 
         # Prüfen, ob der Spieler in der Liste ist
-        player_list = [{"id": pid, "name": pdata.get("name", "Unknown"), "x": pdata.get("x", 0), "y": pdata.get("y", 0)} for pid, pdata in self.other_players.items()]
+        player_list = [{"id": pid, "name": pdata.get("name", "Unknown"), "x": pdata.get("x", 0), "y": pdata.get("y", 0), "player_id": pdata.get("player_id", "Unknown")} for pid, pdata in self.other_players.items()]
         self.logger.info(f"[DATENFLUSS] OTHER_PLAYERS LIST: {json.dumps(player_list)}")
 
         # Prüfen, ob der Spieler in der Liste ist

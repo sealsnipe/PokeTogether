@@ -183,12 +183,16 @@ class GameServer:
                 # Füge Server-Zeitstempel hinzu
                 player_data["server_timestamp"] = time.time()
 
+                # Debug-Ausgabe für die Spielersynchronisierung
+                self.logger.info(f"[SPIELERSYNC] SERVER PROCESSING PLAYER UPDATE: client_id={client_id}, player_id={player_data.get('player_id')}, x={player_data.get('x')}, y={player_data.get('y')}")
+
                 broadcast_data = {
                     "type": "player_update",
                     "client_id": client_id,
                     **player_data  # Entpacke die Spielerdaten direkt in die Nachricht
                 }
                 self.logger.info(f"[DATENFLUSS] SERVER BROADCASTING TO CLIENTS: {json.dumps(broadcast_data)}")
+                self.logger.info(f"[SPIELERSYNC] SERVER BROADCASTING PLAYER UPDATE: client_id={client_id}, player_id={player_data.get('player_id')}, x={player_data.get('x')}, y={player_data.get('y')}")
                 await self.broadcast(broadcast_data, exclude={client_id})
 
             elif message_type == "connection_confirmation":

@@ -115,8 +115,24 @@ class Game:
 
         self.current_map = SimpleMap(map_width, map_height, tile_size)
 
-        # Spieler - Starte in der Mitte der Karte
-        self.player = Player(self.current_map.pixel_width // 2, self.current_map.pixel_height // 2, "Red")
+        # Spieler - Starte an einer definierten Position basierend auf der Konfiguration
+        player_character = "Red"  # Standard-Charakter
+        player_x = self.current_map.pixel_width // 2
+        player_y = self.current_map.pixel_height // 2
+
+        # Wenn wir eine Konfiguration haben, verwende die Werte daraus
+        if hasattr(self, 'config'):
+            player_character = self.config.get("player", "character") or player_character
+            # Verwende die instance_id, um unterschiedliche Startpositionen zu bestimmen
+            instance_id = self.config.get("instance", "id") or ""
+            if "player1" in instance_id:
+                # Spieler 1 startet links von der Mitte
+                player_x = player_x - 100
+            elif "player2" in instance_id:
+                # Spieler 2 startet rechts von der Mitte
+                player_x = player_x + 100
+
+        self.player = Player(player_x, player_y, player_character)
 
         # Kamera - Verwende die aktuelle Bildschirmgröße für die Kamera
         # Zoom-Faktor von 1.2 bedeutet 20% herausgezoomt
