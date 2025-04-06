@@ -563,9 +563,7 @@ class Game:
                 direction = player_data.get("direction", "down")
 
             # Kamera-Offset anwenden
-            offset = self.camera.get_offset()
-            screen_x = int(x - offset[0])
-            screen_y = int(y - offset[1])
+            screen_x, screen_y = self.camera.apply(x, y)
 
             # Debug-Ausgabe für das Rendering
             self.logger.info(f"[DATENFLUSS] RENDERING PLAYER {name} (ID: {player_id}): x={x}, y={y}, screen_x={screen_x}, screen_y={screen_y}")

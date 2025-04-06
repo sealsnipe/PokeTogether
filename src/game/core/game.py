@@ -1179,9 +1179,7 @@ class Game:
             direction = player_data.get("direction", "down")
 
             # Kamera-Offset anwenden
-            offset = self.camera.get_offset()
-            screen_x = x + offset[0]
-            screen_y = y + offset[1]
+            screen_x, screen_y = self.camera.apply(x, y)
 
             # Prüfen, ob der Spieler im sichtbaren Bereich ist
             if (0 <= screen_x <= self.screen.get_width() and
